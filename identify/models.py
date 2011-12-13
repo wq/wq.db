@@ -8,14 +8,17 @@ class IdentifiedModel(models.Model):
 
     # Subclasses should override this method
     def fallback_identifier(self):
-       return ''
+        return ''
 
     def __unicode__(self):
-       ids = self.identifiers.filter(is_primary=True)
-       if (len(ids) > 0):
-           return ', '.join(map(str, ids))
-       else:
-           return self.fallback_identifier()
+        ids = self.identifiers.filter(is_primary=True)
+        if (len(ids) > 0):
+            return ', '.join(map(str, ids))
+        else:
+            return self.fallback_identifier()
+
+    class Meta:
+        abstract = True
 
 class Identifier(models.Model):
     name       = models.CharField(max_length=255)
@@ -31,7 +34,7 @@ class Identifier(models.Model):
     content_object = generic.GenericForeignKey()
 
     def __unicode__(self):
-      return self.name
+        return self.name
 
 class Authority(models.Model):
     name = models.TextField()

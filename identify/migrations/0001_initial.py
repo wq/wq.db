@@ -8,12 +8,6 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding model 'IdentifiedModel'
-        db.create_table('identify_identifiedmodel', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('identify', ['IdentifiedModel'])
-
         # Adding model 'Identifier'
         db.create_table('identify_identifier', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -38,9 +32,6 @@ class Migration(SchemaMigration):
 
     def backwards(self, orm):
         
-        # Deleting model 'IdentifiedModel'
-        db.delete_table('identify_identifiedmodel')
-
         # Deleting model 'Identifier'
         db.delete_table('identify_identifier')
 
@@ -60,10 +51,6 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Authority'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.TextField', [], {})
-        },
-        'identify.identifiedmodel': {
-            'Meta': {'object_name': 'IdentifiedModel'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         'identify.identifier': {
             'Meta': {'object_name': 'Identifier'},

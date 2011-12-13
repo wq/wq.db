@@ -7,6 +7,8 @@ from identify.models import IdentifiedModel, IdentifiedModelAdmin
 
 class AnnotatedModel(models.Model):
     annotations = generic.GenericRelation('Annotation')
+    class Meta:
+        abstract = True
 
 class AnnotationType(IdentifiedModel):
     description = models.TextField()

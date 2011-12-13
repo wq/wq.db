@@ -8,15 +8,9 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding model 'AnnotatedModel'
-        db.create_table('annotate_annotatedmodel', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-        ))
-        db.send_create_signal('annotate', ['AnnotatedModel'])
-
         # Adding model 'AnnotationType'
         db.create_table('annotate_annotationtype', (
-            ('identifiedmodel_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['identify.IdentifiedModel'], unique=True, primary_key=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('description', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal('annotate', ['AnnotationType'])
@@ -42,9 +36,6 @@ class Migration(SchemaMigration):
 
     def backwards(self, orm):
         
-        # Deleting model 'AnnotatedModel'
-        db.delete_table('annotate_annotatedmodel')
-
         # Deleting model 'AnnotationType'
         db.delete_table('annotate_annotationtype')
 
@@ -56,10 +47,6 @@ class Migration(SchemaMigration):
 
 
     models = {
-        'annotate.annotatedmodel': {
-            'Meta': {'object_name': 'AnnotatedModel'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
         'annotate.annotation': {
             'Meta': {'object_name': 'Annotation'},
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
@@ -69,9 +56,9 @@ class Migration(SchemaMigration):
             'value': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'annotate.annotationtype': {
-            'Meta': {'object_name': 'AnnotationType', '_ormbases': ['identify.IdentifiedModel']},
+            'Meta': {'object_name': 'AnnotationType'},
             'description': ('django.db.models.fields.TextField', [], {}),
-            'identifiedmodel_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['identify.IdentifiedModel']", 'unique': 'True', 'primary_key': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'models': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['contenttypes.ContentType']", 'symmetrical': 'False'})
         },
         'contenttypes.contenttype': {
@@ -86,21 +73,17 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.TextField', [], {})
         },
-        'identify.identifiedmodel': {
-            'Meta': {'object_name': 'IdentifiedModel'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
         'identify.identifier': {
             'Meta': {'object_name': 'Identifier'},
-            'authority': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['identify.Authority']", 'blank': 'True'}),
+            'authority': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['identify.Authority']", 'null': 'True', 'blank': 'True'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'}),
-            'valid_from': ('django.db.models.fields.DateField', [], {'blank': 'True'}),
-            'valid_to': ('django.db.models.fields.DateField', [], {'blank': 'True'})
+            'valid_from': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'valid_to': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
         }
     }
 
