@@ -75,7 +75,7 @@ class InverseRelationship(Relationship):
     def reltype(self):
         return InverseRelationshipType.objects.filter(pk=self.type.pk)[0]
     
-    class Meta():
+    class Meta:
         proxy = True
 
 class RelationshipType(models.Model):
@@ -109,7 +109,7 @@ class InverseRelationshipType(RelationshipType):
     def __unicode__(self):
         return self.inverse_name
 
-    class Meta():
+    class Meta:
         proxy = True
 
 # Admin interface

@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.contrib import admin
 from reversion import VersionAdmin
-from identify.models import IdentifiedModel, IdentifiedModelAdmin
+from wq.identify.models import IdentifiedModel, IdentifiedModelAdmin
 
 class AnnotatedModel(models.Model):
     annotations = generic.GenericRelation('Annotation')
