@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.contrib import admin
-from reversion import VersionAdmin
+from reversion.admin import VersionAdmin
 from wq.identify.models import IdentifiedModel, IdentifiedModelAdmin
 
 class AnnotatedModel(models.Model):
