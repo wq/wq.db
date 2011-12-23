@@ -25,7 +25,7 @@ class Migration(SchemaMigration):
         # Adding model 'Authority'
         db.create_table('identify_authority', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.TextField')()),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
         ))
         db.send_create_signal('identify', ['Authority'])
 
@@ -50,7 +50,7 @@ class Migration(SchemaMigration):
         'identify.authority': {
             'Meta': {'object_name': 'Authority'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.TextField', [], {})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'identify.identifier': {
             'Meta': {'object_name': 'Identifier'},
