@@ -42,7 +42,7 @@ class Migration(SchemaMigration):
         db.create_table('annotate_annotation', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['annotate.AnnotationType'])),
-            ('value', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('qualifier', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['annotate.AnnotationQualifier'], null=True, blank=True)),
             ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
             ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
@@ -76,7 +76,7 @@ class Migration(SchemaMigration):
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'qualifier': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['annotate.AnnotationQualifier']", 'null': 'True', 'blank': 'True'}),
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['annotate.AnnotationType']"}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'})
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
         'annotate.annotationqualifier': {
             'Meta': {'object_name': 'AnnotationQualifier'},
