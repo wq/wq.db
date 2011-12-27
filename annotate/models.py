@@ -16,6 +16,20 @@ class AnnotationQualifier(models.Model):
         return self.name
 
 class AnnotationManager(models.Manager):
+
+    # Collapse annotations into dict for simple access
+    @property
+    def vals(self):
+        if (hasattr(self, '_vals')):
+            return getattr(self, '_vals')
+
+        vals = {}
+        for annot in self.all():
+            vals[str(annot.type)] = annot.value
+
+        setattr(self, '_vals', vals)
+        return vals
+
     # Default implementation of get_or_create doesn't work well with generics
     def get_or_create(self, **kwargs):
         try:
@@ -47,12 +61,17 @@ class Annotation(models.Model):
 class AnnotationSet(generic.GenericRelation):
     def __init__(self, *args, **kwargs):
        if len(args) == 0:
-           args = ['Annotation'] 
+           kwargs['to'] = "Annotation"
        kwargs['related_name'] = None
        super(AnnotationSet, self).__init__(*args, **kwargs)
 
 class AnnotatedModel(models.Model):
     annotations = AnnotationSet()
+
+    @property
+    def vals(self):
+        return self.annotations.vals
+
     class Meta:
         abstract = True
 
@@ -64,3 +83,7 @@ class AnnotatedModelAdmin(admin.ModelAdmin):
     inlines = [
         AnnotationInline,
     ]
+
+# Tell south not to worry about the "custom" field type
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^wq.annotate.models.AnnotationSet"])
