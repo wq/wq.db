@@ -16,6 +16,13 @@ class Identifier(models.Model):
     object_id      = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
 
+    @property
+    def url(self):
+        if (self.authority is None or self.authority.object_url is None):
+            return self.slug
+	else:
+            return self.authority.object_url % self.slug
+
     def __unicode__(self):
         return self.name
 
@@ -60,7 +67,10 @@ class IdentifiedModel(models.Model):
         abstract = True
 
 class Authority(models.Model):
-    name = models.CharField(max_length=255)
+    name       = models.CharField(max_length=255)
+    homepage   = models.URLField(null=True,blank=True)
+    object_url = models.URLField(null=True,blank=True)
+
     class Meta:
         verbose_name_plural = 'authorities'
 
@@ -78,4 +88,11 @@ class IdentifiedModelAdmin(admin.ModelAdmin):
         IdentifierInline
     ]
 
-admin.site.register(Authority)
+class AuthorityIdentifierInline(admin.TabularInline):
+    model = Identifier
+    extra = 0
+
+class AuthorityAdmin(admin.ModelAdmin):
+    inlines = [
+        AuthorityIdentifierInline
+    ]
