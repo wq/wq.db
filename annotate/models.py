@@ -86,4 +86,4 @@ class AnnotatedModelAdmin(admin.ModelAdmin):
 
 # Tell south not to worry about the "custom" field type
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^wq.annotate.models.AnnotationSet"])
+add_introspection_rules([], ["^wq.db.annotate.models.AnnotationSet"])
