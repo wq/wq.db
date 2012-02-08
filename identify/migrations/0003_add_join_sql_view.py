@@ -7,6 +7,9 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        if db.backend_name != 'postgres':
+            print "Warning: Non-postgres database detected; convenience view will not be created."
+            return
         db.execute('''
 CREATE OR REPLACE VIEW identify_identifier_joined AS 
 SELECT
@@ -18,6 +21,8 @@ JOIN django_content_type ct ON i.content_type_id = ct.id
 LEFT OUTER JOIN identify_authority a ON i.authority_id = a.id;''')
 
     def backwards(self, orm):
+        if db.backend_name != 'postgres':
+            return
         db.execute("DROP VIEW identify_identifier_joined;");
 
 

@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.contrib import admin
 
 class Identifier(models.Model):
     name       = models.CharField(max_length=255)
@@ -76,23 +75,3 @@ class Authority(models.Model):
 
     def __unicode__(self):
         return self.name
-
-# Admin interface
-class IdentifierInline(generic.GenericTabularInline):
-    model = Identifier
-    prepopulated_fields = {"slug": ("name",)}
-    extra = 0
-
-class IdentifiedModelAdmin(admin.ModelAdmin):
-    inlines = [
-        IdentifierInline
-    ]
-
-class AuthorityIdentifierInline(admin.TabularInline):
-    model = Identifier
-    extra = 0
-
-class AuthorityAdmin(admin.ModelAdmin):
-    inlines = [
-        AuthorityIdentifierInline
-    ]
