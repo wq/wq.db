@@ -2,6 +2,14 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+class IdentifierManager(models.Manager):
+    # Default implementation of get_or_create doesn't work well with generics
+    def get_or_create(self, **kwargs):
+        try:
+            return self.get(**kwargs), False
+        except self.model.DoesNotExist:
+            return self.create(**kwargs), True
+
 class Identifier(models.Model):
     name       = models.CharField(max_length=255)
     slug       = models.SlugField()
@@ -14,6 +22,8 @@ class Identifier(models.Model):
     content_type   = models.ForeignKey(ContentType)
     object_id      = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
+
+    objects = IdentifierManager()
 
     @property
     def url(self):
