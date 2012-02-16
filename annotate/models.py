@@ -4,17 +4,31 @@ from django.contrib.contenttypes import generic
 from django.contrib import admin
 
 class AnnotationType(models.Model):
-    name   = models.CharField(max_length=255)
-    models = models.ManyToManyField(ContentType)
+    name        = models.CharField(max_length=255)
+    contenttype = models.ForeignKey(ContentType, null=True, blank=True)
+
+    # Assign a value to annotated_model to automatically set contenttype
+    # (Useful for subclasses with a single target model)
+    annotated_model = None
+
     def __unicode__(self):
+        for f in self._meta.get_all_related_objects():
+            # Check for any linked subclasses as they may have a more
+            # meaningful representation
+            if f.field.__class__ == models.OneToOneField:
+                try:
+                    child = getattr(self, f.get_accessor_name())
+                except f.field.model.DoesNotExist:
+                    continue
+                else:
+                    return unicode(child)
+        # Fall back to name
         return self.name
 
-class AnnotationQualifier(models.Model):
-    name   = models.CharField(max_length=255)
-    types  = models.ManyToManyField(AnnotationType)
-    def __unicode__(self):
-        return self.name
-
+    def clean(self, *args, **kwargs):
+        if self.annotated_model is not None:
+            self.contenttype = ContentType.objects.get_for_model(self.annotated_model)
+            
 class AnnotationManager(models.Manager):
 
     # Collapse annotations into dict for simple access
@@ -40,7 +54,6 @@ class AnnotationManager(models.Manager):
 class Annotation(models.Model):
     type      = models.ForeignKey(AnnotationType)
     value     = models.CharField(max_length=255, null=True, blank=True) # FIXME:numbers?
-    qualifier = models.ForeignKey(AnnotationQualifier, null=True, blank=True)
 
     # Link can contain a pointer to any model
     # FIXME: restrict to models allowed for given type
