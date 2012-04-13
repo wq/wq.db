@@ -3,10 +3,23 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 class RelatedModel(models.Model):
-    relations = generic.GenericRelation('Relationship',
-      content_type_field='from_content_type',
-      object_id_field='from_object_id'
+    relationships = generic.GenericRelation('Relationship',
+        content_type_field='from_content_type',
+        object_id_field='from_object_id',
+        related_name='%(class)s_set'
     )
+    inverse_relationships = generic.GenericRelation('InverseRelationship',
+        content_type_field='to_content_type',
+        object_id_field='to_object_id',
+        related_name='%(class)s_inverse_set'
+    )
+
+    def all_relationships(self):
+        for rel in self.relationships.all():
+            yield rel
+        for rel in self.inverse_relationships.all():
+            yield rel
+
     class Meta:
         abstract = True
 
@@ -15,11 +28,11 @@ class Relationship(models.Model):
     type                = models.ForeignKey('RelationshipType')
 
     # Objects can contain pointers to any model
-    from_content_type   = models.ForeignKey(ContentType, related_name='+', editable = False)
+    from_content_type   = models.ForeignKey(ContentType, related_name='+')
     from_object_id      = models.PositiveIntegerField()
     from_content_object = generic.GenericForeignKey('from_content_type', 'from_object_id')
     
-    to_content_type     = models.ForeignKey(ContentType, related_name='+', editable = False)
+    to_content_type     = models.ForeignKey(ContentType, related_name='+')
     to_object_id        = models.PositiveIntegerField()
     to_content_object   = generic.GenericForeignKey('to_content_type', 'to_object_id')
     
