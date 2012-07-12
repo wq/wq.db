@@ -1,7 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib import admin
 
-from wq.identify.models import Identifier, IdentifiedModel, Authority
+from .models import Identifier, IdentifiedModel, Authority
 
 class IdentifierInline(generic.GenericTabularInline):
     model = Identifier
