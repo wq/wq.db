@@ -5,10 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 from wq.db import resources, views
 
 urlpatterns = patterns('', 
-    url('^config$', views.Config.as_view())
+    url('^config/?$', views.Config.as_view()),
+    url('^config.(?P<format>\w+)$', views.Config.as_view())
 )
 
 for ct in ContentType.objects.all():
+        
     cls = ct.model_class()
     if cls is None:
         continue
@@ -18,6 +20,8 @@ for ct in ContentType.objects.all():
     detailview = views.InstanceModelView.as_view(resource=res)
     urlbase    = views.geturlbase(ct)
 
-    urlpatterns += patterns('', url(urlbase + r'/$', listview))
-    urlpatterns += patterns('', url(urlbase + r'/new$', listview))
-    urlpatterns += patterns('', url(urlbase + r'/(?P<pk>[^/]+)', detailview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/?$',  listview))
+    urlpatterns += patterns('', url('^' + urlbase + r'\.(?P<format>\w+)$', listview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/new$', listview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>\w+)\.(?P<format>\w+)$', detailview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>\w+)/?$', detailview))

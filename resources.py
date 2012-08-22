@@ -1,5 +1,7 @@
 from djangorestframework.resources import ModelResource as RestModelResource
 
+from django.contrib.gis.db.models.fields import GeometryField
+
 from django.contrib.contenttypes.models import ContentType
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
 
@@ -49,6 +51,10 @@ class ModelResource(RestModelResource):
         for f in self.model._meta.fields:
             if f.rel is not None and f.rel.to == ContentType:
                 data['for'] = get_id(getattr(instance, f.name))
+            if isinstance(f, GeometryField):
+                import json
+                geo = getattr(instance, f.name)
+                data[f.name] = json.loads(geo.geojson)
         return data
 
 class AnnotationResource(ModelResource):
