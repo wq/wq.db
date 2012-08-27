@@ -4,6 +4,12 @@ from django.contrib.gis.db.models.fields import GeometryField
 
 from django.contrib.contenttypes.models import ContentType
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
+from wq.db.identify.models import Identifier, IdentifiedModel, Authority
+
+from django.conf import settings
+from wq.db.util import get_id
+
+server_context = getattr(settings, 'RENDER_ON_SERVER', False)
 
 _resource_map = {}
 
@@ -23,6 +29,13 @@ class ModelResource(RestModelResource):
                     fields.append(f.name + '_id')
         if (self.view.method in ("PUT", "POST") and issubclass(self.model, AnnotatedModel)):
             fields.append("updates")
+
+        if (server_context):
+            if issubclass(self.model, AnnotatedModel):
+                fields.append("annotations")
+            if issubclass(self.model, IdentifiedModel):
+                fields.append("identifiers")
+
         return fields
 
     def updates(self, instance):
@@ -55,6 +68,18 @@ class ModelResource(RestModelResource):
                 import json
                 geo = getattr(instance, f.name)
                 data[f.name] = json.loads(geo.geojson)
+
+        if (server_context):
+            if issubclass(self.model, AnnotatedModel):
+                data["annotations"] = {} #TODO
+            if issubclass(self.model, IdentifiedModel):
+                data["identifiers"] = [{
+                    'id':        ident.id,
+                    'name':      ident.name,
+                    'authority': getattr(ident.authority, 'name', None),
+                    'url':       ident.url
+                } for ident in instance.identifiers.all()]
+
         return data
 
 class AnnotationResource(ModelResource):
@@ -66,6 +91,17 @@ class AnnotationResource(ModelResource):
                 idname:    instance.object_id,
                 'value':   instance.value}
 
+class IdentifierResource(ModelResource):
+    model = Identifier
+    def serialize_model(self, instance):
+        idname = get_id(instance.content_type) + '_id'
+        return {'id':        instance.pk,
+                'authority': getattr(instance.authority, 'name', None),
+                'url':       instance.url,
+                idname:      instance.object_id,
+                'name':      instance.name}
+        
+
 def register(model_class, resource_class):
     _resource_map[model_class] = resource_class
 
@@ -76,9 +112,5 @@ def get_for_model(model_class):
         return type(model_class.__name__ + "Resource", (ModelResource,),
                     {'model': model_class})
 
-def get_id(contenttype):
-    if contenttype is None:
-        return 'NONE'
-    return contenttype.name.replace(' ', '')
-
 register(Annotation, AnnotationResource)
+register(Identifier, IdentifierResource)
