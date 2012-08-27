@@ -28,6 +28,9 @@ class AnnotationType(models.Model):
     def clean(self, *args, **kwargs):
         if self.annotated_model is not None:
             self.contenttype = ContentType.objects.get_for_model(self.annotated_model)
+
+    class Meta:
+        db_table = 'wq_annotationtype'
             
 class AnnotationManager(models.Manager):
 
@@ -71,6 +74,9 @@ class Annotation(models.Model):
                   'value':  self.value
                 })
 
+    class Meta:
+        db_table = 'wq_annotation'
+            
 class AnnotationSet(generic.GenericRelation):
     def __init__(self, *args, **kwargs):
        if len(args) == 0:
@@ -87,15 +93,6 @@ class AnnotatedModel(models.Model):
 
     class Meta:
         abstract = True
-
-class AnnotationInline(generic.GenericTabularInline):
-    model = Annotation
-    extra = 0
-
-class AnnotatedModelAdmin(admin.ModelAdmin):
-    inlines = [
-        AnnotationInline,
-    ]
 
 # Tell south not to worry about the "custom" field type
 from south.modelsinspector import add_introspection_rules

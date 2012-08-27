@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding model 'Relationship'
-        db.create_table('relate_relationship', (
+        db.create_table('wq_relationship', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['relate.RelationshipType'])),
             ('from_content_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
@@ -20,7 +20,7 @@ class Migration(SchemaMigration):
         db.send_create_signal('relate', ['Relationship'])
 
         # Adding model 'RelationshipType'
-        db.create_table('relate_relationshiptype', (
+        db.create_table('wq_relationshiptype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('inverse_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
@@ -33,10 +33,10 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         
         # Deleting model 'Relationship'
-        db.delete_table('relate_relationship')
+        db.delete_table('wq_relationship')
 
         # Deleting model 'RelationshipType'
-        db.delete_table('relate_relationshiptype')
+        db.delete_table('wq_relationshiptype')
 
 
     models = {
@@ -48,7 +48,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'relate.relationship': {
-            'Meta': {'object_name': 'Relationship'},
+            'Meta': {'object_name': 'Relationship', 'db_table': "'wq_relationship'"},
             'from_content_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
             'from_object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -57,7 +57,7 @@ class Migration(SchemaMigration):
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['relate.RelationshipType']"})
         },
         'relate.relationshiptype': {
-            'Meta': {'object_name': 'RelationshipType'},
+            'Meta': {'object_name': 'RelationshipType', 'db_table': "'wq_relationshiptype'"},
             'from_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'inverse_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),

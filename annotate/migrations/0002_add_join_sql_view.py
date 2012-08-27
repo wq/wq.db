@@ -1,48 +1,41 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
         if db.backend_name != 'postgres':
             print "Warning: Non-postgres database detected; convenience view will not be created."
             return
         db.execute('''
-CREATE OR REPLACE VIEW annotate_annotation_joined AS 
+CREATE OR REPLACE VIEW wq_annotation_joined AS 
 SELECT ct.app_label, ct.model, a.object_id, at.id AS type_id, at.name AS type_name, a.value
-FROM annotate_annotation a
-JOIN annotate_annotationtype at ON at.id = a.type_id
+FROM wq_annotation a
+JOIN wq_annotationtype at ON at.id = a.type_id
 JOIN django_content_type ct ON a.content_type_id = ct.id;''')
 
     def backwards(self, orm):
         if db.backend_name != 'postgres':
             return
-        db.execute("DROP VIEW annotate_annotation_joined;");
+        db.execute("DROP VIEW wq_annotation_joined;");
 
 
     models = {
         'annotate.annotation': {
-            'Meta': {'object_name': 'Annotation'},
+            'Meta': {'object_name': 'Annotation', 'db_table': "'wq_annotation'"},
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'qualifier': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['annotate.AnnotationQualifier']", 'null': 'True', 'blank': 'True'}),
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['annotate.AnnotationType']"}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
-        'annotate.annotationqualifier': {
-            'Meta': {'object_name': 'AnnotationQualifier'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'types': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['annotate.AnnotationType']", 'symmetrical': 'False'})
-        },
         'annotate.annotationtype': {
-            'Meta': {'object_name': 'AnnotationType'},
+            'Meta': {'object_name': 'AnnotationType', 'db_table': "'wq_annotationtype'"},
+            'contenttype': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'models': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['contenttypes.ContentType']", 'symmetrical': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'contenttypes.contenttype': {

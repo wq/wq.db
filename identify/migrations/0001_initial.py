@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding model 'Identifier'
-        db.create_table('identify_identifier', (
+        db.create_table('wq_identifier', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50, db_index=True)),
@@ -23,9 +23,11 @@ class Migration(SchemaMigration):
         db.send_create_signal('identify', ['Identifier'])
 
         # Adding model 'Authority'
-        db.create_table('identify_authority', (
+        db.create_table('wq_identifiertype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('homepage', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True)),
+            ('object_url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True)),
         ))
         db.send_create_signal('identify', ['Authority'])
 
@@ -33,10 +35,10 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         
         # Deleting model 'Identifier'
-        db.delete_table('identify_identifier')
+        db.delete_table('wq_identifier')
 
         # Deleting model 'Authority'
-        db.delete_table('identify_authority')
+        db.delete_table('wq_identifiertype')
 
 
     models = {
@@ -48,12 +50,14 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'identify.authority': {
-            'Meta': {'object_name': 'Authority'},
+            'Meta': {'object_name': 'Authority', 'db_table': "'wq_identifiertype'"},
+            'homepage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'object_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         },
         'identify.identifier': {
-            'Meta': {'object_name': 'Identifier'},
+            'Meta': {'object_name': 'Identifier', 'db_table': "'wq_identifier'"},
             'authority': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['identify.Authority']", 'null': 'True', 'blank': 'True'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

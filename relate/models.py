@@ -66,6 +66,9 @@ class Relationship(models.Model):
 	else:
 	    return 'Undefined'
 
+    class Meta:
+        db_table = 'wq_relationship'
+
 class InverseRelationship(Relationship):
     @property
     def left(self):
@@ -107,6 +110,9 @@ class RelationshipType(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        db_table = 'wq_relationshiptype'
 
 class InverseRelationshipType(RelationshipType):
     @property

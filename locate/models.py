@@ -20,6 +20,9 @@ class Location(models.Model):
         else:
             return 'Location %s - %s' % (self.pk,   self.content_object)
 
+    class Meta:
+        db_table = 'wq_location'
+
 class LocatedModel(models.Model):
     locations = generic.GenericRelation(Location)
     class Meta:

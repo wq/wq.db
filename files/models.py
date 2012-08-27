@@ -13,6 +13,9 @@ class FileType(models.Model):
     def __unicode__(self):
         return '%s (%s)' % (self.name, self.mimetype)
 
+    class Meta:
+        db_table = 'wq_filetype'
+
 class BaseFile(AnnotatedModel, RelatedModel):
     name = models.CharField(max_length=255, null=True, blank=True)     
     type = models.ForeignKey(FileType, null=True, blank=True)
@@ -39,10 +42,17 @@ class BaseFile(AnnotatedModel, RelatedModel):
     def __unicode__(self):
         return self.name
 
+    class Meta:
+        db_table = 'wq_basefile'
+
 class File(BaseFile):
     file = models.FileField(upload_to='files')
+    class Meta:
+        db_table = 'wq_file'
 
 class Image(BaseFile):
     file   = models.ImageField(upload_to='images', width_field='width', height_field='height')
     width  = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
+    class Meta:
+        db_table = 'wq_image'

@@ -1,27 +1,29 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        
-        # Adding field 'Authority.homepage'
-        db.add_column('identify_authority', 'homepage', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True), keep_default=False)
-
-        # Adding field 'Authority.object_url'
-        db.add_column('identify_authority', 'object_url', self.gf('django.db.models.fields.URLField')(max_length=200, null=True, blank=True), keep_default=False)
-
+        if db.backend_name != 'postgres':
+            print "Warning: Non-postgres database detected; convenience view will not be created."
+            return
+        db.execute('''
+CREATE OR REPLACE VIEW wq_identifier_joined AS 
+SELECT
+  ct.app_label, ct.model, i.object_id, i.name AS identifier,
+  i.is_primary, a.name authority,
+  REPLACE(a.object_url, '%%s', i.slug) AS url
+FROM wq_identifier i
+JOIN django_content_type ct ON i.content_type_id = ct.id
+LEFT OUTER JOIN wq_identifiertype a ON i.identifiertype_id = a.id;''')
 
     def backwards(self, orm):
-        
-        # Deleting field 'Authority.homepage'
-        db.delete_column('identify_authority', 'homepage')
-
-        # Deleting field 'Authority.object_url'
-        db.delete_column('identify_authority', 'object_url')
+        if db.backend_name != 'postgres':
+            return
+        db.execute("DROP VIEW wq_identifier_joined;");
 
 
     models = {
@@ -33,14 +35,14 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'identify.authority': {
-            'Meta': {'object_name': 'Authority'},
+            'Meta': {'object_name': 'Authority', 'db_table': "'wq_identifiertype'"},
             'homepage': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'object_url': ('django.db.models.fields.URLField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'})
         },
         'identify.identifier': {
-            'Meta': {'object_name': 'Identifier'},
+            'Meta': {'object_name': 'Identifier', 'db_table': "'wq_identifier'"},
             'authority': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['identify.Authority']", 'null': 'True', 'blank': 'True'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

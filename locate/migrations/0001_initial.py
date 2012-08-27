@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding model 'Location'
-        db.create_table('locate_location', (
+        db.create_table('wq_location', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('is_primary', self.gf('django.db.models.fields.BooleanField')(default=False)),
@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         
         # Deleting model 'Location'
-        db.delete_table('locate_location')
+        db.delete_table('wq_location')
 
 
     models = {
@@ -36,7 +36,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'locate.location': {
-            'Meta': {'object_name': 'Location'},
+            'Meta': {'object_name': 'Location', 'db_table': "'wq_location'"},
             'accuracy': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'geometry': ('django.contrib.gis.db.models.fields.GeometryField', [], {}),

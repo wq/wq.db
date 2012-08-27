@@ -35,6 +35,9 @@ class Identifier(models.Model):
     def __unicode__(self):
         return self.name
 
+    class Meta:
+        db_table = 'wq_identifier'
+
 class IdentifiedModelManager(models.Manager):
     def get_by_identifier(self, identifier, auto_create=False):
 
@@ -82,6 +85,7 @@ class Authority(models.Model):
 
     class Meta:
         verbose_name_plural = 'authorities'
+        db_table = 'wq_identifiertype'
 
     def __unicode__(self):
         return self.name
