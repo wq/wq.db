@@ -16,12 +16,15 @@ def geturlbase(ct):
     return getattr(cls, 'slug', get_id(ct) + 's')
 
 def has_perm(user, ct, perm):
-    if ct.app_label in _FORBIDDEN_APPS and not user.is_superuser:
+    if not isinstance(ct, ContentType):
+        perm = '%s_%s' % (ct, perm)
+    elif ct.app_label in _FORBIDDEN_APPS and not user.is_superuser:
         return False
     elif perm == 'view':
         return True
+    else:
+        perm = '%s.%s_%s' % (ct.app_label, ct.model, perm)
 
-    perm = '%s.%s_%s' % (ct.app_label, ct.model, perm)
     if user.is_authenticated():
         return user.has_perm(perm)
     else:
