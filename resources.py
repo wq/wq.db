@@ -74,10 +74,11 @@ class ModelResource(RestModelResource):
                 data["annotations"] = {} #TODO
             if issubclass(self.model, IdentifiedModel):
                 data["identifiers"] = [{
-                    'id':        ident.id,
-                    'name':      ident.name,
-                    'authority': getattr(ident.authority, 'name', None),
-                    'url':       ident.url
+                    'id':         ident.id,
+                    'name':       ident.name,
+                    'is_primary': ident.is_primary,
+                    'authority':  getattr(ident.authority, 'name', None),
+                    'url':        ident.url
                 } for ident in instance.identifiers.all()]
 
         return data

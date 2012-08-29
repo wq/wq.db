@@ -20,15 +20,22 @@ class RedirectRenderer(BaseRenderer):
 class MustacheRenderer(BaseRenderer):
     media_type = 'text/html'
     def render(self, obj=None, accept=None):
-        config = get_config(self.view.request.user)
+        user   = self.view.request.user
+        config = get_config(user)
         ctid   = get_id(get_ct(self.view.resource.model))
         parts  = self.view.request.path.split('/')
-        if len(parts) > 2 and len(parts[1]) > 0:
-            template = ctid + '_detail'
-            context  = obj
-        else:
+        if isinstance(obj, list):
             template = ctid + '_list'
             context  = {'list': obj}
+        else:
+            template = ctid + '_detail'
+            context  = obj
+        if user.is_authenticated():
+            context['user'] = {
+                key: getattr(user, key)
+                for key in ('username', 'first_name', 'last_name', 'email', 
+                            'is_active', 'is_staff', 'is_superuser')
+            }
         template = mustache.load_template(template)
         return mustache.render(template, context)
 
