@@ -33,6 +33,8 @@ def has_perm(user, ct, perm):
 
 def get_config(user):
      pages = {}
+     pages['login']  = {'name': 'Log in',  'url': 'login'}
+     pages['logout'] = {'name': 'Log out', 'url': 'logout'}
      for ct in ContentType.objects.all():
          if not has_perm(user, ct, 'view'):
              continue
@@ -56,3 +58,10 @@ def get_config(user):
          info['identified'] = issubclass(cls, IdentifiedModel)
          pages[get_id(ct)] = info
      return {'pages': pages}
+
+def user_dict(user):
+    return {
+        key: getattr(user, key)
+        for key in ('username', 'first_name', 'last_name', 'email', 
+                    'is_active', 'is_staff', 'is_superuser')
+    }

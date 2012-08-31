@@ -1,8 +1,9 @@
-from djangorestframework.renderers import BaseRenderer, JSONRenderer, XMLRenderer
+from djangorestframework.renderers import (BaseRenderer,
+     JSONRenderer, JSONPRenderer, XMLRenderer)
 from djangorestframework import status
 from pystache.renderer import Renderer as Mustache
 from django.conf import settings
-from wq.db.util import get_config, get_ct, get_id
+from wq.db.util import get_config, get_ct, get_id, user_dict
 
 mustache = Mustache(
     file_extension = 'html',
@@ -31,13 +32,15 @@ class MustacheRenderer(BaseRenderer):
             template = ctid + '_detail'
             context  = obj
         if user.is_authenticated():
-            context['user'] = {
-                key: getattr(user, key)
-                for key in ('username', 'first_name', 'last_name', 'email', 
-                            'is_active', 'is_staff', 'is_superuser')
-            }
+            context['user'] = user_dict(user)
+
         template = mustache.load_template(template)
         return mustache.render(template, context)
+
+class AMDRenderer(JSONPRenderer):
+    media_type = 'application/javascript'
+    format = 'js'
+    callback_parameter = 'define'
 
 if getattr(settings, 'RENDER_ON_SERVER', False):
     HTMLRenderer = MustacheRenderer
