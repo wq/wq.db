@@ -42,16 +42,20 @@ class IdentifiedModelManager(models.Manager):
     def get_by_identifier(self, identifier, auto_create=False):
 
         try:
-            object = self.get(identifiers__name = identifier)
+            object = self.get(identifiers__name = identifier, 
+                              identifiers__is_primary = True)
 
         except self.model.DoesNotExist:
-            if (not auto_create):
-                raise
-            if ('name' in self.model._meta.get_all_field_names()):
-                object = self.create(name = identifier)
-            else:
-                object = self.create()
-            object.identifiers.create(name = identifier, is_primary=True)
+            try:
+                object = self.get(identifiers__name = identifier)
+            except self.model.DoesNotExist:
+                if (not auto_create):
+                    raise
+                if ('name' in self.model._meta.get_all_field_names()):
+                    object = self.create(name = identifier)
+                else:
+                    object = self.create()
+                object.identifiers.create(name = identifier, is_primary=True)
 
         return object
 
