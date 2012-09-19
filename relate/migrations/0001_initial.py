@@ -16,6 +16,7 @@ class Migration(SchemaMigration):
             ('from_object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('to_content_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
             ('to_object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('computed', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('relate', ['Relationship'])
 
@@ -26,6 +27,7 @@ class Migration(SchemaMigration):
             ('inverse_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('from_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
             ('to_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
+            ('computed', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('relate', ['RelationshipType'])
 
@@ -49,6 +51,7 @@ class Migration(SchemaMigration):
         },
         'relate.relationship': {
             'Meta': {'object_name': 'Relationship', 'db_table': "'wq_relationship'"},
+            'computed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'from_content_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
             'from_object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -58,6 +61,7 @@ class Migration(SchemaMigration):
         },
         'relate.relationshiptype': {
             'Meta': {'object_name': 'RelationshipType', 'db_table': "'wq_relationshiptype'"},
+            'computed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'from_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'inverse_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),

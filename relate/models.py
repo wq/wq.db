@@ -35,6 +35,8 @@ class Relationship(models.Model):
     to_content_type     = models.ForeignKey(ContentType, related_name='+')
     to_object_id        = models.PositiveIntegerField()
     to_content_object   = generic.GenericForeignKey('to_content_type', 'to_object_id')
+
+    computed            = models.BooleanField(default=False)
     
     @property
     def left(self):
@@ -95,10 +97,11 @@ class InverseRelationship(Relationship):
 class RelationshipType(models.Model):
     name           = models.CharField(max_length=255)
     inverse_name   = models.CharField(max_length=255)
-#   implicit       = models.BooleanField()
 
     from_type      = models.ForeignKey(ContentType, related_name='+')
     to_type        = models.ForeignKey(ContentType, related_name='+')
+
+    computed       = models.BooleanField(default=False)
     
     @property
     def left(self):
