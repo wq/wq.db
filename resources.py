@@ -4,16 +4,23 @@ from django.contrib.gis.db.models.fields import GeometryField
 
 from django.contrib.contenttypes.models import ContentType
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
-from wq.db.identify.models import Identifier, IdentifiedModel, Authority
 
 from django.conf import settings
-from wq.db.util import get_id
+from django.utils.importlib import import_module
+from django.utils.module_loading import module_has_submodule
 
-server_context = getattr(settings, 'RENDER_ON_SERVER', False)
+from wq.db.util import get_ct, get_id, geturlbase
 
 _resource_map = {}
+_context_mixin_set = set()
 
 class ModelResource(RestModelResource):
+    @property
+    def full_context(self):
+        if getattr(settings, 'RENDER_ON_SERVER', False):
+            return True
+        else:
+            return self.view._suffix != 'List'
 
     def get_fields(self, obj):
         fields = []
@@ -27,14 +34,13 @@ class ModelResource(RestModelResource):
                     fields.append('for')
                 else:
                     fields.append(f.name + '_id')
-        if (self.view.method in ("PUT", "POST") and issubclass(self.model, AnnotatedModel)):
+        if (self.view.method in ("PUT", "POST")):
             fields.append("updates")
 
-        if (server_context):
-            if issubclass(self.model, AnnotatedModel):
-                fields.append("annotations")
-            if issubclass(self.model, IdentifiedModel):
-                fields.append("identifiers")
+        if (self.full_context):
+            for mixin in _context_mixin_set:
+                if mixin.valid_for_model(self.model):
+                    fields.append(mixin.name)
 
         return fields
 
@@ -69,42 +75,31 @@ class ModelResource(RestModelResource):
                 geo = getattr(instance, f.name)
                 data[f.name] = json.loads(geo.geojson)
 
-        if (server_context):
-            if issubclass(self.model, AnnotatedModel):
-                data["annotations"] = {} #TODO
-            if issubclass(self.model, IdentifiedModel):
-                data["identifiers"] = [{
-                    'id':         ident.id,
-                    'name':       ident.name,
-                    'is_primary': ident.is_primary,
-                    'authority':  getattr(ident.authority, 'name', None),
-                    'url':        ident.url
-                } for ident in instance.identifiers.all()]
-
+        if (self.full_context):
+            for mixin in _context_mixin_set:
+                if mixin.valid_for_model(self.model):
+                    data[mixin.name] = mixin.get_data(instance)
         return data
 
-class AnnotationResource(ModelResource):
-    model = Annotation
-    def serialize_model(self, instance):
-        idname = get_id(instance.content_type) + '_id'
-        return {'id': instance.pk,
-                'annotationtype_id': instance.type.pk,
-                idname:    instance.object_id,
-                'value':   instance.value}
+class ContextMixin(object):
+    model = None
+    target_model = None
 
-class IdentifierResource(ModelResource):
-    model = Identifier
-    def serialize_model(self, instance):
-        idname = get_id(instance.content_type) + '_id'
-        return {'id':        instance.pk,
-                'authority': getattr(instance.authority, 'name', None),
-                'url':       instance.url,
-                idname:      instance.object_id,
-                'name':      instance.name}
-        
+    @property
+    def name(self):
+        return geturlbase(get_ct(self.model))
+
+    def get_data(self, instance):
+        raise NotImplementedError
+
+    def valid_for_model(self, model):
+        return issubclass(model, self.target_model)
 
 def register(model_class, resource_class):
     _resource_map[model_class] = resource_class
+
+def register_context_mixin(cls):
+    _context_mixin_set.add(cls())
 
 def get_for_model(model_class):
     if model_class in _resource_map:
@@ -113,5 +108,8 @@ def get_for_model(model_class):
         return type(model_class.__name__ + "Resource", (ModelResource,),
                     {'model': model_class})
 
-register(Annotation, AnnotationResource)
-register(Identifier, IdentifierResource)
+def autodiscover():
+    for app_name in settings.INSTALLED_APPS:
+        app = import_module(app_name)
+        if module_has_submodule(app, 'resources'):
+            import_module(app_name + '.resources')
