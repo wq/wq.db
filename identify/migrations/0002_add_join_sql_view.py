@@ -18,7 +18,7 @@ SELECT
   REPLACE(a.object_url, '%%s', i.slug) AS url
 FROM wq_identifier i
 JOIN django_content_type ct ON i.content_type_id = ct.id
-LEFT OUTER JOIN wq_identifiertype a ON i.identifiertype_id = a.id;''')
+LEFT OUTER JOIN wq_identifiertype a ON i.authority_id = a.id;''')
 
     def backwards(self, orm):
         if db.backend_name != 'postgres':
