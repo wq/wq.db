@@ -30,7 +30,7 @@ JOIN django_content_type ct ON a.content_type_id = ct.id;''')
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['annotate.AnnotationType']"}),
-            'value': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
+            'value': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
         },
         'annotate.annotationtype': {
             'Meta': {'object_name': 'AnnotationType', 'db_table': "'wq_annotationtype'"},

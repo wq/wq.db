@@ -56,7 +56,7 @@ class AnnotationManager(models.Manager):
 
 class Annotation(models.Model):
     type      = models.ForeignKey(AnnotationType)
-    value     = models.CharField(max_length=255, null=True, blank=True) # FIXME:numbers?
+    value     = models.TextField(null=True, blank=True)
 
     # Link can contain a pointer to any model
     # FIXME: restrict to models allowed for given type
