@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
         db.create_table('wq_relationshiptype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('inverse_name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('inverse_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('from_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
             ('to_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
             ('computed', self.gf('django.db.models.fields.BooleanField')(default=False)),
@@ -74,7 +74,7 @@ class Migration(SchemaMigration):
             'computed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'from_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inverse_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'inverse_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'to_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': "orm['contenttypes.ContentType']"})
         }

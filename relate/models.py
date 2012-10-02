@@ -71,7 +71,14 @@ class Relationship(models.Model):
     class Meta:
         db_table = 'wq_relationship'
 
+class InverseRelationshipManager(models.Manager):
+    def get_query_set(self):
+        qs = super(InverseRelationshipManager, self).get_query_set()
+        return qs.filter(type__inverse_name__isnull=False)
+
 class InverseRelationship(Relationship):
+    objects = InverseRelationshipManager()
+
     @property
     def left(self):
         return self.to_content_object
@@ -96,7 +103,7 @@ class InverseRelationship(Relationship):
 
 class RelationshipType(models.Model):
     name           = models.CharField(max_length=255)
-    inverse_name   = models.CharField(max_length=255)
+    inverse_name   = models.CharField(max_length=255, null=True, blank=True)
 
     from_type      = models.ForeignKey(ContentType, related_name='+')
     to_type        = models.ForeignKey(ContentType, related_name='+')
@@ -117,7 +124,14 @@ class RelationshipType(models.Model):
     class Meta:
         db_table = 'wq_relationshiptype'
 
+class InverseRelationshipTypeManager(models.Manager):
+    def get_query_set(self):
+        qs = super(InverseRelationshipTypeManager, self).get_query_set()
+        return qs.filter(inverse_name__isnull=False)
+
 class InverseRelationshipType(RelationshipType):
+    objects = InverseRelationshipTypeManager()
+    
     @property
     def left(self):
        return self.to_type
