@@ -17,13 +17,10 @@ _context_mixin_set = set()
 class ModelResource(RestModelResource):
     @property
     def full_context(self):
-        if getattr(settings, 'RENDER_ON_SERVER', False):
-            return True
-        else:
-            return self.view._suffix != 'List'
+        return self.view._suffix != 'List'
 
     def get_fields(self, obj):
-        fields = []
+        fields = ['label']
         for f in self.model._meta.fields:
             if f.rel is None:
                 fields.append(f.name)
@@ -33,6 +30,7 @@ class ModelResource(RestModelResource):
                 elif f.rel.to == ContentType:
                     fields.append('for')
                 else:
+                    fields.append(f.name + '_label')
                     fields.append(f.name + '_id')
         if (self.view.method in ("PUT", "POST")):
             fields.append("updates")
@@ -67,9 +65,13 @@ class ModelResource(RestModelResource):
 
     def serialize_model(self, instance):
         data = super(ModelResource, self).serialize_model(instance)
+        data['label'] = unicode(instance)
         for f in self.model._meta.fields:
-            if f.rel is not None and f.rel.to == ContentType:
-                data['for'] = get_id(getattr(instance, f.name))
+            if f.rel is not None:
+                if f.rel.to == ContentType:
+                    data['for'] = get_id(getattr(instance, f.name))
+                else:
+                    data[f.name + '_label'] = unicode(getattr(instance, f.name))
             if isinstance(f, GeometryField):
                 import json
                 geo = getattr(instance, f.name)

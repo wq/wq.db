@@ -5,9 +5,13 @@ from pystache.renderer import Renderer as Mustache
 from django.conf import settings
 from wq.db.util import get_config, get_ct, get_id, user_dict
 
+dirs = []
+for d in settings.TEMPLATE_DIRS:
+    dirs.append(d)
+    dirs.append(d + '/partials')
 mustache = Mustache(
     file_extension = 'html',
-    search_dirs    = settings.TEMPLATE_DIRS
+    search_dirs    = dirs
 )
 
 class RedirectRenderer(BaseRenderer):
