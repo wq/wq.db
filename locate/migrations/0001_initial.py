@@ -20,8 +20,15 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('locate', ['Location'])
 
+        # Create index
+        db.execute("""CREATE INDEX wq_location_idx ON wq_location
+                         (content_type_id, object_id)""")
+
 
     def backwards(self, orm):
+
+        # Drop index
+        db.execute("DROP INDEX wq_location_idx;");
         
         # Deleting model 'Location'
         db.delete_table('wq_location')

@@ -11,7 +11,7 @@ class Migration(SchemaMigration):
         # Adding model 'Identifier'
         db.create_table('wq_identifier', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, db_index=True)),
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50, db_index=True)),
             ('authority', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['identify.Authority'], null=True, blank=True)),
             ('is_primary', self.gf('django.db.models.fields.BooleanField')(default=False)),
@@ -31,9 +31,16 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('identify', ['Authority'])
 
+        # Create indexes
+        db.execute("""CREATE INDEX wq_identifier_idx ON wq_identifier
+                         (content_type_id, object_id)""")
+
 
     def backwards(self, orm):
-        
+
+        # Drop indexes
+        db.execute("DROP INDEX wq_identifier_idx")
+
         # Deleting model 'Identifier'
         db.delete_table('wq_identifier')
 

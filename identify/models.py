@@ -11,7 +11,7 @@ class IdentifierManager(models.Manager):
             return self.create(**kwargs), True
 
 class Identifier(models.Model):
-    name       = models.CharField(max_length=255)
+    name       = models.CharField(max_length=255, db_index=True)
     slug       = models.SlugField()
     authority  = models.ForeignKey('Authority', blank=True, null=True)
     is_primary = models.BooleanField()

@@ -27,7 +27,15 @@ class Migration(SchemaMigration):
         db.send_create_signal('annotate', ['Annotation'])
 
 
+        # Create index
+        db.execute("""CREATE INDEX wq_annotation_idx ON wq_annotation
+                         (content_type_id, object_id)""")
+
+
     def backwards(self, orm):
+
+        # Drop index
+        db.execute("DROP INDEX wq_annotation_idx;");
         
         # Deleting model 'AnnotationType'
         db.delete_table('wq_annotationtype')

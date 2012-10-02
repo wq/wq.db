@@ -31,9 +31,19 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('relate', ['RelationshipType'])
 
+        # Create indexes
+        db.execute("""CREATE INDEX wq_relationship_from_idx ON wq_relationship
+                         (from_content_type_id, from_object_id)""")
+        db.execute("""CREATE INDEX wq_relationship_to_idx ON wq_relationship
+                         (to_content_type_id, to_object_id)""")
+
 
     def backwards(self, orm):
-        
+
+        # Drop indexes
+        db.execute("DROP INDEX wq_relationship_to_idx")
+        db.execute("DROP INDEX wq_relationship_from_idx")
+
         # Deleting model 'Relationship'
         db.delete_table('wq_relationship')
 
