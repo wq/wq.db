@@ -1,5 +1,5 @@
 from wq.db import resources
-from wq.db.util import get_id, geturlbase
+from wq.db.util import get_id, geturlbase, get_object_id
 
 from .models import Relationship, InverseRelationship, RelatedModel
 
@@ -24,16 +24,17 @@ class InverseRelationshipContextMixin(RelationshipContextMixin):
         return map(serialize_relationship, instance.inverse_relationships.all())
 
 def serialize_relationship(rel, include_pointer=False):
+    oid = get_object_id(rel.right)
     data = {
         'id':    rel.pk,
         'type':  unicode(rel.reltype),
         'label': unicode(rel.right),
-        'id':    rel.right.pk,
-        'url':   '%s/%s' % (geturlbase(rel.reltype.right), rel.right.pk)
+        'id':    oid,
+        'url':   '%s/%s' % (geturlbase(rel.reltype.right), oid)
     }
     if include_pointer:
         idname = get_id(rel.reltype.left) + '_id'
-        data[idname] = rel.left.pk
+        data[idname] = get_object_id(rel.left)
     return data
 
 resources.register(Relationship, RelationshipResource)

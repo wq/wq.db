@@ -40,22 +40,32 @@ class Identifier(models.Model):
 
 class IdentifiedModelManager(models.Manager):
     def get_by_identifier(self, identifier, auto_create=False):
+        searches = [
+            {'identifiers__slug': identifier, 'identifiers__is_primary': True},
+            {'identifiers__name': identifier, 'identifiers__is_primary': True},
+            {'identifiers__slug': identifier},
+            {'identifiers__name': identifier},
+            {'pk':                identifier}
+        ]
 
-        try:
-            object = self.get(identifiers__name = identifier, 
-                              identifiers__is_primary = True)
 
-        except self.model.DoesNotExist:
+        object = None
+        for search in searches:
             try:
-                object = self.get(identifiers__name = identifier)
+                object = self.get(**search)
+                break
             except self.model.DoesNotExist:
-                if (not auto_create):
+                if 'pk' not in search:
+                    continue
+                elif (not auto_create):
                     raise
-                if ('name' in self.model._meta.get_all_field_names()):
-                    object = self.create(name = identifier)
-                else:
-                    object = self.create()
-                object.identifiers.create(name = identifier, is_primary=True)
+
+        if object is None and auto_create:
+            if ('name' in self.model._meta.get_all_field_names()):
+                object = self.create(name = identifier)
+            else:
+                object = self.create()
+            object.identifiers.create(name = identifier, is_primary=True)
 
         return object
 

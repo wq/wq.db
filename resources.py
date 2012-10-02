@@ -3,16 +3,17 @@ from djangorestframework.resources import ModelResource as RestModelResource
 from django.contrib.gis.db.models.fields import GeometryField
 
 from django.contrib.contenttypes.models import ContentType
+from wq.db.identify.models import IdentifiedModel
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
 
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 
-from wq.db.util import get_ct, get_id, geturlbase
+from wq.db.util import get_ct, get_id, get_object_id, geturlbase
 
 _resource_map = {}
-_context_mixin_set = set()
+_context_mixin_map = {}
 
 class ModelResource(RestModelResource):
     @property
@@ -36,7 +37,7 @@ class ModelResource(RestModelResource):
             fields.append("updates")
 
         if (self.full_context):
-            for mixin in _context_mixin_set:
+            for mixin in _context_mixin_map.values():
                 if mixin.valid_for_model(self.model):
                     fields.append(mixin.name)
 
@@ -65,20 +66,25 @@ class ModelResource(RestModelResource):
 
     def serialize_model(self, instance):
         data = super(ModelResource, self).serialize_model(instance)
+        data['id']    = get_object_id(instance)
         data['label'] = unicode(instance)
         for f in self.model._meta.fields:
             if f.rel is not None:
                 if f.rel.to == ContentType:
                     data['for'] = get_id(getattr(instance, f.name))
                 else:
-                    data[f.name + '_label'] = unicode(getattr(instance, f.name))
+                    obj = getattr(instance, f.name)
+                    if obj is None:
+                        continue
+                    data[f.name + '_id']    = get_object_id(obj)
+                    data[f.name + '_label'] = unicode(obj)
             if isinstance(f, GeometryField):
                 import json
                 geo = getattr(instance, f.name)
                 data[f.name] = json.loads(geo.geojson)
 
         if (self.full_context):
-            for mixin in _context_mixin_set:
+            for mixin in _context_mixin_map.values():
                 if mixin.valid_for_model(self.model):
                     data[mixin.name] = mixin.get_data(instance)
         return data
@@ -101,7 +107,8 @@ def register(model_class, resource_class):
     _resource_map[model_class] = resource_class
 
 def register_context_mixin(cls):
-    _context_mixin_set.add(cls())
+    mixin = cls()
+    _context_mixin_map[mixin.name] = mixin
 
 def get_for_model(model_class):
     if model_class in _resource_map:

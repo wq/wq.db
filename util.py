@@ -11,6 +11,13 @@ def get_id(contenttype):
         return 'NONE'
     return contenttype.name.replace(' ', '')
 
+def get_object_id(instance):
+    if issubclass(type(instance), IdentifiedModel):
+        ids = instance.identifiers.filter(is_primary=True)
+        if len(ids) > 0:
+            return ids[0].slug
+    return instance.pk
+
 def geturlbase(ct):
     cls = ct.model_class()
     return getattr(cls, 'slug', get_id(ct) + 's')

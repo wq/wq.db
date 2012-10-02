@@ -27,14 +27,18 @@ class MustacheRenderer(BaseRenderer):
     def render(self, obj=None, accept=None):
         user   = self.view.request.user
         config = get_config(user)
-        ctid   = get_id(get_ct(self.view.resource.model))
-        parts  = self.view.request.path.split('/')
-        if isinstance(obj, list):
-            template = ctid + '_list'
-            context  = {'list': obj}
-        else:
-            template = ctid + '_detail'
+        if getattr(self.view, 'resource', None) is None:
+            template = type(self.view).__name__.replace('View', '').lower()
             context  = obj
+        else:
+            ctid   = get_id(get_ct(self.view.resource.model))
+            parts  = self.view.request.path.split('/')
+            if isinstance(obj, list):
+                template = ctid + '_list'
+                context  = {'list': obj}
+            else:
+                template = ctid + '_detail'
+                context  = obj
         if user.is_authenticated():
             context['user'] = user_dict(user)
 

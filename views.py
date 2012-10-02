@@ -2,11 +2,13 @@ from djangorestframework import views, status, response
 from wq.db.renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
+from wq.db.identify.models import Identifier, IdentifiedModel
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
 from wq.db import resources
 
 from django.conf import settings
 from wq.db.util import get_config, has_perm, geturlbase, user_dict
+from wq.db.util import get_object_id
 
 from django.contrib.auth import authenticate, login, logout
 
@@ -18,6 +20,12 @@ class View(views.View):
 
 class InstanceModelView(views.InstanceModelView):
     renderers = _RENDERERS
+    def get_instance(self, *args, **kwargs):
+        if issubclass(self.resource.model, IdentifiedModel):
+            return self.resource.model.objects.get_by_identifier(kwargs['pk'])
+        else:
+            return super(InstanceModelView, self).get_instance(*args, **kwargs)
+
     def put(self, request, *args, **kwargs):
         ct = ContentType.objects.get_for_model(self.resource.model)
         if not has_perm(request.user, ct, 'change'):
@@ -50,6 +58,10 @@ class ListOrCreateModelView(views.ListOrCreateModelView):
             if key in '_':
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
+            for f in self.resource.model._meta.fields:
+                if f.name == key and hasattr(f, 'rel'):
+                    if issubclass(f.rel.to, IdentifiedModel):
+                        kwargs[key] = f.rel.to.objects.get_by_identifier(val)
         kwargs = super(ListOrCreateModelView, self).get_query_kwargs(*args, **kwargs)
         return kwargs
 
@@ -122,6 +134,44 @@ class LogoutView(View):
             return True
         else:
             return {}
+
+class DisambiguateView(View):
+    def get(self, request, *args, **kwargs):
+        slug = kwargs['slug']
+        searches = [
+            {'slug': slug, 'is_primary': True},
+            {'name': slug, 'is_primary': True},
+            {'slug': slug},
+            {'name': slug}
+        ]
+        result = {
+            'slug': slug
+        }
+        for search in searches:
+            ids = Identifier.objects.filter(**search)
+            if len(ids) == 0:
+                continue
+            result['list'] = [
+                {
+                    'url':   '%s/%s' % (geturlbase(ident.content_type),
+                                        get_object_id(ident.content_object)),
+                    'type':  unicode(ident.content_type),
+                    'label': unicode(ident.content_object)
+                }
+                for ident in ids
+            ]
+            if len(ids) == 1:
+                result['message'] = "Found"
+                result = response.Response(status.HTTP_302_FOUND, result,
+                    {'Location': '/' + result['list'][0]['url']}
+                )
+            else:
+                result['message'] = "Multiple Matches Found"
+
+            return result
+
+        result['message'] = "Page Not Found"
+        raise response.ErrorResponse(status.HTTP_404_NOT_FOUND, result)
 
 def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {

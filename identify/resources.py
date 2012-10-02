@@ -1,5 +1,5 @@
 from wq.db import resources
-from wq.db.util import get_id
+from wq.db.util import get_id, get_object_id
 
 from .models import Identifier, IdentifiedModel
 
@@ -24,7 +24,7 @@ def serialize_identifier(ident, include_pointer=False):
     }
     if include_pointer:
         idname = get_id(ident.content_type) + '_id'
-        data[idname] = ident.object_id
+        data[idname] = get_object_id(ident.content_object)
     return data
 
 resources.register(Identifier, IdentifierResource)

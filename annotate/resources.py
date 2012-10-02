@@ -1,5 +1,5 @@
 from wq.db import resources
-from wq.db.util import get_id
+from wq.db.util import get_id, get_object_id
 
 from .models import Annotation, AnnotatedModel
 
@@ -21,7 +21,7 @@ def serialize_annotation(annot, include_pointer=False):
             'value':             annot.value}
     if include_pointer:
         idname = get_id(annot.content_type) + '_id'
-        data[idname] = annot.object_id
+        data[idname] = get_object_id(annot.content_object)
     return data
 
 resources.register(Annotation, AnnotationResource)
