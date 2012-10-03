@@ -1,4 +1,4 @@
-from djangorestframework import views, status, response
+from djangorestframework import views, status, response, mixins
 from wq.db.renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
@@ -50,12 +50,12 @@ class InstanceModelView(views.InstanceModelView):
             forbid(request.user, ct, 'delete')
         return super(InstanceModelView, delete).put(request, *args, **kwargs)
 
-class ListOrCreateModelView(views.ListOrCreateModelView):
+class ListOrCreateModelView(mixins.PaginatorMixin, views.ListOrCreateModelView):
     renderers = _RENDERERS
     annotations = {}
     def get_query_kwargs(self, *args, **kwargs):
         for key, val in self.request.GET.items():
-            if key in '_':
+            if key in ('_', 'page'):
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
             for f in self.resource.model._meta.fields:
@@ -100,6 +100,12 @@ class ListOrCreateModelView(views.ListOrCreateModelView):
                 annot.save()
         return res
 
+    def filter_response(self, obj):
+        result = super(ListOrCreateModelView, self).filter_response(obj)
+        result['list'] = result['results']
+        del result['results']
+        return result
+
 class ConfigView(View):
     def get(self, request, *args, **kwargs):
         return get_config(request.user)
@@ -138,40 +144,33 @@ class LogoutView(View):
 class DisambiguateView(View):
     def get(self, request, *args, **kwargs):
         slug = kwargs['slug']
-        searches = [
-            {'slug': slug, 'is_primary': True},
-            {'name': slug, 'is_primary': True},
-            {'slug': slug},
-            {'name': slug}
-        ]
         result = {
             'slug': slug
         }
-        for search in searches:
-            ids = Identifier.objects.filter(**search)
-            if len(ids) == 0:
-                continue
-            result['list'] = [
-                {
-                    'url':   '%s/%s' % (geturlbase(ident.content_type),
-                                        get_object_id(ident.content_object)),
-                    'type':  unicode(ident.content_type),
-                    'label': unicode(ident.content_object)
-                }
-                for ident in ids
-            ]
-            if len(ids) == 1:
-                result['message'] = "Found"
-                result = response.Response(status.HTTP_302_FOUND, result,
-                    {'Location': '/' + result['list'][0]['url']}
-                )
-            else:
-                result['message'] = "Multiple Matches Found"
+        ids = Identifier.objects.filter_by_identifier(slug)
+        if len(ids) == 0:
+            result['message'] = "Page Not Found"
+            raise response.ErrorResponse(status.HTTP_404_NOT_FOUND, result)
 
-            return result
+        result['list'] = [
+            {
+                'url':   '%s/%s' % (geturlbase(ident.content_type),
+                                    get_object_id(ident.content_object)),
+                'type':  unicode(ident.content_type),
+                'label': unicode(ident.content_object)
+            }
+            for ident in ids
+        ]
+        if len(ids) == 1:
+            result['message'] = "Found"
+            result = response.Response(status.HTTP_302_FOUND, result,
+                {'Location': '/' + result['list'][0]['url']}
+            )
+        else:
+            result['message'] = "Multiple Matches Found"
 
-        result['message'] = "Page Not Found"
-        raise response.ErrorResponse(status.HTTP_404_NOT_FOUND, result)
+        return result
+
 
 def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {

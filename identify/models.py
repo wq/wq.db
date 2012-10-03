@@ -3,6 +3,20 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 class IdentifierManager(models.Manager):
+    def filter_by_identifier(self, identifier):
+        searches = [
+            {'slug': identifier, 'is_primary': True},
+            {'name': identifier, 'is_primary': True},
+            {'slug': identifier},
+            {'name': identifier}
+        ]
+        for search in searches:
+            ids = self.filter(**search)
+            if len(ids) == 0:
+                continue
+            return ids
+        return ids
+
     # Default implementation of get_or_create doesn't work well with generics
     def get_or_create(self, **kwargs):
         try:

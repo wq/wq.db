@@ -27,8 +27,8 @@ for ct in ContentType.objects.all():
     urlpatterns += patterns('', url('^' + urlbase + r'/?$',  listview))
     urlpatterns += patterns('', url('^' + urlbase + r'\.(?P<format>\w+)$', listview))
     urlpatterns += patterns('', url('^' + urlbase + r'/new$', listview))
-    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>\w+)\.(?P<format>\w+)$', detailview))
-    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>\w+)/?$', detailview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview))
+    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview))
 
 urlpatterns += patterns('',
     url('^(?P<slug>[^\/]+)$', views.DisambiguateView.as_view())
