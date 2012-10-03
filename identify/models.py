@@ -17,6 +17,19 @@ class IdentifierManager(models.Manager):
             return ids
         return ids
 
+    def resolve(self, *args):
+        resolved   = None
+        unresolved = None
+        for identifier in args:
+            ids = self.filter_by_identifier(identifier)
+            if len(ids) == 1:
+                if not resolved: resolved = {}
+                resolved[identifier] = ids[0]
+            else:
+                if not unresolved: unresolved = {}
+                unresolved[identifier] = ids
+        return resolved, unresolved
+
     # Default implementation of get_or_create doesn't work well with generics
     def get_or_create(self, **kwargs):
         try:

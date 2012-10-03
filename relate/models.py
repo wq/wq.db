@@ -2,6 +2,27 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+class RelatedModelManager(models.Manager):
+    def filter_by_related(self, *args, **kwargs):
+        objects = {}
+        for obj in args:
+            ctype = ContentType.objects.get_for_model(obj)
+            if ctype not in objects:
+                objects[ctype] = []
+            objects[ctype].append(obj)
+       
+        data = self.all()
+        for ctype, objs in objects.items():
+            if kwargs.get('inverse', False):
+                data = data.filter(relationships__to_content_type=ctype,
+                                   relationships__to_object_id__in=
+                                     [obj.pk for obj in objs])
+            else:
+                data = data.filter(inverse_relationships__from_content_type=ctype, 
+                                   inverse_relationships__from_object_id__in=
+                                     [obj.pk for obj in objs])
+        return data
+
 class RelatedModel(models.Model):
     relationships = generic.GenericRelation('Relationship',
         content_type_field='from_content_type',
@@ -13,6 +34,7 @@ class RelatedModel(models.Model):
         object_id_field='to_object_id',
         related_name='%(class)s_inverse_set'
     )
+    objects = RelatedModelManager()
 
     def all_relationships(self):
         for rel in self.relationships.all():
