@@ -8,7 +8,7 @@ from wq.db import resources
 
 from django.conf import settings
 from wq.db.util import get_config, has_perm, geturlbase, user_dict
-from wq.db.util import get_object_id
+from wq.db.util import get_ct, get_id, get_object_id
 
 from django.contrib.auth import authenticate, login, logout
 
@@ -17,9 +17,21 @@ _RENDERERS = [HTMLRenderer, JSONRenderer, XMLRenderer, AMDRenderer]
 
 class View(views.View):
     renderers = _RENDERERS
+    
+    @property
+    def template(self):
+        if getattr(self, 'resource', None) is None:
+            template = type(self).__name__.replace('View', '').lower()
+        else:
+            model = getattr(self, 'model', self.resource.model)
+            ctid   = get_id(get_ct(model))
+            if self._suffix == 'List':
+                template = ctid + '_list'
+            else:
+                template = ctid + '_detail'
+        return template
 
-class InstanceModelView(views.InstanceModelView):
-    renderers = _RENDERERS
+class InstanceModelView(View, views.InstanceModelView):
     def get_instance(self, *args, **kwargs):
         if issubclass(self.resource.model, IdentifiedModel):
             return self.resource.model.objects.get_by_identifier(kwargs['pk'])
@@ -50,8 +62,8 @@ class InstanceModelView(views.InstanceModelView):
             forbid(request.user, ct, 'delete')
         return super(InstanceModelView, delete).put(request, *args, **kwargs)
 
-class ListOrCreateModelView(mixins.PaginatorMixin, views.ListOrCreateModelView):
-    renderers = _RENDERERS
+class ListOrCreateModelView(View, mixins.PaginatorMixin, 
+                            views.ListOrCreateModelView):
     annotations = {}
     def get_query_kwargs(self, *args, **kwargs):
         for key, val in self.request.GET.items():

@@ -27,19 +27,11 @@ class MustacheRenderer(BaseRenderer):
     def render(self, obj=None, accept=None):
         user   = self.view.request.user
         config = get_config(user)
-        if getattr(self.view, 'resource', None) is None:
-            template = type(self.view).__name__.replace('View', '').lower()
-        else:
-            ctid   = get_id(get_ct(self.view.resource.model))
-            parts  = self.view.request.path.split('/')
-            if obj and 'list' in obj:
-                template = ctid + '_list'
-            else:
-                template = ctid + '_detail'
-        if user.is_authenticated():
+        template = self.view.template
+        if user.is_authenticated() and obj:
             obj['user'] = user_dict(user)
 
-        template = mustache.load_template(template)
+        template = mustache.load_template(self.view.template)
         return mustache.render(template, obj)
 
 class AMDRenderer(JSONPRenderer):

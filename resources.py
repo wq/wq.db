@@ -18,7 +18,7 @@ _context_mixin_map = {}
 class ModelResource(RestModelResource):
     @property
     def full_context(self):
-        return self.view._suffix != 'List'
+        return getattr(self.view, '_suffix', None) != 'List'
 
     def get_fields(self, obj):
         fields = ['label']
