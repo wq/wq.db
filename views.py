@@ -71,7 +71,7 @@ class ListOrCreateModelView(View, mixins.PaginatorMixin,
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
             for f in self.resource.model._meta.fields:
-                if f.name == key and hasattr(f, 'rel'):
+                if f.name == key and getattr(f, 'rel', None):
                     if issubclass(f.rel.to, IdentifiedModel):
                         kwargs[key] = f.rel.to.objects.get_by_identifier(val)
         kwargs = super(ListOrCreateModelView, self).get_query_kwargs(*args, **kwargs)

@@ -9,10 +9,6 @@ dirs = []
 for d in settings.TEMPLATE_DIRS:
     dirs.append(d)
     dirs.append(d + '/partials')
-mustache = Mustache(
-    file_extension = 'html',
-    search_dirs    = dirs
-)
 
 class RedirectRenderer(BaseRenderer):
     media_type = 'text/html'
@@ -24,6 +20,7 @@ class RedirectRenderer(BaseRenderer):
 
 class MustacheRenderer(BaseRenderer):
     media_type = 'text/html'
+    file_extension = 'html'
     def render(self, obj=None, accept=None):
         user   = self.view.request.user
         config = get_config(user)
@@ -31,8 +28,14 @@ class MustacheRenderer(BaseRenderer):
         if user.is_authenticated() and obj:
             obj['user'] = user_dict(user)
 
-        template = mustache.load_template(self.view.template)
-        return mustache.render(template, obj)
+        if not hasattr(self, '_mustache'):
+            self._mustache = Mustache(
+                file_extension = self.file_extension,
+                search_dirs    = dirs
+            )
+
+        template = self._mustache.load_template(self.view.template)
+        return self._mustache.render(template, obj)
 
 class AMDRenderer(JSONPRenderer):
     media_type = 'application/javascript'
