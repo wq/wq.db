@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.contrib import admin
+from django.core.exceptions import FieldError
 
 class AnnotationType(models.Model):
     name        = models.CharField(max_length=255)
@@ -53,6 +54,27 @@ class AnnotationManager(models.Manager):
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
             return self.create(**kwargs), True
+
+    # Fix filtering across generic relations
+    def filter(self, *args, **kwargs):
+
+        def add_content_type(model):
+            ctype = ContentType.objects.get_for_model(model)
+            if 'content_type' in kwargs and kwargs['content_type'] != ctype:
+                raise FieldError(
+                    "Cannot match more than one generic relationship!"
+                )
+            kwargs['content_type'] = ctype
+
+        for rel in self.model._meta.get_all_related_many_to_many_objects():
+            if not isinstance(rel.field, generic.GenericRelation):
+                continue
+            rname = rel.field.related_query_name()
+            for key in kwargs.keys():
+                if key == rname or key.startswith(rname + '__'):
+                    add_content_type(rel.model)
+         
+        return super(AnnotationManager, self).filter(*args, **kwargs)
 
 class Annotation(models.Model):
     type      = models.ForeignKey(AnnotationType)
