@@ -66,6 +66,8 @@ class Identifier(models.Model):
         db_table = 'wq_identifier'
 
 class PrimaryIdentifierManager(IdentifierManager):
+    use_for_related_fields = True
+
     def get_query_set(self):
         qs = super(PrimaryIdentifierManager, self).get_query_set()
         return qs.filter(is_primary=True)
@@ -78,8 +80,8 @@ class PrimaryIdentifier(Identifier):
 class IdentifiedModelManager(models.Manager):
     def get_by_identifier(self, identifier, auto_create=False):
         searches = [
-            {'primary_identifiers__slug': identifier},
-            {'primary_identifiers__name': identifier},
+            {'identifiers__slug': identifier, 'identifiers__is_primary': True},
+            {'identifiers__name': identifier, 'identifiers__is_primary': True},
             {'identifiers__slug': identifier},
             {'identifiers__name': identifier},
             {'pk':                identifier}
