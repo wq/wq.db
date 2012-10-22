@@ -1,6 +1,4 @@
 from django.conf.urls.defaults import patterns, include, url
-from django.conf import settings
-
 from django.contrib.contenttypes.models import ContentType
 
 from wq.db import resources, views, util
@@ -30,8 +28,3 @@ for ct in ContentType.objects.all():
     urlpatterns += patterns('', url('^' + urlbase + r'/new$', listview))
     urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview))
     urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview))
-
-if 'wq.db.identify' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('',
-        url('^(?P<slug>[^\/]+)$', views.DisambiguateView.as_view())
-    )

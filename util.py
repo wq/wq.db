@@ -72,3 +72,41 @@ def user_dict(user):
         for key in ('username', 'first_name', 'last_name', 'email', 
                     'is_active', 'is_staff', 'is_superuser')
     }
+
+class MultiQuerySet(object):
+    querysets = []
+    def __init__(self, *args, **kwargs):
+        self.querysets = args
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            multi = True
+        else:
+            multi = False
+            index = slice(index, index + 1)
+        
+        result = []
+        for qs in self.querysets:
+             if index.start < qs.count():
+                 result.extend(qs[index])
+             index = slice(index.start - qs.count(),
+                           index.stop  - qs.count())
+             if index.start < 0:
+                 if index.stop < 0:
+                     break
+                 index = slice(0, index.stop)
+        if multi:
+            return (item for item in result)
+        else:
+            return result[0]
+
+    def __iter__(self):
+        for qs in self.querysets:
+            for item in qs:
+                yield item
+
+    def count(self):
+        result = 0
+        for qs in self.querysets:
+            result += qs.count()
+        return result

@@ -1,4 +1,5 @@
-from djangorestframework import views, status, response, mixins
+from djangorestframework import views, status, response
+from djangorestframework.mixins import PaginatorMixin
 from wq.db.renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
@@ -62,7 +63,7 @@ class InstanceModelView(View, views.InstanceModelView):
             forbid(request.user, ct, 'delete')
         return super(InstanceModelView, delete).put(request, *args, **kwargs)
 
-class ListOrCreateModelView(View, mixins.PaginatorMixin, 
+class ListOrCreateModelView(View, PaginatorMixin, 
                             views.ListOrCreateModelView):
     annotations = {}
     def get_query_kwargs(self, *args, **kwargs):
@@ -152,37 +153,6 @@ class LogoutView(View):
             return True
         else:
             return {}
-
-class DisambiguateView(View):
-    def get(self, request, *args, **kwargs):
-        slug = kwargs['slug']
-        result = {
-            'slug': slug
-        }
-        ids = Identifier.objects.filter_by_identifier(slug)
-        if len(ids) == 0:
-            result['message'] = "Page Not Found"
-            raise response.ErrorResponse(status.HTTP_404_NOT_FOUND, result)
-
-        result['list'] = [
-            {
-                'url':   '%s/%s' % (geturlbase(ident.content_type),
-                                    get_object_id(ident.content_object)),
-                'type':  unicode(ident.content_type),
-                'label': unicode(ident.content_object)
-            }
-            for ident in ids
-        ]
-        if len(ids) == 1:
-            result['message'] = "Found"
-            result = response.Response(status.HTTP_302_FOUND, result,
-                {'Location': '/' + result['list'][0]['url']}
-            )
-        else:
-            result['message'] = "Multiple Matches Found"
-
-        return result
-
 
 def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {
