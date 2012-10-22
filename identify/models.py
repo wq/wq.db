@@ -65,27 +65,36 @@ class Identifier(models.Model):
     class Meta:
         db_table = 'wq_identifier'
 
+class PrimaryIdentifierManager(IdentifierManager):
+    def get_query_set(self):
+        qs = super(PrimaryIdentifierManager, self).get_query_set()
+        return qs.filter(is_primary=True)
+
+class PrimaryIdentifier(Identifier):
+    objects = PrimaryIdentifierManager()
+    class Meta:
+        proxy = True
+
 class IdentifiedModelManager(models.Manager):
     def get_by_identifier(self, identifier, auto_create=False):
         searches = [
-            {'identifiers__slug': identifier, 'identifiers__is_primary': True},
-            {'identifiers__name': identifier, 'identifiers__is_primary': True},
+            {'primary_identifiers__slug': identifier},
+            {'primary_identifiers__name': identifier},
             {'identifiers__slug': identifier},
             {'identifiers__name': identifier},
             {'pk':                identifier}
         ]
-
 
         object = None
         for search in searches:
             try:
                 object = self.get(**search)
                 break
-            except self.model.DoesNotExist:
+            except ValueError, self.model.DoesNotExist:
                 if 'pk' not in search:
                     continue
                 elif (not auto_create):
-                    raise
+                    raise self.model.DoesNotExist
 
         if object is None and auto_create:
             if ('name' in self.model._meta.get_all_field_names()):
@@ -96,23 +105,36 @@ class IdentifiedModelManager(models.Manager):
 
         return object
 
-    def filter_by_identifier(self, identifier):
-        return self.filter(identifiers__name = identifier)
+    def get_query_set(self):
+        qs = super(IdentifiedModelManager, self).get_query_set()
+        ct = ContentType.objects.get_for_model(self.model)
+        meta = self.model._meta
+        qs = qs.extra(select={'wq_id_name': """
+               SELECT name FROM wq_identifier
+               WHERE content_type_id=%s AND object_id=%s.%s AND is_primary
+               LIMIT 1""" % (ct.pk, meta.db_table, meta.pk.get_attname_column()[1])})
+        return qs.order_by('wq_id_name')
 
 class IdentifiedModel(models.Model):
     identifiers = generic.GenericRelation(Identifier)
+    primary_identifiers = generic.GenericRelation(PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary')
     objects     = IdentifiedModelManager()
+
+    @property
+    def primary_identifier(self):
+        if self.primary_identifiers.count() > 0:
+            return self.primary_identifiers.all()[0]
+        return None
 
     def fallback_identifier(self):
         if hasattr(self, 'name'):
-            return self.name
+            return unicode(self.name)
         else:
             return ContentType.objects.get_for_model(self).name
 
     def __unicode__(self):
-        ids = self.identifiers.filter(is_primary=True)
-        if (len(ids) > 0):
-            return ', '.join(map(str, ids))
+        if self.primary_identifier:
+            return unicode(self.primary_identifier)
         else:
             return self.fallback_identifier()
 
