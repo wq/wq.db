@@ -3,8 +3,6 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-import magic
-
 from wq.db.annotate.models import AnnotatedModel
 from wq.db.relate.models import RelatedModel
 
@@ -66,6 +64,7 @@ class File(AnnotatedModel, RelatedModel):
     @property
     def mimetype(self):
         if self.file is not None:
+            import magic
             mime = magic.Magic(mime=True)
             self.file.open()
             return mime.from_buffer(self.file.read(1024))
