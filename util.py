@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from wq.db.models import AnnotatedModel, IdentifiedModel
+from wq.db.models import AnnotatedModel, IdentifiedModel, RelationshipType
 
 _FORBIDDEN_APPS = ('auth','sessions','admin','contenttypes','reversion','south')
 
@@ -38,6 +38,36 @@ def has_perm(user, ct, perm):
         from django.conf import settings
         return perm in getattr(settings, 'ANONYMOUS_PERMISSIONS', {})
 
+# Get foreign keys for this content type
+def get_parents(ct):
+    cls = ct.model_class()
+    if cls is None:
+        return []
+    parents = []
+    for f in cls._meta.fields:
+        if f.rel is not None and type(f.rel).__name__ == 'ManyToOneRel':
+            parents.append(get_ct(f.rel.to))
+    return parents
+
+# Get foreign keys and RelationshipType parents for this content type
+def get_all_parents(ct):
+    parents = get_parents(ct)
+    for rtype in RelationshipType.objects.filter(to_type=ct):
+        parents.append(rtype.from_type)
+    return parents
+
+def get_children(ct):
+    cls = ct.model_class()
+    if cls is None:
+        return [];
+    return [get_ct(r.model) for r in cls._meta.get_all_related_objects()]
+
+def get_all_children(ct):
+    children = get_children(ct)
+    for rtype in RelationshipType.objects.filter(from_type=ct):
+        children.append(rtype.to_type)
+    return children
+
 def get_config(user):
      pages = {}
      pages['login']  = {'name': 'Log in',  'url': 'login'}
@@ -52,14 +82,14 @@ def get_config(user):
          for perm in ('add', 'change', 'delete'):
              if has_perm(user, ct, perm):
                  info['can_' + perm] = True
-         for f in cls._meta.fields:
-             if f.rel is not None and type(f.rel).__name__ == 'ManyToOneRel':
-                 pct = get_ct(f.rel.to)
+
+         for pct in get_parents(ct):
+             if has_perm(user, pct, 'view'):
                  info['parents'].append(get_id(pct))
 
-         for r in cls._meta.get_all_related_objects():
-             cct = get_ct(r.model)
-             info['children'].append(get_id(cct))
+         for cct in get_children(ct):
+             if has_perm(user, cct, 'view'):
+                 info['children'].append(get_id(cct))
 
          info['annotated'] = issubclass(cls, AnnotatedModel)
          info['identified'] = issubclass(cls, IdentifiedModel)

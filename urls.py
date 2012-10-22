@@ -23,8 +23,26 @@ for ct in ContentType.objects.all():
     detailview = views.InstanceModelView.as_view(resource=res)
     urlbase    = util.geturlbase(ct)
 
-    urlpatterns += patterns('', url('^' + urlbase + r'/?$',  listview))
-    urlpatterns += patterns('', url('^' + urlbase + r'\.(?P<format>\w+)$', listview))
-    urlpatterns += patterns('', url('^' + urlbase + r'/new$', listview))
-    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview))
-    urlpatterns += patterns('', url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview))
+    urlpatterns += patterns('',
+        url('^' + urlbase + r'/?$',  listview),
+        url('^' + urlbase + r'\.(?P<format>\w+)$', listview),
+        url('^' + urlbase + r'/new$', listview),
+        url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview),
+        url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview)
+    )
+
+    for pct in util.get_all_parents(ct):
+        purl = '^' + util.geturlbase(pct) + r'/(?P<' + util.get_id(pct) + '>[^\/\?]+)/' + urlbase
+        urlpatterns += patterns('',
+            url(purl + '/?$', listview),
+            url(purl + '\.(?P<format>\w+)$', listview),
+        )
+
+    for cct in util.get_all_children(ct):
+        cbase = util.geturlbase(cct)
+        curl = '^%s-by-%s'% (cbase, util.get_id(ct))
+        kwargs = {'target': cbase}
+        urlpatterns += patterns('',
+            url(curl + '/?$', listview, kwargs),
+            url(curl + '\.(?P<format>\w+)$', listview, kwargs),
+        )
