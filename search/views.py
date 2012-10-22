@@ -31,6 +31,8 @@ class SearchView(PaginatorMixin, View):
         )
 
     def filter_response(self, obj):
+        if isinstance(obj, dict):
+            return obj
         result = super(SearchView, self).filter_response(obj)
         result['list'] = result['results']
         del result['results']
