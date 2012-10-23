@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from wq.db.models import AnnotatedModel, IdentifiedModel, RelationshipType
+from wq.db.models import AnnotatedModel, IdentifiedModel, RelatedModel, RelationshipType
 
 _FORBIDDEN_APPS = ('auth','sessions','admin','contenttypes','reversion','south')
 
@@ -52,8 +52,10 @@ def get_parents(ct):
 # Get foreign keys and RelationshipType parents for this content type
 def get_all_parents(ct):
     parents = get_parents(ct)
-    for rtype in RelationshipType.objects.filter(to_type=ct):
-        parents.append(rtype.from_type)
+    cls = ct.model_class()
+    if issubclass(cls, RelatedModel):
+        for rtype in RelationshipType.objects.filter(to_type=ct):
+            parents.append(rtype.from_type)
     return parents
 
 def get_children(ct):
@@ -64,8 +66,10 @@ def get_children(ct):
 
 def get_all_children(ct):
     children = get_children(ct)
-    for rtype in RelationshipType.objects.filter(from_type=ct):
-        children.append(rtype.to_type)
+    cls = ct.model_class()
+    if issubclass(cls, RelatedModel):
+        for rtype in RelationshipType.objects.filter(from_type=ct):
+            children.append(rtype.to_type)
     return children
 
 def get_config(user):
