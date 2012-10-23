@@ -144,6 +144,8 @@ class ListOrCreateModelView(View, PaginatorMixin,
 
     def filter_response(self, obj):
         result = super(ListOrCreateModelView, self).filter_response(obj)
+        if 'results' not in result:
+            return result
         result['list'] = result['results']
         del result['results']
         if 'target' in self.kwargs:

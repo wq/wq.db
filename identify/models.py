@@ -92,7 +92,7 @@ class IdentifiedModelManager(models.Manager):
             try:
                 object = self.get(**search)
                 break
-            except ValueError, self.model.DoesNotExist:
+            except (ValueError, self.model.DoesNotExist):
                 if 'pk' not in search:
                     continue
                 elif (not auto_create):

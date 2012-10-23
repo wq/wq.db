@@ -73,8 +73,8 @@ class File(AnnotatedModel, RelatedModel):
 
     def save(self):
         if self.type is None:
-            self.type = FileType.objects.get_or_create(mimetype=self.mimetype,
-                                                       name=self.type_name)
+            self.type, isnew = FileType.objects.get_or_create(mimetype=self.mimetype,
+                                                              name=self.type_name)
         if self.size is None:
             self.size = self.file.size
         if self.name is None or self.name == '':
