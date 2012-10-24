@@ -1,5 +1,4 @@
-from djangorestframework import views, status, response
-from djangorestframework.mixins import PaginatorMixin
+from djangorestframework import views, status, response, mixins
 from wq.db.renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
@@ -64,13 +63,22 @@ class InstanceModelView(View, views.InstanceModelView):
             forbid(request.user, ct, 'delete')
         return super(InstanceModelView, delete).put(request, *args, **kwargs)
 
+class PaginatorMixin(mixins.PaginatorMixin):
+    limit = 50
+    def get_limit(self):
+        limit = int(self.request.GET.get('limit', 0))
+        if not limit:
+            limit = getattr(settings, 'DEFAULT_PER_PAGE', self.limit)
+        max_limit = getattr(settings, 'MAX_PER_PAGE', self.limit)
+        return min(limit, max_limit)
+
 class ListOrCreateModelView(View, PaginatorMixin, 
                             views.ListOrCreateModelView):
     annotations = {}
     parent = None
     def get_query_kwargs(self, *args, **kwargs):
         for key, val in self.request.GET.items():
-            if key in ('_', 'page'):
+            if key in ('_', 'page', 'limit'):
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
 
