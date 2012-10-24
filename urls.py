@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.contenttypes.models import ContentType
 
-from wq.db import resources, views, util
+from wq.db import views, util
 
 urlpatterns = patterns('', 
     url('^config/?$',                views.ConfigView.as_view()),
@@ -18,10 +18,8 @@ for ct in ContentType.objects.all():
     if cls is None:
         continue
 
-    res        = resources.get_for_model(cls)
-    listview   = views.ListOrCreateModelView.as_view(resource=res)
-    detailview = views.InstanceModelView.as_view(resource=res)
-    urlbase    = util.geturlbase(ct)
+    listview, detailview = views.get_for_model(cls)
+    urlbase = util.geturlbase(ct)
 
     urlpatterns += patterns('',
         url('^' + urlbase + r'/?$',  listview),

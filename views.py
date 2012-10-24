@@ -8,12 +8,16 @@ from wq.db.relate.models import RelatedModel
 from wq.db import resources
 
 from django.conf import settings
+from django.utils.importlib import import_module
+from django.utils.module_loading import module_has_submodule
 from wq.db import util
 
 from django.contrib.auth import authenticate, login, logout
 
 _FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
 _RENDERERS = [HTMLRenderer, JSONRenderer, XMLRenderer, AMDRenderer]
+
+_view_map = {}
 
 class View(views.View):
     renderers = _RENDERERS
@@ -205,3 +209,23 @@ def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {
         'details': _FORBIDDEN_RESPONSE % (user, perm, ct)
     })
+
+def register(model_class, list_view=None, detail_view=None):
+    _view_map[model_class] = (list_view, detail_view)
+
+def get_for_model(model_class):
+    if model_class in _view_map:
+        listview, detailview = _view_map[model_class]
+    else:
+        listview, detailview = None, None
+    listview = listview or ListOrCreateModelView
+    detailview = detailview or InstanceModelView
+
+    res = resources.get_for_model(model_class)
+    return listview.as_view(resource=res), detailview.as_view(resource=res)
+
+def autodiscover():
+    for app_name in settings.INSTALLED_APPS:
+        app = import_module(app_name)
+        if module_has_submodule(app, 'views'):
+            import_module(app_name + '.views')
