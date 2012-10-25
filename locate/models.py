@@ -2,10 +2,13 @@ from django.contrib.gis.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+from django.conf import settings
+SRID = getattr(settings, 'SRID', 3857)
+
 class Location(models.Model):
     name       = models.CharField(max_length=255, null=True, blank=True)
     is_primary = models.BooleanField()
-    geometry   = models.GeometryField()
+    geometry   = models.GeometryField(srid=SRID)
     accuracy   = models.IntegerField(null=True, blank=True)
 
     content_type   = models.ForeignKey(ContentType)

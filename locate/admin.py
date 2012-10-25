@@ -1,7 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib.gis import admin 
 from django.contrib.gis.db import models
-from wq.db.locate.models import LocatedModel, Location
+from .models import LocatedModel, Location, SRID
 
 class LocationInline(generic.GenericTabularInline):
     model = Location
@@ -23,6 +23,7 @@ class LocatedModelAdmin(admin.GeoModelAdmin):
     geom_type    = 'POINT'
     map_width    = 300
     map_height   = 200 
+    map_srid     = SRID
     default_zoom = 1
     point_zoom   = 10
 
