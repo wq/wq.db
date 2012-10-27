@@ -30,6 +30,8 @@ class MustacheRenderer(BaseRenderer):
         template = self.view.template
         if user.is_authenticated() and obj:
             obj['user'] = user_dict(user)
+        if 'list' in obj and 'pages' in obj:
+            obj['multiple'] = (obj['pages'] > 1)
 
         if not hasattr(self, '_mustache'):
             self._mustache = Mustache(
