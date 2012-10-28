@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.template.defaultfilters import slugify
 
 class IdentifierManager(models.Manager):
     def filter_by_identifier(self, identifier):
@@ -36,6 +37,26 @@ class IdentifierManager(models.Manager):
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
             return self.create(**kwargs), True
+
+    def find_unique_slug(self, name, model):
+        slug = slugify(name)
+        exists = self.filter(
+             content_type__name = model,
+             slug               = slug
+        )
+        num = ''
+        while exists.count() > 0:
+            slug = slugify('%s %s' % (name, num))
+            exists = self.filter(
+                 content_type__name = model,
+                 slug               = slug
+            )
+            if num == '':
+                num = 1
+            else:
+                num += 1
+        return slug
+
 
 class Identifier(models.Model):
     name       = models.CharField(max_length=255, db_index=True)
