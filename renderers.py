@@ -13,7 +13,7 @@ for d in settings.TEMPLATE_DIRS:
 class RedirectRenderer(BaseRenderer):
     media_type = 'text/html'
     def render(self, obj=None, accept=None):
-        path = self.view.request.path
+        path = self.view.response.headers.get('Location', self.view.request.path)
         query = self.view.request.GET.urlencode()
         if query:
             path += "?" + query
