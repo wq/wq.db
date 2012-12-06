@@ -26,6 +26,7 @@ for ct in ContentType.objects.all():
         url('^' + urlbase + r'\.(?P<format>\w+)$', listview),
         url('^' + urlbase + r'/new$', listview),
         url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview),
+        url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/edit$', detailview),
         url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview)
     )
 
