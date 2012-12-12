@@ -73,6 +73,9 @@ def get_all_children(ct):
     return children
 
 def get_config(user):
+     from django.conf import settings
+     if hasattr(settings, 'REST_CONFIG'):
+         return settings.REST_CONFIG
      pages = {}
      pages['login']  = {'name': 'Log in',  'url': 'login'}
      pages['logout'] = {'name': 'Log out', 'url': 'logout'}
@@ -101,11 +104,22 @@ def get_config(user):
      return {'pages': pages}
 
 def user_dict(user):
-    return {
+    u = {
         key: getattr(user, key)
         for key in ('username', 'first_name', 'last_name', 'email', 
                     'is_active', 'is_staff', 'is_superuser')
     }
+    if hasattr(user, 'social_auth'):
+        auth = user.social_auth.all()
+        if auth.count() > 0:
+            u['social_auth'] = True
+            u['accounts'] = [{
+                'provider_id':    unicode(a.provider),
+                'provider_label': a.provider.title(),
+                'id':             a.pk,
+                'label':          a.uid
+            } for a in auth]
+    return u
 
 class MultiQuerySet(object):
     querysets = []

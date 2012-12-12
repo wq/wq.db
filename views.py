@@ -191,11 +191,13 @@ class LoginView(View):
         if user is not None and user.is_active:
             login(request, user)
             return {
-                'user':   user_dict(user),
-                'config': get_config(user)
+                'user':   util.user_dict(user),
+                'config': util.get_config(user)
             }
         else:
-            return {}
+            raise response.ErrorResponse(status.HTTP_401_UNAUTHORIZED, {
+                'errors': ["Invalid username or password"]
+            })
 
 class LogoutView(View):
     def get(self, request, *args, **kwargs):
@@ -207,7 +209,7 @@ class LogoutView(View):
 
 def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {
-        'details': _FORBIDDEN_RESPONSE % (user, perm, ct)
+        'errors': [_FORBIDDEN_RESPONSE % (user, perm, ct)]
     })
 
 def register(model_class, list_view=None, detail_view=None):
