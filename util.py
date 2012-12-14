@@ -105,7 +105,7 @@ def get_config(user):
 
 def user_dict(user):
     u = {
-        key: getattr(user, key)
+        key: getattr(user, key, None)
         for key in ('username', 'first_name', 'last_name', 'email', 
                     'is_active', 'is_staff', 'is_superuser')
     }
@@ -117,7 +117,12 @@ def user_dict(user):
                 'provider_id':    unicode(a.provider),
                 'provider_label': a.provider.title(),
                 'id':             a.pk,
-                'label':          a.uid
+                'label':          a.uid,
+                'can_disconnect': type(a).allowed_to_disconnect(
+                    user = user,
+                    backend_name = a.provider,
+                    association_id = a.pk
+                )
             } for a in auth]
     return u
 
