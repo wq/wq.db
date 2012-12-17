@@ -1,6 +1,6 @@
-from wq.db.views import View, PaginatorMixin
+from wq.db.rest.views import View, PaginatorMixin
 from djangorestframework import status, response
-from wq.db import util
+from wq.db.rest import util
 from .resources import SearchResource
 
 SEARCH_PARAMETER = 'q'

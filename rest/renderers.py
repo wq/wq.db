@@ -3,7 +3,7 @@ from djangorestframework.renderers import (BaseRenderer,
 from djangorestframework import status
 from pystache.renderer import Renderer as Mustache
 from django.conf import settings
-from wq.db.util import get_config, get_ct, get_id, user_dict
+from wq.db.rest.util import get_config, get_ct, get_id, user_dict
 
 dirs = []
 for d in settings.TEMPLATE_DIRS:

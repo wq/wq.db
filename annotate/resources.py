@@ -1,5 +1,5 @@
-from wq.db import resources
-from wq.db.util import get_id, get_object_id
+from wq.db.rest import resources
+from wq.db.rest.util import get_id, get_object_id
 
 from .models import Annotation, AnnotatedModel
 

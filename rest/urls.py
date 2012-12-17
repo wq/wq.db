@@ -1,7 +1,7 @@
 from django.conf.urls.defaults import patterns, include, url
 from django.contrib.contenttypes.models import ContentType
 
-from wq.db import views, util
+from wq.db.rest import views, util
 
 urlpatterns = patterns('', 
     url('^config/?$',                views.ConfigView.as_view()),

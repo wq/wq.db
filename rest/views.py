@@ -1,16 +1,16 @@
 from djangorestframework import views, status, response, mixins
-from wq.db.renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
+from .renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
 from wq.db.identify.models import Identifier, IdentifiedModel
 from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
 from wq.db.relate.models import RelatedModel
-from wq.db import resources
+from wq.db.rest import resources
 
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
-from wq.db import util
+from wq.db.rest import util
 
 from django.contrib.auth import authenticate, login, logout
 

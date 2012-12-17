@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 
-from wq.db.util import get_ct, get_id, get_object_id, geturlbase
+from wq.db.rest.util import get_ct, get_id, get_object_id, geturlbase
 
 _resource_map = {}
 _context_mixin_map = {}

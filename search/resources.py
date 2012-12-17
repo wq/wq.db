@@ -1,5 +1,5 @@
 from djangorestframework import resources
-from wq.db import util
+from wq.db.rest import util
 from wq.db.models import Identifier, Annotation
 
 class SearchResource(resources.Resource):
