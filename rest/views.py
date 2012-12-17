@@ -42,6 +42,12 @@ class InstanceModelView(View, views.InstanceModelView):
             return self.resource.model.objects.get_by_identifier(kwargs['pk'])
         else:
             return super(InstanceModelView, self).get_instance(*args, **kwargs)
+    
+    def get(self, request, *args, **kwargs):
+        ct = ContentType.objects.get_for_model(self.resource.model)
+        if not util.has_perm(request.user, ct, 'view'):
+            forbid(request.user, ct, 'view')
+        return super(InstanceModelView, self).get(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         ct = ContentType.objects.get_for_model(self.resource.model)
