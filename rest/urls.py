@@ -6,10 +6,6 @@ from wq.db.rest import views, util
 urlpatterns = patterns('', 
     url('^config/?$',                views.ConfigView.as_view()),
     url('^config\.(?P<format>\w+)$', views.ConfigView.as_view()),
-    url('^login/?$',                 views.LoginView.as_view()),
-    url('^login\.(?P<format>\w+)$',  views.LoginView.as_view()),
-    url('^logout/?$',                views.LogoutView.as_view()),
-    url('^logout\.(?P<format>\w+)$', views.LogoutView.as_view()),
 )
 
 for ct in ContentType.objects.all():

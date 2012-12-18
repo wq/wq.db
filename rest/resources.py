@@ -33,7 +33,7 @@ class ModelResource(RestModelResource):
                 else:
                     fields.append(f.name + '_label')
                     fields.append(f.name + '_id')
-        if (self.view.method in ("PUT", "POST")):
+        if (getattr(self.view, "method", None) in ("PUT", "POST")):
             fields.append("updates")
 
         if (self.full_context):

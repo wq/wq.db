@@ -104,27 +104,10 @@ def get_config(user):
      return {'pages': pages}
 
 def user_dict(user):
-    u = {
-        key: getattr(user, key, None)
-        for key in ('username', 'first_name', 'last_name', 'email', 
-                    'is_active', 'is_staff', 'is_superuser')
-    }
-    if hasattr(user, 'social_auth'):
-        auth = user.social_auth.all()
-        if auth.count() > 0:
-            u['social_auth'] = True
-            u['accounts'] = [{
-                'provider_id':    unicode(a.provider),
-                'provider_label': a.provider.title(),
-                'id':             a.pk,
-                'label':          a.uid,
-                'can_disconnect': type(a).allowed_to_disconnect(
-                    user = user,
-                    backend_name = a.provider,
-                    association_id = a.pk
-                )
-            } for a in auth]
-    return u
+    from .resources import get_for_model
+    from django.contrib.auth.models import User
+    res = get_for_model(User)
+    return res().serialize_model(user)
 
 class MultiQuerySet(object):
     querysets = []
