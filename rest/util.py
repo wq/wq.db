@@ -30,7 +30,7 @@ def has_perm(user, ct, perm):
     elif perm == 'view':
         return True
     else:
-        perm = '%s.%s_%s' % (ct.app_label, ct.model, perm)
+        perm = '%s.%s_%s' % (ct.app_label, perm, ct.model)
 
     if user.is_authenticated():
         return user.has_perm(perm)
