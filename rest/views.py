@@ -12,6 +12,7 @@ from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 from wq.db.rest import util
 
+RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format')
 _FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
 _RENDERERS = [HTMLRenderer, JSONRenderer, XMLRenderer, AMDRenderer]
 
@@ -86,7 +87,7 @@ class ListOrCreateModelView(View, PaginatorMixin,
     parent = None
     def get_query_kwargs(self, *args, **kwargs):
         for key, val in self.request.GET.items():
-            if key in ('_', 'page', 'limit'):
+            if key in RESERVED_PARAMETERS:
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
 
@@ -134,8 +135,6 @@ class ListOrCreateModelView(View, PaginatorMixin,
                 if fname in content:
                     self.annotations[at] = content[fname]
                     del content[fname]
-                else:
-                    self.annotations[at] = ""
         return content
 
     def get(self, request, *args, **kwargs):

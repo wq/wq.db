@@ -5,8 +5,14 @@ class UserResource(resources.ModelResource):
     model = User
     def get_fields(self, instance):
         fields = super(UserResource, self).get_fields(instance)
+        fields.remove('id')
         fields.remove('password')
         return fields
+
+    def serialize_model(self, instance):
+        result = super(UserResource, self).serialize_model(instance)
+        del result['id']
+        return result
 
 class SocialContextMixin(resources.ContextMixin):
     target_model = User

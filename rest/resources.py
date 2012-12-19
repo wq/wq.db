@@ -48,19 +48,16 @@ class ModelResource(RestModelResource):
         idname = get_id(ct) + '_id'
         annots = Annotation.objects.filter(content_type=ct, object_id=instance.pk)
         updates = []
-        for a in annots:
-            updates.append({'id': a.pk,
-                            'annotationtype_id': a.type.pk,
-                            idname:    instance.pk,
-                            'value':   a.value})
+        res = get_for_model(Annotation)()
+        updates = map(res.serialize_model, annots)
         return {'annotation': updates}
 
     def validate_request(self, data, files=None):
-        extra_fields = ()
+        extra_fields = self._property_fields_set
         if issubclass(self.model, AnnotatedModel):
             ct = ContentType.objects.get_for_model(self.model)
             atypes = AnnotationType.objects.filter(contenttype=ct)
-            extra_fields = ('annotation-%s' % at.pk for at in atypes)
+            extra_fields.update(('annotation-%s' % at.pk for at in atypes))
         data = self._validate(data, files, extra_fields)
         return data
 
