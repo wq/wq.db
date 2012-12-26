@@ -128,6 +128,9 @@ class IdentifiedModelManager(models.Manager):
 
         return object
 
+    def get_by_natural_key(self, identifier):
+        return self.get_by_identifier(identifier)
+
     def get_query_set(self):
         qs = super(IdentifiedModelManager, self).get_query_set()
         ct = ContentType.objects.get_for_model(self.model)
@@ -157,9 +160,15 @@ class IdentifiedModel(models.Model):
 
     def __unicode__(self):
         if self.primary_identifier:
-            return unicode(self.primary_identifier)
+            return self.primary_identifier.name
         else:
             return self.fallback_identifier()
+
+    def natural_key(self):
+        if self.primary_identifier:
+            return (self.primary_identifier.slug,)
+        else:
+            return (self.pk,)
 
     class Meta:
         abstract = True
