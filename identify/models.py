@@ -117,7 +117,8 @@ class IdentifiedModelManager(models.Manager):
                 if 'pk' not in search:
                     continue
                 elif (not auto_create):
-                    raise self.model.DoesNotExist
+                    name = self.model._meta.object_name
+                    raise self.model.DoesNotExist('%s "%s" does not exist' % (name, identifier))
 
         if object is None and auto_create:
             if ('name' in self.model._meta.get_all_field_names()):
