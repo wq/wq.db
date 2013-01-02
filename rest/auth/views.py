@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
-from djangorestframework import response
+from djangorestframework import response, status
 from wq.db.rest import util, views
 
 class LoginView(views.View):
