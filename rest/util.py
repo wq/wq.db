@@ -72,13 +72,14 @@ def get_all_children(ct):
             children.append(rtype.to_type)
     return children
 
+_extra_pages = {}
 def get_config(user):
      from django.conf import settings
      if hasattr(settings, 'REST_CONFIG'):
          return settings.REST_CONFIG
      pages = {}
-     pages['login']  = {'name': 'Log in',  'url': 'login'}
-     pages['logout'] = {'name': 'Log out', 'url': 'logout'}
+     for page in _extra_pages:
+         pages[page] = _extra_pages[page]
      for ct in ContentType.objects.all():
          if not has_perm(user, ct, 'view'):
              continue
@@ -102,6 +103,9 @@ def get_config(user):
          info['identified'] = issubclass(cls, IdentifiedModel)
          pages[get_id(ct)] = info
      return {'pages': pages}
+
+def add_page_config(name, config):
+    _extra_pages[name] = config
 
 def user_dict(user):
     from .resources import get_for_model
