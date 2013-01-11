@@ -23,4 +23,5 @@ class AnnotatedModelAdmin(admin.ModelAdmin):
     ]
 
 class AnnotationTypeAdmin(admin.ModelAdmin):
-    exclude = ['contenttype']
+    list_display = ('__unicode__', 'contenttype')
+    list_filter = ('contenttype',)

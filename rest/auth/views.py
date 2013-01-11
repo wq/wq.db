@@ -5,8 +5,10 @@ from wq.db.rest import util, views
 class LoginView(views.View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
+            user_dict = util.user_dict(request.user)
+            user_dict['id'] = request.user.pk
             return {
-                'user':   util.user_dict(request.user),
+                'user': user_dict,
                 'config': util.get_config(request.user)
             }
         else:
@@ -18,8 +20,10 @@ class LoginView(views.View):
         user = authenticate(username=username, password=password)
         if user is not None and user.is_active:
             login(request, user)
+            user_dict = util.user_dict(user),
+            user_dict['id'] = user.pk
             return {
-                'user':   util.user_dict(user),
+                'user':   user_dict,
                 'config': util.get_config(user)
             }
         else:
