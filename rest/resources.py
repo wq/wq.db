@@ -46,10 +46,10 @@ class ModelResource(RestModelResource):
     def updates(self, instance):
         ct = ContentType.objects.get_for_model(instance)
         idname = get_id(ct) + '_id'
-        annots = Annotation.objects.filter(content_type=ct, object_id=instance.pk)
+        res = get_for_model(Annotation)
+        annots = res.queryset.filter(content_type=ct, object_id=instance.pk)
         updates = []
-        res = get_for_model(Annotation)()
-        updates = map(res.serialize_model, annots)
+        updates = map(res().serialize_model, annots)
         return {'annotation': updates}
 
     def validate_request(self, data, files=None):

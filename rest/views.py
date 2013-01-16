@@ -83,7 +83,7 @@ class PaginatorMixin(mixins.PaginatorMixin):
 
 class ListOrCreateModelView(View, PaginatorMixin, 
                             views.ListOrCreateModelView):
-    annotations = {}
+    annotations = None 
     parent = None
     def get_query_kwargs(self, *args, **kwargs):
         for key, val in self.request.GET.items():
@@ -130,6 +130,7 @@ class ListOrCreateModelView(View, PaginatorMixin,
         if issubclass(self.resource.model, AnnotatedModel):
             ct = ContentType.objects.get_for_model(self.resource.model)
             atypes = AnnotationType.objects.filter(contenttype=ct)
+            self.annotations = {}
             for at in atypes:
                 fname = 'annotation-%s' % at.pk
                 if fname in content:
