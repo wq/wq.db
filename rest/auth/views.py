@@ -20,7 +20,7 @@ class LoginView(views.View):
         user = authenticate(username=username, password=password)
         if user is not None and user.is_active:
             login(request, user)
-            user_dict = util.user_dict(user),
+            user_dict = util.user_dict(user)
             user_dict['id'] = user.pk
             return {
                 'user':   user_dict,
