@@ -47,7 +47,8 @@ class ModelResource(RestModelResource):
         ct = ContentType.objects.get_for_model(instance)
         idname = get_id(ct) + '_id'
         res = get_for_model(Annotation)
-        annots = res.queryset.filter(content_type=ct, object_id=instance.pk)
+        qs = getattr(res, 'queryset', Annotation.objects)
+        annots = qs.filter(content_type=ct, object_id=instance.pk)
         updates = []
         updates = map(res().serialize_model, annots)
         return {'annotation': updates}
