@@ -83,7 +83,7 @@ class ModelResource(RestModelResource):
 
         if (self.full_context):
             for mixin in _context_mixin_map.values():
-                if mixin.valid_for_model(self.model):
+                if mixin.valid_for_model(type(instance)):
                     data[mixin.name] = mixin.get_data(instance)
         return data
 
