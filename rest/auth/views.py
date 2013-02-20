@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from djangorestframework import response, status
-from wq.db.rest import util, views
+from wq.db.rest import util, views, renderers
 
 class LoginView(views.View):
     def get(self, request, *args, **kwargs):
@@ -38,3 +38,11 @@ class LogoutView(views.View):
             return True
         else:
             return {}
+
+def get_user(renderer, obj):
+    user = renderer.view.request.user
+    if user.is_authenticated():
+        return util.user_dict(user)
+    return None
+
+renderers.HTMLRenderer.register_context_default('user', get_user)

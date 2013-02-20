@@ -174,6 +174,12 @@ class ListOrCreateModelView(View, PaginatorMixin,
             )
         return result
 
+def is_multiple(renderer, obj):
+    if 'list' in obj and 'pages' in obj:
+        return (obj['pages'] > 1)
+    return None
+HTMLRenderer.register_context_default('multiple', is_multiple)
+
 class ConfigView(View):
     def get(self, request, *args, **kwargs):
         return util.get_config(request.user)

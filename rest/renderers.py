@@ -21,19 +21,26 @@ class RedirectRenderer(BaseRenderer):
         self.view.response.headers['Location'] = '/#' + path
         return 'Redirecting...'
 
+    @staticmethod
+    def register_context_default(name, val):
+        pass
+
 class MustacheRenderer(BaseRenderer):
     media_type = 'text/html'
     file_extension = 'html'
+    _defaults = {}
+
     def render(self, obj=None, accept=None):
-        user   = self.view.request.user
-        config = get_config(user)
         template = self.view.template
 
-        if obj:
-            if user.is_authenticated():
-                obj['user'] = user_dict(user)
-            if 'list' in obj and 'pages' in obj:
-                obj['multiple'] = (obj['pages'] > 1)
+        if obj is None:
+            obj = {}
+        for name, val in MustacheRenderer._defaults.items():
+            if name not in obj:
+                if callable(val):
+                    val = val(self, obj)
+                if val is not None:
+                    obj[name] = val
 
         if not hasattr(self, '_mustache'):
             self._mustache = Mustache(
@@ -43,6 +50,10 @@ class MustacheRenderer(BaseRenderer):
 
         template = self._mustache.load_template(self.view.template)
         return self._mustache.render(template, obj)
+
+    @staticmethod
+    def register_context_default(name, val):
+        MustacheRenderer._defaults[name] = val
 
 class AMDRenderer(JSONPRenderer):
     media_type = 'application/javascript'
