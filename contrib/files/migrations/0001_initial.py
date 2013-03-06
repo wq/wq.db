@@ -62,7 +62,7 @@ class Migration(SchemaMigration):
         },
         'files.file': {
             'Meta': {'object_name': 'File', 'db_table': "'wq_file'"},
-            'annotations': ('wq.db.annotate.models.AnnotationSet', [], {'to': "orm['annotate.Annotation']"}),
+            'annotations': ('wq.db.patterns.annotate.models.AnnotationSet', [], {'to': "orm['annotate.Annotation']"}),
             'file': ('wq.db.files.models.FileField', [], {'max_length': '100'}),
             'height': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),

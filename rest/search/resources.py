@@ -1,6 +1,6 @@
 from djangorestframework import resources
 from wq.db.rest import util
-from wq.db.models import Identifier, Annotation
+from wq.db.patterns.models import Identifier, Annotation
 
 class SearchResource(resources.Resource):
     def search(self, query, auto=True):

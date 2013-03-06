@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from wq.db.models import AnnotatedModel, IdentifiedModel, RelatedModel, RelationshipType
+from wq.db.patterns.models import AnnotatedModel, IdentifiedModel, RelatedModel, RelationshipType
 
 _FORBIDDEN_APPS = ('auth','sessions','admin','contenttypes','reversion','south')
 

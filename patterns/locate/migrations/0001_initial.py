@@ -4,7 +4,7 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-from wq.db.locate.models import SRID
+from wq.db.patterns.locate.models import SRID
 
 class Migration(SchemaMigration):
 

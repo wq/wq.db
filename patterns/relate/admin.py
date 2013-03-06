@@ -2,7 +2,7 @@ from django.contrib.contenttypes import generic
 from django.contrib import admin
 from django import forms
 
-from wq.db.relate.models import Relationship, InverseRelationship, RelationshipType, InverseRelationshipType, RelatedModel
+from .models import Relationship, InverseRelationship, RelationshipType, InverseRelationshipType, RelatedModel
 
 class RelationshipForm(forms.ModelForm):
     type = forms.models.ModelChoiceField(

@@ -3,8 +3,7 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from wq.db.annotate.models import AnnotatedModel
-from wq.db.relate.models import RelatedModel
+from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
 # Custom FileField handles both images and files
 class FileField(models.ImageField):
@@ -92,4 +91,4 @@ class File(AnnotatedModel, RelatedModel):
 
 # Tell south not to worry about the "custom" field type
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^wq.db.files.models.FileField"])
+add_introspection_rules([], ["^wq.db.contrib.files.models.FileField"])

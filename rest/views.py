@@ -2,9 +2,8 @@ from djangorestframework import views, status, response, mixins
 from .renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
 
 from django.contrib.contenttypes.models import ContentType
-from wq.db.identify.models import Identifier, IdentifiedModel
-from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
-from wq.db.relate.models import RelatedModel
+from wq.db.patterns.models import (Annotation, AnnotatedModel, AnnotationType,
+                                   Identifier, IdentifiedModel, RelatedModel)
 from wq.db.rest import resources
 
 from django.conf import settings

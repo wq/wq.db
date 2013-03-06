@@ -3,8 +3,7 @@ from djangorestframework.resources import ModelResource as RestModelResource
 from django.contrib.gis.db.models.fields import GeometryField
 
 from django.contrib.contenttypes.models import ContentType
-from wq.db.identify.models import IdentifiedModel
-from wq.db.annotate.models import Annotation, AnnotatedModel, AnnotationType
+from wq.db.patterns.models import Annotation, AnnotatedModel, AnnotationType
 
 from django.conf import settings
 from django.utils.importlib import import_module
