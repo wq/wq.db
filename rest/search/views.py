@@ -1,5 +1,5 @@
 from wq.db.rest.views import View, PaginatorMixin
-from djangorestframework import status, response
+from rest_framework import status, response
 from wq.db.rest import util
 from .resources import SearchResource
 

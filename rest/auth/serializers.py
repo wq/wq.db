@@ -1,16 +1,16 @@
 from wq.db.rest import resources
 from django.contrib.auth.models import User
 
-class UserResource(resources.ModelResource):
+class UserSerializer(resources.ModelResource):
     model = User
     def get_fields(self, instance):
-        fields = super(UserResource, self).get_fields(instance)
+        fields = super(UserSerializer, self).get_fields(instance)
         fields.remove('id')
         fields.remove('password')
         return fields
 
     def serialize_model(self, instance):
-        result = super(UserResource, self).serialize_model(instance)
+        result = super(UserSerializer, self).serialize_model(instance)
         del result['id']
         return result
 
@@ -37,5 +37,5 @@ class SocialContextMixin(resources.ContextMixin):
             } for a in auth.all()]
         }
 
-resources.register(User, UserResource)
+resources.register(User, UserSerializer)
 resources.register_context_mixin(SocialContextMixin)

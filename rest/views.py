@@ -1,27 +1,15 @@
-from djangorestframework import views, status, response, mixins
-from .renderers import JSONRenderer, XMLRenderer, HTMLRenderer, AMDRenderer
+from rest_framework import generics, status, response, mixins
 
 from django.contrib.contenttypes.models import ContentType
 from wq.db.patterns.models import (Annotation, AnnotatedModel, AnnotationType,
                                    Identifier, IdentifiedModel, RelatedModel)
-from wq.db.rest import resources
-
-from django.conf import settings
-from django.utils.importlib import import_module
-from django.utils.module_loading import module_has_submodule
 from wq.db.rest import util
 
 RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format')
 _FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
-_RENDERERS = [HTMLRenderer, JSONRenderer, XMLRenderer, AMDRenderer]
 
-_view_map = {}
-
-class View(views.View):
-    renderers = _RENDERERS
-    
-    @property
-    def template(self):
+class View(generics.GenericAPIView):
+    def get_template_names(self):
         if (getattr(self, 'resource', None) is None 
               or getattr(self.resource, 'model') is None):
             template = type(self).__name__.replace('View', '').lower()
@@ -32,9 +20,9 @@ class View(views.View):
                 template = ctid + '_list'
             else:
                 template = ctid + '_detail'
-        return template
+        return (template,)
 
-class InstanceModelView(View, views.InstanceModelView):
+class InstanceModelView(View, views.RetrieveUpdateDestroyAPIView):
     def get_instance(self, *args, **kwargs):
         if issubclass(self.resource.model, IdentifiedModel):
             return self.resource.model.objects.get_by_identifier(kwargs['pk'])
@@ -71,17 +59,7 @@ class InstanceModelView(View, views.InstanceModelView):
             forbid(request.user, ct, 'delete')
         return super(InstanceModelView, delete).put(request, *args, **kwargs)
 
-class PaginatorMixin(mixins.PaginatorMixin):
-    limit = 50
-    def get_limit(self):
-        limit = int(self.request.GET.get('limit', 0))
-        if not limit:
-            limit = getattr(settings, 'DEFAULT_PER_PAGE', self.limit)
-        max_limit = getattr(settings, 'MAX_PER_PAGE', self.limit)
-        return min(limit, max_limit)
-
-class ListOrCreateModelView(View, PaginatorMixin, 
-                            views.ListOrCreateModelView):
+class ListOrCreateModelView(View, views.ListCreateAPIView):
     annotations = None 
     parent = None
     def get_query_kwargs(self, *args, **kwargs):
@@ -162,6 +140,8 @@ class ListOrCreateModelView(View, PaginatorMixin,
         if 'results' not in result:
             return result
         result['list'] = result['results']
+        if 'list' in obj and 'pages' in obj:
+            result['multiple'] = obj['pages'] > 1
         del result['results']
         if 'target' in self.kwargs:
             result['target'] = self.kwargs['target']
@@ -173,37 +153,7 @@ class ListOrCreateModelView(View, PaginatorMixin,
             )
         return result
 
-def is_multiple(renderer, obj):
-    if 'list' in obj and 'pages' in obj:
-        return (obj['pages'] > 1)
-    return None
-HTMLRenderer.register_context_default('multiple', is_multiple)
-
-class ConfigView(View):
-    def get(self, request, *args, **kwargs):
-        return util.get_config(request.user)
-
 def forbid(user, ct, perm):
     raise response.ErrorResponse(status.HTTP_403_FORBIDDEN, {
         'errors': [_FORBIDDEN_RESPONSE % (user, perm, ct)]
     })
-
-def register(model_class, list_view=None, detail_view=None):
-    _view_map[model_class] = (list_view, detail_view)
-
-def get_for_model(model_class):
-    if model_class in _view_map:
-        listview, detailview = _view_map[model_class]
-    else:
-        listview, detailview = None, None
-    listview = listview or ListOrCreateModelView
-    detailview = detailview or InstanceModelView
-
-    res = resources.get_for_model(model_class)
-    return listview.as_view(resource=res), detailview.as_view(resource=res)
-
-def autodiscover():
-    for app_name in settings.INSTALLED_APPS:
-        app = import_module(app_name)
-        if module_has_submodule(app, 'views'):
-            import_module(app_name + '.views')

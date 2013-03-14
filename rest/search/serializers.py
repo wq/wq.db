@@ -1,4 +1,4 @@
-from djangorestframework import resources
+from rest_framework import resources
 from wq.db.rest import util
 from wq.db.patterns.models import Identifier, Annotation
 

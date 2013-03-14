@@ -1,4 +1,4 @@
-from djangorestframework.resources import ModelResource as RestModelResource
+from rest_framework.serializers import ModelSerializer as RestModelSerializer
 
 from django.contrib.gis.db.models.fields import GeometryField
 
@@ -11,15 +11,12 @@ from django.utils.module_loading import module_has_submodule
 
 from wq.db.rest.util import get_ct, get_id, get_object_id, geturlbase
 
-_resource_map = {}
-_context_mixin_map = {}
-
-class ModelResource(RestModelResource):
+class ModelSerializer(RestModelSerializer):
     @property
     def full_context(self):
-        return getattr(self.view, '_suffix', None) != 'List'
+        return not self.many
 
-    def get_fields(self, obj):
+    def get_fields_FIXME(self, obj):
         fields = ['label']
         for f in self.model._meta.fields:
             if f.rel is None:
@@ -35,12 +32,14 @@ class ModelResource(RestModelResource):
         if (getattr(self.view, "method", None) in ("PUT", "POST")):
             fields.append("updates")
 
-        if (self.full_context):
-            for mixin in _context_mixin_map.values():
-                if mixin.valid_for_model(self.model):
-                    fields.append(mixin.name)
-
         return fields
+
+    def get_nested_field(self, model_field):
+        model = model_field.rel.to
+        router = getattr(self.context, 'router', None):
+        if router is not None:
+            return router.get_serializer_for_model(model)
+        return super(ModelSerializer, self).get_nested_field(self, model_field)
 
     def updates(self, instance):
         ct = ContentType.objects.get_for_model(instance)
@@ -86,36 +85,3 @@ class ModelResource(RestModelResource):
                     data[mixin.name] = mixin.get_data(instance)
         return data
 
-class ContextMixin(object):
-    model = None
-    target_model = None
-
-    @property
-    def name(self):
-        return geturlbase(get_ct(self.model))
-
-    def get_data(self, instance):
-        raise NotImplementedError
-
-    def valid_for_model(self, model):
-        return issubclass(model, self.target_model)
-
-def register(model_class, resource_class):
-    _resource_map[model_class] = resource_class
-
-def register_context_mixin(cls):
-    mixin = cls()
-    _context_mixin_map[mixin.name] = mixin
-
-def get_for_model(model_class):
-    if model_class in _resource_map:
-        return _resource_map[model_class]
-    else:
-        return type(model_class.__name__ + "Resource", (ModelResource,),
-                    {'model': model_class})
-
-def autodiscover():
-    for app_name in settings.INSTALLED_APPS:
-        app = import_module(app_name)
-        if module_has_submodule(app, 'resources'):
-            import_module(app_name + '.resources')
