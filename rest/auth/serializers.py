@@ -1,41 +1,36 @@
-from wq.db.rest import resources
+from wq.db.rest import app
+from wq.db.rest.serializers import ModelSerializer
 from django.contrib.auth.models import User
+from django.conf import settings
 
-class UserSerializer(resources.ModelResource):
-    model = User
-    def get_fields(self, instance):
-        fields = super(UserSerializer, self).get_fields(instance)
-        fields.remove('id')
-        fields.remove('password')
-        return fields
-
-    def serialize_model(self, instance):
-        result = super(UserSerializer, self).serialize_model(instance)
-        del result['id']
+class UserSerializer(ModelSerializer):
+    def to_native(self, instance):
+        result = super(UserSerializer, self).to_native(instance)
+        if 'social_auth' in settings.INSTALLED_APPS and 'social_auth' in result:
+            if len(result['social_auth']) > 0:
+                result['social_auth'] = {'accounts': result['social_auth']}
+            else:
+                result['social_auth'] = None
         return result
 
-class SocialContextMixin(resources.ContextMixin):
-    target_model = User
-    name = 'social_auth'
+    class Meta:
+        exclude = ('id', 'password')
 
-    def get_data(self, instance):
-        auth = getattr(instance, 'social_auth', None)
-        if not auth or auth.count() == 0:
-            return None
-        
+class SocialAuthSerializer(ModelSerializer):
+    def to_native(self, instance):
         return {
-            'accounts': [{
-                'provider_id':    unicode(a.provider),
-                'provider_label': a.provider.title(),
-                'id':             a.pk,
-                'label':          a.uid,
-                'can_disconnect': type(a).allowed_to_disconnect(
-                    user = instance,
-                    backend_name = a.provider,
-                    association_id = a.pk
-                )
-            } for a in auth.all()]
+            'provider_id':    unicode(instance.provider),
+            'provider_label': instance.provider.title(),
+            'id':             instance.pk,
+            'label':          instance.uid,
+            'can_disconnect': type(instance).allowed_to_disconnect(
+                 user = instance.user,
+                 backend_name = instance.provider,
+                 association_id = instance.pk
+             )
         }
 
-resources.register(User, UserSerializer)
-resources.register_context_mixin(SocialContextMixin)
+app.router.register_serializer(User, UserSerializer)
+if 'social_auth' in settings.INSTALLED_APPS:
+    from social_auth.models import UserSocialAuth
+    app.router.register_serializer(UserSocialAuth, SocialAuthSerializer)

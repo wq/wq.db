@@ -1,16 +1,18 @@
 from django.contrib.auth import authenticate, login, logout
-from rest_framework import response, status
-from wq.db.rest import util, views, renderers, app
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+from wq.db.rest import app
+from wq.db.rest.views import View
 
-class LoginView(views.View):
+class LoginView(View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
-            user_dict = util.user_dict(request.user)
+            user_dict = app.router.serialize(request.user)
             user_dict['id'] = request.user.pk
-            return {
+            return Response({
                 'user': user_dict,
-                'config': util.get_config(request.user)
-            }
+                'config': app.router.get_config(request.user)
+            })
         else:
             return {}
 
@@ -20,32 +22,20 @@ class LoginView(views.View):
         user = authenticate(username=username, password=password)
         if user is not None and user.is_active:
             login(request, user)
-            user_dict = util.user_dict(user)
+            user_dict = app.router.serialize(user)
             user_dict['id'] = user.pk
-            return {
+            return Response({
                 'user':   user_dict,
-                'config': util.get_config(user)
-            }
-        else:
-            raise response.ErrorResponse(status.HTTP_401_UNAUTHORIZED, {
-                'errors': ["Invalid username or password"]
+                'config': app.router.get_config(user)
             })
+        else:
+            raise AuthenticationFailed(detail="Invalid username or password")
 
-class LogoutView(views.View):
+class LogoutView(View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             logout(request)
-            return True
-        else:
-            return {}
-
-def get_user(renderer, obj):
-    user = renderer.view.request.user
-    if user.is_authenticated():
-        return util.user_dict(user)
-    return None
+        return Response({})
 
 app.router.add_page_config('login',  {'name': 'Log in',  'url': 'login'})
 app.router.add_page_config('logout', {'name': 'Log out', 'url': 'logout'})
-
-renderers.HTMLRenderer.register_context_default('user', get_user)
