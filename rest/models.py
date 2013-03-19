@@ -2,8 +2,6 @@ from django.contrib.contenttypes.models import ContentType as DjangoContentType
 from wq.db.patterns.models import AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
 from wq.db.patterns.models import RelationshipType
 
-_FORBIDDEN_APPS = ('auth','sessions','admin','contenttypes','reversion','south')
-
 class ContentType(DjangoContentType):
     @property
     def identifier(self):
@@ -93,22 +91,6 @@ def get_object_id(instance):
         if len(ids) > 0:
             return ids[0].slug
     return instance.pk
-
-def has_perm(user, ct, perm):
-    if not isinstance(ct, ContentType):
-        perm = '%s_%s' % (ct, perm)
-    elif ct.app_label in _FORBIDDEN_APPS and not user.is_superuser:
-        return False
-    elif perm == 'view':
-        return True
-    else:
-        perm = '%s.%s_%s' % (ct.app_label, perm, ct.model)
-
-    if user.is_authenticated():
-        return user.has_perm(perm)
-    else:
-        from django.conf import settings
-        return perm in getattr(settings, 'ANONYMOUS_PERMISSIONS', {})
 
 class MultiQuerySet(object):
     querysets = []

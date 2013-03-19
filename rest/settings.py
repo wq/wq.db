@@ -16,6 +16,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_MODEL_SERIALIZER_CLASS': 'wq.db.rest.serializers.ModelSerializer',
     'DEFAULT_PAGINATION_SERIALIZER_CLASS': 'wq.db.rest.serializers.PaginationSerializer',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'wq.db.rest.permissions.ModelPermissions',
+    )
 }
 
 # wq.db settings

@@ -5,8 +5,9 @@ from django.conf import settings
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 
-from wq.db.rest.models import ContentType, get_ct, has_perm
-from wq.db.rest.views import View, InstanceModelView, ListOrCreateModelView
+from .models import ContentType, get_ct
+from .permissions import has_perm
+from .views import View, InstanceModelView, ListOrCreateModelView
 
 class Router(object):
     _serializers = {}
@@ -105,7 +106,7 @@ class Router(object):
 
     @property 
     def urls(self):
-        from django.conf.urls.defaults import patterns, include, url
+        from django.conf.urls import patterns, include, url
         configview = self.get_config_view()
         urlpatterns = patterns('', 
             url('^config/?$',                configview),

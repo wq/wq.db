@@ -1,15 +1,13 @@
 from django.http import Http404
 
 from rest_framework import generics, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from wq.db.patterns.models import Annotation, AnnotationType, Identifier
 
-from wq.db.rest.models import get_ct, get_object_id, has_perm
+from .models import get_ct, get_object_id
 
 RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format')
-_FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
 
 class View(generics.GenericAPIView):
     router = None
@@ -53,19 +51,11 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
                       self.model._meta.verbose_name,
                       slug
                 ))
+            #TODO: automatically redirect to primary identifier?
         return obj
-
-    def retrieve(self, request, *args, **kwargs):
-        ct = get_ct(self.model)
-        if not has_perm(request.user, ct, 'view'):
-            forbid(request.user, ct, 'view')
-        #TODO: automatically redirect to primary identifier?
-        return super(InstanceModelView, self).retrieve(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         ct = get_ct(self.model)
-        if not has_perm(request.user, ct, 'change'):
-            forbid(request.user, ct, 'change')
 
         res = super(InstanceModelView, self).update(request, *args, **kwargs)
 
@@ -81,21 +71,14 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
                     annot.save()
         return res
 
-    def destroy(self, request, *args, **kwargs):
-        ct = get_ct(self.model)
-        if not has_perm(request.user, ct, 'delete'):
-            forbid(request.user, ct, 'delete')
-        return super(InstanceModelView, delete).destroy(request, *args, **kwargs)
-
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
-    annotations = None 
     parent = None
 
     @property
     def template_name(self):
         return get_ct(self.model).identifier + '_list.html'
 
-    def get_query_kwargs(self, *args, **kwargs):
+    def get_query_kwargs_FIXME(self, *args, **kwargs):
         for key, val in self.request.GET.items():
             if key in RESERVED_PARAMETERS:
                 continue
@@ -134,48 +117,40 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         kwargs = super(ListOrCreateModelView, self).get_query_kwargs(*args, **kwargs)
         return kwargs
 
-    @property
-    def CONTENT(self):
-        content = super(ListOrCreateModelView, self).CONTENT
+    def get_annotations(self, request):
         ct = get_ct(self.model)
-        if ct.is_annotated:
-            atypes = AnnotationType.objects.filter(contenttype=ct)
-            self.annotations = {}
-            for at in atypes:
-                fname = 'annotation-%s' % at.pk
-                if fname in content:
-                    self.annotations[at] = content[fname]
-                    del content[fname]
-        return content
+        if not ct.is_annotated:
+            return {}
 
-    def get(self, request, *args, **kwargs):
+        atypes = AnnotationType.objects.filter(contenttype=ct)
+        annotations = {}
+        for at in atypes:
+            fname = 'annotation-%s' % at.pk
+            if fname in request.DATA:
+                annotations[at] = request.DATA[fname]
+        return annotations
+
+    def create(self, request, *args, **kwargs):
+        res = super(ListOrCreateModelView, self).create(request, *args, **kwargs)
+
         ct = get_ct(self.model)
-        if not has_perm(request.user, ct, 'view'):
-            forbid(request.user, ct, 'view')
-        return super(ListOrCreateModelView, self).get(request, *args, **kwargs)
+        if not ct.is_annotated:
+            return res
 
-    def post(self, request, *args, **kwargs):
-        ct = get_ct(self.model)
-        if not has_perm(request.user, ct, 'add'):
-            forbid(request.user, ct, 'add')
-        res = super(ListOrCreateModelView, self).post(request, *args, **kwargs)
+        #FIXME: this should be handled by the annotation serializer
+        for at, val in self.get_annotations(request).iteritems():
+            annot, isnew = Annotation.objects.get_or_create(
+                type = at,
+                content_type = ct,
+                object_id = self.object.id
+            )
+            annot.value = val
+            annot.save()
 
-        if ct.is_annotated:
-            for at, val in self.annotations.iteritems():
-                annot, isnew = Annotation.objects.get_or_create(
-                type=at, content_type=ct, object_id=res.raw_content.id)
-                annot.value = val
-                annot.save()
         return res
 
-    def filter_response(self, obj):
+    def filter_response_FIXME(self, obj):
         result = super(ListOrCreateModelView, self).filter_response(obj)
-        if 'results' not in result:
-            return result
-        result['list'] = result['results']
-        if 'list' in obj and 'pages' in obj:
-            result['multiple'] = obj['pages'] > 1
-        del result['results']
         if 'target' in self.kwargs:
             result['target'] = self.kwargs['target']
         if getattr(self, 'parent', None):
@@ -185,6 +160,3 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
                 get_ct(self.parent).urlbase, get_object_id(self.parent)
             )
         return result
-
-def forbid(user, ct, perm):
-    raise PermissionDenied(detail=_FORBIDDEN_RESPONSE % (user, perm, ct))

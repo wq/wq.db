@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 
-from wq.db.rest.models import ContentType, get_ct, get_object_id
+from .models import ContentType, get_ct, get_object_id
 
 class GeometryField(WritableField):
     def to_native(self, value):
@@ -33,6 +33,7 @@ class IDField(Field):
 
 #TODO: investigate use of SlugRelatedField and/or PrimaryKeyRelatedField
 class IDRelatedField(RelatedField):
+    read_only = False
     def field_to_native(self, obj, field_name):
         if field_name.endswith('_id'):
             field_name = field_name[:-3] 
@@ -43,6 +44,9 @@ class IDRelatedField(RelatedField):
             return [get_object_id(item) for item in val.all()]
         else:
             return get_object_id(val)
+
+    def from_native(self, data):
+        return self.queryset.get_by_identifier(data)
 
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
@@ -86,7 +90,7 @@ class ModelSerializer(RestModelSerializer):
                 continue
 
             # Add _id and _label to context
-            fields[name + '_id'] = IDRelatedField(queryset=field.queryset)
+            fields[name + '_id'] = IDRelatedField(source=name, queryset=field.queryset)
             fields[name + '_label'] = LabelRelatedField(queryset=field.queryset)
                 
         # Add child objects (serialize with registered serializers)
