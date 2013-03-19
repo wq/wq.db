@@ -37,6 +37,8 @@ class IDRelatedField(RelatedField):
         if field_name.endswith('_id'):
             field_name = field_name[:-3] 
         val = getattr(obj, self.source or field_name)
+        if val is None:
+            return None
         if self.many:
             return [get_object_id(item) for item in val.all()]
         else:
@@ -88,11 +90,19 @@ class ModelSerializer(RestModelSerializer):
             fields[name + '_label'] = LabelRelatedField(queryset=field.queryset)
                 
         # Add child objects (serialize with registered serializers)
+        if not router:
+            return fields
+
         ct = get_ct(self.opts.model)
         for cct, rel in ct.get_children(include_rels=True):
             accessor = rel.get_accessor_name()
             if accessor == rel.field.related_query_name():
-                fields[accessor] = router.get_serializer_for_model(cct.model_class())()
+                cls = router.get_serializer_for_model(cct.model_class())
+                if self.opts.depth > 1:
+                    serializer = cls(context=self.context)
+                else:
+                    serializer = cls()
+                fields[accessor] = serializer
 
         return fields
 
@@ -101,7 +111,7 @@ class ModelSerializer(RestModelSerializer):
         if 'view' in self.context and hasattr(self.context['view'], 'router'):
             router = self.context['view'].router
             return router.get_serializer_for_model(model)()
-        return super(ModelSerializer, self).get_nested_field(self, model_field)
+        return super(ModelSerializer, self).get_nested_field(model_field)
 
     #TODO: make this a field
     def updates(self, instance):

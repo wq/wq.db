@@ -1,5 +1,8 @@
+from django.http import Http404
+
 from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
 from wq.db.patterns.models import Annotation, AnnotationType, Identifier
 
@@ -18,32 +21,55 @@ class View(generics.GenericAPIView):
     def get_template_names(self):
         return [self.template_name]
 
+    def get_serializer_class(self):
+        if self.router is not None and self.model is not None:
+            return self.router.get_serializer_for_model(self.model)
+        return super(View, self).get_serializer_class()
+
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
     @property
     def template_name(self):
         return get_ct(self.model).identifier + '_detail.html'
 
-    # FIXME: implement get_object (and get_slug_field?)
-    def get_instance(self, *args, **kwargs):
+    def get_slug_field(self):
         if get_ct(self.model).is_identified:
-            return self.model.objects.get_by_identifier(kwargs['pk'])
+            return 'primary_identifiers__slug'
         else:
-            return super(InstanceModelView, self).get_instance(*args, **kwargs)
+            return 'pk'
     
-    # FIXME: these should be retrieve, update, destroy
-    def get(self, request, *args, **kwargs):
+    def get_object(self, queryset=None):
+        try:
+            obj = super(InstanceModelView, self).get_object(queryset)
+        except Http404:
+            if not get_ct(self.model).is_identified:
+                raise
+
+            # Allow retrieval via non-primary identifiers
+            slug = self.kwargs.get(self.slug_url_kwarg)
+            try:
+                obj = self.model.objects.get_by_identifier(slug)
+            except:
+                raise Http404("Could not find %s with id '%s'" % (
+                      self.model._meta.verbose_name,
+                      slug
+                ))
+        return obj
+
+    def retrieve(self, request, *args, **kwargs):
         ct = get_ct(self.model)
         if not has_perm(request.user, ct, 'view'):
             forbid(request.user, ct, 'view')
-        return super(InstanceModelView, self).get(request, *args, **kwargs)
+        #TODO: automatically redirect to primary identifier?
+        return super(InstanceModelView, self).retrieve(request, *args, **kwargs)
 
-    def put(self, request, *args, **kwargs):
+    def update(self, request, *args, **kwargs):
         ct = get_ct(self.model)
         if not has_perm(request.user, ct, 'change'):
             forbid(request.user, ct, 'change')
 
-        res = super(InstanceModelView, self).put(request, *args, **kwargs)
+        res = super(InstanceModelView, self).update(request, *args, **kwargs)
 
+        # FIXME: test
         if ct.is_annotated:
             atypes = AnnotationType.objects.filter(contenttype=ct)
             for at in atypes:
@@ -55,11 +81,11 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
                     annot.save()
         return res
 
-    def delete(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         ct = get_ct(self.model)
         if not has_perm(request.user, ct, 'delete'):
             forbid(request.user, ct, 'delete')
-        return super(InstanceModelView, delete).put(request, *args, **kwargs)
+        return super(InstanceModelView, delete).destroy(request, *args, **kwargs)
 
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
     annotations = None 

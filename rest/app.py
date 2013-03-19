@@ -57,12 +57,10 @@ class Router(object):
         # pass router to view so that serializer can load appropriate model serializers
         listview = listview.as_view(
             model = model,
-            serializer_class = serializer,
             router = self
         )
         detailview = detailview.as_view(
             model = model,
-            serializer_class = serializer,
             router = self
         )
         return listview, detailview
@@ -127,9 +125,9 @@ class Router(object):
                 url('^' + urlbase + r'/?$',  listview),
                 url('^' + urlbase + r'\.(?P<format>\w+)$', listview),
                 url('^' + urlbase + r'/new$', listview),
-                url('^' + urlbase + r'/(?P<pk>[^\/\?]+)\.(?P<format>\w+)$', detailview),
-                url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/edit$', detailview),
-                url('^' + urlbase + r'/(?P<pk>[^\/\?]+)/?$', detailview)
+                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)\.(?P<format>\w+)$', detailview),
+                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)/edit$', detailview),
+                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)/?$', detailview)
             )
 
             for pct in ct.get_all_parents():
