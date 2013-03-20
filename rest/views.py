@@ -127,7 +127,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         for at in atypes:
             fname = 'annotation-%s' % at.pk
             if fname in request.DATA:
-                annotations[at] = request.DATA[fname]
+                annotations[at] = request.DATA.getlist(fname)
         return annotations
 
     def create(self, request, *args, **kwargs):
@@ -138,14 +138,14 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             return res
 
         #FIXME: this should be handled by the annotation serializer
-        for at, val in self.get_annotations(request).iteritems():
-            annot, isnew = Annotation.objects.get_or_create(
-                type = at,
-                content_type = ct,
-                object_id = self.object.id
-            )
-            annot.value = val
-            annot.save()
+        for at, vals in self.get_annotations(request).iteritems():
+            for val in vals:
+                Annotation.objects.create(
+                    type = at,
+                    content_type = ct,
+                    object_id = self.object.id,
+                    value = val
+                )
 
         return res
 
