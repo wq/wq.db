@@ -24,6 +24,10 @@ class View(generics.GenericAPIView):
             return self.router.get_serializer_for_model(self.model)
         return super(View, self).get_serializer_class()
 
+class SimpleView(View):
+    def get(self, request, *args, **kwargs):
+        return Response({})
+
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
     @property
     def template_name(self):

@@ -1,5 +1,6 @@
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
+from django.conf.urls import patterns, include, url
 
 from django.conf import settings
 from rest_framework.settings import api_settings
@@ -7,7 +8,7 @@ from rest_framework.response import Response
 
 from .models import ContentType, get_ct
 from .permissions import has_perm
-from .views import View, InstanceModelView, ListOrCreateModelView
+from .views import View, SimpleView, InstanceModelView, ListOrCreateModelView
 
 class Router(object):
     _serializers = {}
@@ -69,7 +70,8 @@ class Router(object):
     def get_config(self, user):
          pages = {}
          for page in self._extra_pages:
-             pages[page] = self._extra_pages[page]
+             conf, view = self.get_page(page)
+             pages[page] = conf
          for ct in ContentType.objects.all():
              if not has_perm(user, ct, 'view'):
                  continue
@@ -95,8 +97,16 @@ class Router(object):
              pages[ct.identifier] = info
          return {'pages': pages}
 
-    def add_page_config(self, name, config):
-        self._extra_pages[name] = config
+    def add_page(self, name, config, view=None):
+        self._extra_pages[name] = config, view
+
+    def get_page(self, page):
+        config, view = self._extra_pages[page]
+        if view is None:
+            class PageView(SimpleView):
+                template_name = page + '.html'
+            view = PageView
+        return config, view.as_view()
 
     def get_config_view(self):
         class ConfigView(View):
@@ -104,15 +114,44 @@ class Router(object):
                 return Response(self.get_config(request.user))
         return ConfigView.as_view()
 
+    def make_patterns(self, urlbase, listview, detailview=None):
+        if urlbase == '':
+            detailurl = ''
+            listurl   = ''
+        else:
+            detailurl = urlbase + '/' 
+            listurl   = urlbase
+        result = patterns('',
+            url('^' + listurl + r'/?$',  listview),
+            url('^' + listurl + r'\.(?P<format>\w+)$', listview),
+        )
+        if detailview is None:
+            return result
+
+        result += patterns(
+            url('^' + listurl + r'/new$', listview),
+            url('^' + detailurl + r'(?P<slug>[^\/\?]+)\.(?P<format>\w+)$', detailview),
+            url('^' + detailurl + r'(?P<slug>[^\/\?]+)/edit$', detailview),
+            url('^' + detailurl + r'(?P<slug>[^\/\?]+)/?$', detailview)
+        )
+        return result
+
     @property 
     def urls(self):
-        from django.conf.urls import patterns, include, url
-        configview = self.get_config_view()
-        urlpatterns = patterns('', 
-            url('^config/?$',                configview),
-            url('^config\.(?P<format>\w+)$', configview)
-        )
+        root_views = None, None
 
+        # /config.js
+        urlpatterns = self.make_patterns('config', self.get_config_view())
+
+        # Custom pages
+        for page in self._extra_pages:
+            conf, view = self.get_page(page)
+            if conf['url'] == '':
+                root_views = view, None
+                continue
+            urlpatterns += self.make_patterns(conf['url'], view)
+
+        # Model list & detail views
         for ct in ContentType.objects.all():
                 
             cls = ct.model_class()
@@ -120,21 +159,16 @@ class Router(object):
                 continue
 
             listview, detailview = self.get_views_for_model(cls)
-            urlbase = ct.urlbase
+            if ct.urlbase == '':
+                root_views = listview, detailview
+                continue
 
-            urlpatterns += patterns('',
-                url('^' + urlbase + r'/?$',  listview),
-                url('^' + urlbase + r'\.(?P<format>\w+)$', listview),
-                url('^' + urlbase + r'/new$', listview),
-                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)\.(?P<format>\w+)$', detailview),
-                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)/edit$', detailview),
-                url('^' + urlbase + r'/(?P<slug>[^\/\?]+)/?$', detailview)
-            )
+            urlpatterns += self.make_patterns(ct.urlbase, listview, detailview)
 
             for pct in ct.get_all_parents():
                 if pct.model_class() is None:
                     continue
-                purl = '^' + pct.urlbase + r'/(?P<' + pct.identifier + '>[^\/\?]+)/' + urlbase
+                purl = '^' + pct.urlbase + r'/(?P<' + pct.identifier + '>[^\/\?]+)/' + ct.urlbase
                 urlpatterns += patterns('',
                     url(purl + '/?$', listview),
                     url(purl + '\.(?P<format>\w+)$', listview),
@@ -148,6 +182,14 @@ class Router(object):
                     url(curl + '/?$', listview, kwargs),
                     url(curl + '\.(?P<format>\w+)$', listview, kwargs),
                 )
+
+        # View for root url - could be either a custom page or list/detail 
+        # views for a model. In the latter case /[slug] will catch any unmatched
+        # url and point it to the detail view, which is why this rule is last.
+        if root_views[0] is not None:
+            listview, detailview = root_views
+            urlpatterns += self.make_patterns('', listview, detailview)
+
         return urlpatterns
 
 router = Router()
