@@ -23,7 +23,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_SERIALIZER_CLASS': 'wq.db.rest.serializers.PaginationSerializer',
     'DEFAULT_PERMISSION_CLASSES': (
         'wq.db.rest.permissions.ModelPermissions',
-    )
+    ),
+    'FILTER_BACKEND': 'wq.db.rest.filters.FilterBackend'
 }
 
 # Django Social Auth settings

@@ -105,6 +105,7 @@ class AnnotationSet(generic.GenericRelation):
            kwargs['to'] = "Annotation"
        kwargs['related_name'] = None
        super(AnnotationSet, self).__init__(*args, **kwargs)
+       self.serialize = True
 
 class AnnotatedModel(models.Model):
     annotations = AnnotationSet()

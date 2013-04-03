@@ -4,13 +4,9 @@ from rest_framework.pagination import PaginationSerializer as RestPaginationSeri
 
 from django.contrib.gis.db.models.fields import GeometryField as GISGeometryField
 
-from wq.db.patterns.models import Annotation, AnnotationType
-
 from django.conf import settings
-from django.utils.importlib import import_module
-from django.utils.module_loading import module_has_submodule
 
-from .models import ContentType, get_ct, get_object_id
+from .models import get_ct, get_object_id, get_by_identifier
 
 class GeometryField(WritableField):
     def to_native(self, value):
@@ -45,8 +41,13 @@ class IDRelatedField(RelatedField):
         else:
             return get_object_id(val)
 
+    def field_from_native(self, data, files, field_name, into):
+        if field_name.endswith('_id'):
+            field_name = field_name[:-3] 
+        return super(IDRelatedField, self).field_from_native(data, files, field_name, into)
+
     def from_native(self, data):
-        return self.queryset.get_by_identifier(data)
+        return get_by_identifier(self.queryset, data)
 
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
@@ -65,28 +66,33 @@ class ModelSerializer(RestModelSerializer):
         #     fields.append(UpdatesField)
         
         router = self.context['view'].router
-
         many = self.many or self.source == 'object_list'
+        saving = self.context['request'].method != 'GET'
 
         # Special handling for related fields
         for name, field in fields.items():
             if not isinstance(field, PrimaryKeyRelatedField):
                 continue
 
-            # Move [fieldname] to [fieldname]_id, and add [fieldname]_label
+            model_field, model, direct, m2m = self.opts.model._meta.get_field_by_name(name)
 
-            if many:
-                # In list views, remove [fieldname] as an attribute
-                # (it's up to a client like app.js to resolve [fieldname] to use
-                # [fieldname]_id to resolve [fieldname] to an actual object)
+            # FIXME: handle references to ContentType
+
+            if many or (saving and not m2m):
+                # In list views, remove [fieldname] as an attribute in favor of
+                # [fieldname]_id and [fieldname]_label (below).
+                # (Except when saving m2m items, in which case we need the nested field)
                 del fields[name]
             else:
-                # In detail views, make [fieldname] a nested field
-                model_field, model, direct, m2m = self.opts.model._meta.get_field_by_name(name)
+                # In detail views, always make [fieldname] a nested field. This
+                # is needed to generate renderer contexts to support deep linking.
+                # (The list view doesn't need the full object, as REST clients
+                #  like wq.app's app.js can use preloaded lists and callbacks 
+                #  to resolve [fieldname] to an object, given [fieldname]_id.)
                 fields[name] = self.get_nested_field(model_field)
 
             # Stop processing if this is a many-to-many-field
-            if field.many:
+            if field.many or m2m:
                 continue
 
             # Add _id and _label to context
@@ -116,27 +122,6 @@ class ModelSerializer(RestModelSerializer):
             router = self.context['view'].router
             return router.get_serializer_for_model(model)()
         return super(ModelSerializer, self).get_nested_field(model_field)
-
-    #TODO: make this a field
-    def updates(self, instance):
-        ct = get_ct(instance)
-        idname = ct.identifier + '_id'
-        res = get_for_model(Annotation)
-        qs = getattr(res, 'queryset', Annotation.objects)
-        annots = qs.filter(content_type=ct, object_id=instance.pk)
-        updates = []
-        updates = map(res().serialize_model, annots)
-        return {'annotation': updates}
-
-    #TODO: update & test
-    def validate_request(self, data, files=None):
-        extra_fields = self._property_fields_set
-        ct = get_ct(self.model)
-        if ct.is_annotated:
-            atypes = AnnotationType.objects.filter(contenttype=ct)
-            extra_fields.update(('annotation-%s' % at.pk for at in atypes))
-        data = self._validate(data, files, extra_fields)
-        return data
 
 class PaginationSerializer(RestPaginationSerializer):
     results_field = 'list'

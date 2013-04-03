@@ -92,6 +92,12 @@ def get_object_id(instance):
             return ids[0].slug
     return instance.pk
 
+def get_by_identifier(queryset, ident):
+    if hasattr(queryset, 'get_by_identifier'):
+        return queryset.get_by_identifier(ident)
+    else:
+        return queryset.get(pk=ident)
+
 class MultiQuerySet(object):
     querysets = []
     def __init__(self, *args, **kwargs):
