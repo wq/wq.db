@@ -73,6 +73,6 @@ class AnnotationSerializer(ModelSerializer):
     class Meta:
         # Don't validate these fields (again, assuming new annotations will be
         # saved with their parent object) 
-        exclude = ["content_type_id", "object_id"]
+        exclude = ["content_type_id", "object_id", "for"]
 
 app.router.register_serializer(Annotation, AnnotationSerializer)

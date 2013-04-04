@@ -6,7 +6,7 @@ from django.contrib.gis.db.models.fields import GeometryField as GISGeometryFiel
 
 from django.conf import settings
 
-from .models import get_ct, get_object_id, get_by_identifier
+from .models import DjangoContentType, ContentType, get_ct, get_object_id, get_by_identifier
 
 class GeometryField(WritableField):
     def to_native(self, value):
@@ -49,6 +49,14 @@ class IDRelatedField(RelatedField):
     def from_native(self, data):
         return get_by_identifier(self.queryset, data)
 
+class ContentTypeField(RelatedField):
+    read_only = False
+    def to_native(self, obj):
+        return obj.name
+
+    def from_native(self, data, files):
+        return ContentType.objects.get(name=data)
+
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
         self.field_mapping[GISGeometryField] = GeometryField
@@ -61,10 +69,6 @@ class ModelSerializer(RestModelSerializer):
         if 'view' not in self.context:
             return fields
 
-        # TODO:
-        # if (getattr(self.view, "method", None) in ("PUT", "POST")):
-        #     fields.append(UpdatesField)
-        
         router = self.context['view'].router
         many = self.many or self.source == 'object_list'
         saving = self.context['request'].method != 'GET'
@@ -76,7 +80,10 @@ class ModelSerializer(RestModelSerializer):
 
             model_field, model, direct, m2m = self.opts.model._meta.get_field_by_name(name)
 
-            # FIXME: handle references to ContentType
+            if model_field.rel.to == DjangoContentType:
+                fields['for'] = ContentTypeField(source=name, queryset=field.queryset)
+                del fields[name]
+                continue
 
             if many or (saving and not m2m):
                 # In list views, remove [fieldname] as an attribute in favor of
@@ -123,9 +130,26 @@ class ModelSerializer(RestModelSerializer):
             return router.get_serializer_for_model(model)()
         return super(ModelSerializer, self).get_nested_field(model_field)
 
+    # Any IDRelatedField errors should be reported without the '_id' suffix
+    # FIXME: is there a better way to fix this?
+    @property
+    def errors(self):
+        errors = super(ModelSerializer, self).errors
+        for field_name in self.fields:
+            if field_name not in errors or not field_name.endswith('_id'):
+                continue
+            if not type(self.fields[field_name]) == IDRelatedField:
+                continue
+            field_name = field_name[:-3]
+            errors[field_name] = errors[field_name + '_id']
+            del errors[field_name + '_id']
+        return errors
+
+
 class PaginationSerializer(RestPaginationSerializer):
     results_field = 'list'
     pages = Field('paginator.num_pages')
+    per_page = Field('paginator.per_page')
     def to_native(self, obj):
         result = super(PaginationSerializer, self).to_native(obj)
         result['multiple'] = result['pages'] > 1
