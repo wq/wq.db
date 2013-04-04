@@ -1,4 +1,5 @@
 from wq.db.rest import app
+from django.middleware import csrf
 
 def is_authenticated(request):
     return {
@@ -17,4 +18,9 @@ def social_auth(request):
                   for auth in request.user.social_auth.all()
              ]
         }
+    }
+
+def csrftoken(request):
+    return {
+        'csrftoken': csrf.get_token(request)
     }

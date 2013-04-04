@@ -1,18 +1,23 @@
 from django.contrib.auth import authenticate, login, logout
+from django.middleware import csrf
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from wq.db.rest import app
 from wq.db.rest.views import View
 
 class LoginView(View):
+    def user_info(self, request):
+        user_dict = app.router.serialize(request.user)
+        user_dict['id'] = request.user.pk
+        return Response({
+            'user': user_dict,
+            'config': app.router.get_config(request.user),
+            'csrftoken': csrf.get_token(request),
+        })
+
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
-            user_dict = app.router.serialize(request.user)
-            user_dict['id'] = request.user.pk
-            return Response({
-                'user': user_dict,
-                'config': app.router.get_config(request.user)
-            })
+            return self.user_info(request)
         else:
             return Response({})
 
@@ -22,12 +27,7 @@ class LoginView(View):
         user = authenticate(username=username, password=password)
         if user is not None and user.is_active:
             login(request, user)
-            user_dict = app.router.serialize(user)
-            user_dict['id'] = user.pk
-            return Response({
-                'user':   user_dict,
-                'config': app.router.get_config(user)
-            })
+            return self.user_info(request)
         else:
             raise AuthenticationFailed(detail="Invalid username or password")
 
