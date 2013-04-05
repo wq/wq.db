@@ -66,12 +66,15 @@ class ModelSerializer(RestModelSerializer):
         fields = super(ModelSerializer, self).get_default_fields(*args, **kwargs)
         fields['id'] = IDField()
         fields['label'] = Field(source='__unicode__')
-        if 'view' not in self.context:
+        if 'view' not in self.context and 'router' not in self.context:
             return fields
 
-        router = self.context['view'].router
+        if 'view' in self.context:
+            router = self.context['view'].router
+        else:
+            router = self.context['router']
         many = self.many or self.source == 'object_list'
-        saving = self.context['request'].method != 'GET'
+        saving = 'request' in self.context and self.context['request'].method != 'GET'
 
         # Special handling for related fields
         for name, field in fields.items():

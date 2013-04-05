@@ -1,6 +1,7 @@
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 from django.conf.urls import patterns, include, url
+from django.core.paginator import Paginator
 
 from django.conf import settings
 from rest_framework.settings import api_settings
@@ -12,12 +13,16 @@ from .views import View, SimpleView, InstanceModelView, ListOrCreateModelView
 
 class Router(object):
     _serializers = {}
+    _querysets = {}
     _views = {}
     _extra_pages = {}
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
     
+    def register_queryset(self, model, queryset):
+        self._querysets[model] = queryset
+
     def register_views(self, model, listview=None, instanceview=None):
         self._views[model] = listview, instanceview
 
@@ -38,9 +43,28 @@ class Router(object):
                 model = model_class
         return Serializer
 
-    def serialize(self, obj):
-        serializer = self.get_serializer_for_model(obj)
-        return serializer().to_native(obj)
+    def serialize(self, obj, many=False):
+        if many:
+            # assume obj is a queryset
+            model = obj.model
+        else:
+            model = obj
+        serializer = self.get_serializer_for_model(model)
+        return serializer(obj, many=many).data
+
+    def paginate(self, model, page_num):
+        obj_serializer = self.get_serializer_for_model(model)
+        paginator = Paginator(self.get_queryset_for_model(model), api_settings.PAGINATE_BY)
+        page = paginator.page(page_num)
+        class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
+            class Meta:
+                object_serializer_class = obj_serializer
+        return Serializer(instance=page, context={'router': self}).data
+
+    def get_queryset_for_model(self, model):
+        if model in self._querysets:
+            return self._querysets[model]
+        return model.objects.all()
 
     def get_views_for_model(self, model):
         if model in self._views:
@@ -114,6 +138,25 @@ class Router(object):
                 return Response(self.get_config(request.user))
         return ConfigView.as_view()
 
+    def get_multi_view(self):
+        class MultipleListView(View):
+            def get(this, request, *args, **kwargs):
+                conf_by_url = {
+                    conf['url']: (page, conf)
+                    for page, conf in self.get_config(request.user)['pages'].items()
+                }
+                urls = request.GET.get('lists', '').split(',')
+                result = {}
+                for url in urls:
+                    if url not in conf_by_url:
+                        continue
+                    page, conf = conf_by_url[url]
+                    ct = ContentType.objects.get(model=page)
+                    cls = ct.model_class()
+                    result[url] = self.paginate(cls, 1)
+                return Response(result)
+        return MultipleListView.as_view()
+
     def make_patterns(self, urlbase, listview, detailview=None):
         if urlbase == '':
             detailurl = ''
@@ -142,6 +185,9 @@ class Router(object):
 
         # /config.js
         urlpatterns = self.make_patterns('config', self.get_config_view())
+
+        # /multi.json
+        urlpatterns += self.make_patterns('multi', self.get_multi_view())
 
         # Custom pages
         for page in self._extra_pages:

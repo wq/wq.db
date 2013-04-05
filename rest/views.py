@@ -13,6 +13,11 @@ class View(generics.GenericAPIView):
     def get_template_names(self):
         return [self.template_name]
 
+    def get_queryset(self):
+        if self.router is not None and self.model is not None:
+            return self.router.get_queryset_for_model(self.model)
+        return super(View, self).get_queryset()
+
     def get_serializer_class(self):
         if self.router is not None and self.model is not None:
             return self.router.get_serializer_for_model(self.model)

@@ -5,7 +5,7 @@ from wq.db.patterns.models import RelationshipType
 class ContentType(DjangoContentType):
     @property
     def identifier(self):
-        return self.name.replace(' ', '')
+        return self.model
 
     @property
     def urlbase(self):
