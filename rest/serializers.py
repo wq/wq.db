@@ -74,7 +74,10 @@ class ModelSerializer(RestModelSerializer):
         else:
             router = self.context['router']
         many = self.many or self.source == 'object_list'
-        saving = 'request' in self.context and self.context['request'].method != 'GET'
+        if 'request' in self.context and self.context['request'].method != 'GET':
+            saving = True
+        else:
+            saving = self.context.get('saving', False)
 
         # Special handling for related fields
         for name, field in fields.items():
