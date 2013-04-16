@@ -7,6 +7,7 @@ _FORBIDDEN_APPS = ('auth','sessions','admin','contenttypes','reversion','south')
 class ModelPermissions(BasePermission):
     METHOD_PERM = {
         'GET': 'view',
+        'HEAD': 'view',
         'POST': 'add',
         'PUT': 'change',
         'DELETE': 'delete',
@@ -19,7 +20,6 @@ class ModelPermissions(BasePermission):
         ct = get_ct(view.model)
         result = has_perm(user, ct, self.METHOD_PERM[request.method])
         return result
-        raise Exception(result)
 
 def has_perm(user, ct, perm):
     if not isinstance(ct, ContentType):
