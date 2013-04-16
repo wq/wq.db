@@ -1,7 +1,7 @@
 from django.http import Http404
 from rest_framework import generics
 from rest_framework.response import Response
-from .models import get_ct, get_object_id
+from .models import get_ct, get_object_id, get_by_identifier
 
 class View(generics.GenericAPIView):
     router = None
@@ -58,20 +58,31 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
         return obj
 
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
-    parent = None
-
     @property
     def template_name(self):
         return get_ct(self.model).identifier + '_list.html'
 
-    def filter_response_FIXME(self, obj):
-        result = super(ListOrCreateModelView, self).filter_response(obj)
+    def list(self, request, *args, **kwargs):
+        response = super(ListOrCreateModelView, self).list(request, args, kwargs)
+
         if 'target' in self.kwargs:
-            result['target'] = self.kwargs['target']
-        if getattr(self, 'parent', None):
-            result['parent_label'] = unicode(self.parent)
-            result['parent_id']    = get_object_id(self.parent)
-            result['parent_url']   = '%s/%s' % (
-                get_ct(self.parent).urlbase, get_object_id(self.parent)
-            )
-        return result
+            response.data['target'] = self.kwargs['target']
+        ct = get_ct(self.model)
+        for pct in get_ct(self.model).get_all_parents():
+            self.get_parent(pct, response)
+        return response
+
+    def get_parent(self, ct, response):
+        pid = self.kwargs.get(ct.identifier, None)
+        if not pid:
+            return
+
+        parent = get_by_identifier(ct.model_class().objects, pid)
+        if ct.urlbase == '':
+            urlbase = ''
+        else:
+            urlbase = ct.urlbase + '/'
+        objid = get_object_id(parent)
+        response.data['parent_label'] = unicode(parent)
+        response.data['parent_id']    = objid
+        response.data['parent_url']   = '%s%s' % (urlbase, objid)

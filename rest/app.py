@@ -214,7 +214,11 @@ class Router(object):
             for pct in ct.get_all_parents():
                 if pct.model_class() is None:
                     continue
-                purl = '^' + pct.urlbase + r'/(?P<' + pct.identifier + '>[^\/\?]+)/' + ct.urlbase
+                if pct.urlbase == '':
+                    purlbase = ''
+                else:
+                    purlbase = pct.urlbase + '/'
+                purl = '^' + purlbase + r'(?P<' + pct.identifier + '>[^\/\?]+)/' + ct.urlbase
                 urlpatterns += patterns('',
                     url(purl + '/?$', listview),
                     url(purl + '\.(?P<format>\w+)$', listview),
