@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.middleware import csrf
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from wq.db.rest import app
-from wq.db.rest.views import View
+from wq.db.rest.views import View, InstanceModelView
 
 class LoginView(View):
     def user_info(self, request):
@@ -37,5 +38,11 @@ class LogoutView(View):
             logout(request)
         return Response({})
 
+class UserDetailView(InstanceModelView):
+    def get_slug_field(self):
+        return 'username'
+
 app.router.add_page('login',  {'name': 'Log in',  'url': 'login'}, LoginView)
 app.router.add_page('logout', {'name': 'Log out', 'url': 'logout'}, LogoutView)
+
+app.router.register_views(User, listview=None, instanceview=UserDetailView)

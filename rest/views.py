@@ -77,7 +77,13 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         if not pid:
             return
 
-        parent = get_by_identifier(ct.model_class().objects, pid)
+        pcls = ct.model_class()
+        if self.router and pcls in self.router._views:
+            lv, dv = self.router._views[pcls]
+            slug = dv().get_slug_field()
+            parent = pcls.objects.get(**{slug: pid})
+        else:
+            parent = get_by_identifier(pcls.objects, pid)
         if ct.urlbase == '':
             urlbase = ''
         else:

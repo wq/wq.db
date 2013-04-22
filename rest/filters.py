@@ -24,10 +24,16 @@ class FilterBackend(DjangoFilterBackend):
                 found = True
                 if getattr(f, 'rel', None):
                     del kwargs[key]
-                    if get_ct(f.rel.to).is_identified:
-                        kwargs[f.name] = f.rel.to.objects.get_by_identifier(val)
+                    pcls = f.rel.to
+                    router = getattr(view, 'router', None)
+                    if router and pcls in router._views:
+                        lv, dv = router._views[pcls]
+                        slug = dv().get_slug_field()
+                        kwargs[f.name] = pcls.objects.get(**{slug: val})
+                    elif get_ct(f.rel.to).is_identified:
+                        kwargs[f.name] = pcls.objects.get_by_identifier(val)
                     else:
-                        kwargs[f.name] = f.rel.to.objects.get(pk=val)
+                        kwargs[f.name] = pcls.objects.get(pk=val)
 
             if not found and ctype.is_related:
                 for pct in ctype.get_all_parents():
