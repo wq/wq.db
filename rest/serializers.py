@@ -109,7 +109,11 @@ class ModelSerializer(RestModelSerializer):
                 continue
 
             # Add _id and _label to context
-            fields[name + '_id'] = IDRelatedField(source=name, queryset=field.queryset)
+            fields[name + '_id'] = IDRelatedField(
+                source   = name,
+                queryset = field.queryset,
+                required = field.required
+            )
             fields[name + '_label'] = LabelRelatedField(queryset=field.queryset)
                 
         # Add child objects (serialize with registered serializers)
