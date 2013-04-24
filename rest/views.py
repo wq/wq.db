@@ -1,5 +1,5 @@
 from django.http import Http404
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import get_ct, get_object_id, get_by_identifier
 
@@ -71,6 +71,36 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         for pct in get_ct(self.model).get_all_parents():
             self.get_parent(pct, response)
         return response
+
+    def create(self, request, *args, **kwargs):
+        response = super(ListOrCreateModelView, self).create(request, args, kwargs)
+        if request.accepted_media_type != 'text/html':
+            return response
+
+        # text/html probably means a form post from an older browser
+        if response.status_code == status.HTTP_201_CREATED:
+            ct = get_ct(self.model)
+            oid = response.data['id']
+            url = '/%s/%s' % (ct.urlbase, oid)
+            return Response(
+                {'detail': 'Created'},
+                status = status.HTTP_302_FOUND,
+                headers = {'Location': url}
+            )
+        else:
+            errors = [{
+                'field': key,
+                'errors': val
+            } for key, val in response.data.items()]
+            template = get_ct(self.model).identifier + '_error.html'
+            return Response(
+                {
+                   'errors': errors,
+                   'post': request.DATA
+                },
+                status = response.status_code,
+                template_name = template
+            )
 
     def get_parent(self, ct, response):
         pid = self.kwargs.get(ct.identifier, None)

@@ -16,6 +16,7 @@ class Router(object):
     _querysets = {}
     _views = {}
     _extra_pages = {}
+    _custom_config = {}
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
@@ -118,11 +119,16 @@ class Router(object):
              for name in ('annotated', 'identified', 'located', 'related'):
                  info[name] = getattr(ct, 'is_' + name)
 
+             if ct.identifier in self._custom_config:
+                 info.update(self._custom_config[ct.identifier])
              pages[ct.identifier] = info
          return {'pages': pages}
 
     def add_page(self, name, config, view=None):
         self._extra_pages[name] = config, view
+
+    def customize_page(self, name, config):
+        self._custom_config[name] = config
 
     def get_page(self, page):
         config, view = self._extra_pages[page]
