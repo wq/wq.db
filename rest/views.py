@@ -74,7 +74,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         response = super(ListOrCreateModelView, self).create(request, args, kwargs)
-        if request.accepted_media_type != 'text/html':
+        if not request.accepted_media_type.startswith('text/html'):
             return response
 
         # text/html probably means a form post from an older browser
