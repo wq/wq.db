@@ -44,3 +44,12 @@ SOCIAL_AUTH_PIPELINE = (
 ANONYMOUS_PERMISSIONS = {}
 SRID = 3857
 DEFAULT_AUTH_GROUP = "Users"
+FORBIDDEN_APPS = (
+    'auth',
+    'sessions',
+    'admin',
+    'contenttypes',
+    'reversion',
+    'south',
+    'social_auth'
+)
