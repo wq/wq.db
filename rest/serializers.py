@@ -158,6 +158,7 @@ class ModelSerializer(RestModelSerializer):
 
 class PaginationSerializer(RestPaginationSerializer):
     results_field = 'list'
+    page = Field('number')
     pages = Field('paginator.num_pages')
     per_page = Field('paginator.per_page')
     def to_native(self, obj):

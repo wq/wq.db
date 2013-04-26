@@ -23,6 +23,11 @@ class View(generics.GenericAPIView):
             return self.router.get_serializer_for_model(self.model)
         return super(View, self).get_serializer_class()
 
+    def get_paginate_by(self, queryset):
+        if self.router is not None and self.model is not None:
+            return self.router.get_paginate_by_for_model(self.model)
+        return super(View, self).get_paginate_by(queryset)
+
 class SimpleView(View):
     def get(self, request, *args, **kwargs):
         return Response({})

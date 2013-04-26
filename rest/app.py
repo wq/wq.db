@@ -53,9 +53,18 @@ class Router(object):
         serializer = self.get_serializer_for_model(model)
         return serializer(obj, many=many).data
 
+    def get_paginate_by_for_model(self, model_class):
+        name = get_ct(model_class).identifier
+        if name in self._custom_config:
+            paginate_by = self._custom_config[name].get('per_page', None)
+            if paginate_by:
+                return paginate_by
+        return api_settings.PAGINATE_BY
+
     def paginate(self, model, page_num):
         obj_serializer = self.get_serializer_for_model(model)
-        paginator = Paginator(self.get_queryset_for_model(model), api_settings.PAGINATE_BY)
+        paginate_by = self.get_paginate_by_for_model(model)
+        paginator = Paginator(self.get_queryset_for_model(model), paginate_by)
         page = paginator.page(page_num)
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
             class Meta:
