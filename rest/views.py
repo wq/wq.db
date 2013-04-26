@@ -2,6 +2,7 @@ from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import get_ct, get_object_id, get_by_identifier
+from django.conf import settings
 
 class View(generics.GenericAPIView):
     router = None
@@ -27,6 +28,12 @@ class View(generics.GenericAPIView):
         if self.router is not None and self.model is not None:
             return self.router.get_paginate_by_for_model(self.model)
         return super(View, self).get_paginate_by(queryset)
+
+    def perform_content_negotiation(self, request, force=False):
+        renderer, media_type = super(View, self).perform_content_negotiation(request, force)
+        if media_type.startswith('text'):
+            media_type += "; charset=%s" % (settings.DEFAULT_CHARSET)
+        return renderer, media_type
 
 class SimpleView(View):
     def get(self, request, *args, **kwargs):
