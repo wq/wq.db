@@ -61,7 +61,7 @@ class Router(object):
                 return paginate_by
         return api_settings.PAGINATE_BY
 
-    def paginate(self, model, page_num):
+    def paginate(self, model, page_num, request=None):
         obj_serializer = self.get_serializer_for_model(model)
         paginate_by = self.get_paginate_by_for_model(model)
         paginator = Paginator(self.get_queryset_for_model(model), paginate_by)
@@ -69,7 +69,7 @@ class Router(object):
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
             class Meta:
                 object_serializer_class = obj_serializer
-        return Serializer(instance=page, context={'router': self}).data
+        return Serializer(instance=page, context={'router': self, 'request': request}).data
 
     def get_queryset_for_model(self, model):
         if model in self._querysets:
@@ -168,7 +168,7 @@ class Router(object):
                     page, conf = conf_by_url[url]
                     ct = ContentType.objects.get(model=page)
                     cls = ct.model_class()
-                    result[url] = self.paginate(cls, 1)
+                    result[url] = self.paginate(cls, 1, request)
                 return Response(result)
         return MultipleListView.as_view()
 
