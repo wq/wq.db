@@ -1,3 +1,4 @@
+from django.db.models import *
 from .annotate.models import *
 from .identify.models import *
 from .locate.models   import *
