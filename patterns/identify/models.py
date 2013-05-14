@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from wq.db.patterns.base import SerializableGenericRelation
 from django.template.defaultfilters import slugify
 
 class IdentifierManager(models.Manager):
@@ -143,7 +144,7 @@ class IdentifiedModelManager(models.Manager):
         return qs.order_by('wq_id_name')
 
 class IdentifiedModel(models.Model):
-    identifiers = generic.GenericRelation(Identifier)
+    identifiers = SerializableGenericRelation(Identifier)
     primary_identifiers = generic.GenericRelation(PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary')
     objects     = IdentifiedModelManager()
 

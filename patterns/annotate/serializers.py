@@ -2,7 +2,7 @@ from wq.db.rest.serializers import ModelSerializer
 from wq.db.rest import app
 from wq.db.rest.models import get_ct, get_object_id
 
-from .models import Annotation, AnnotationType, AnnotatedModel
+from .models import Annotation, AnnotationType
 
 class AnnotationSerializer(ModelSerializer):
 

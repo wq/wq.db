@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from wq.db.patterns.base import SerializableGenericRelation
 
 class RelatedModelManager(models.Manager):
     def filter_by_related(self, *args, **kwargs):
@@ -18,18 +19,18 @@ class RelatedModelManager(models.Manager):
                                    relationships__to_object_id__in=
                                      [obj.pk for obj in objs])
             else:
-                data = data.filter(inverse_relationships__from_content_type=ctype, 
-                                   inverse_relationships__from_object_id__in=
+                data = data.filter(inverserelationships__from_content_type=ctype, 
+                                   inverserelationships__from_object_id__in=
                                      [obj.pk for obj in objs])
         return data
 
 class RelatedModel(models.Model):
-    relationships = generic.GenericRelation('Relationship',
+    relationships = SerializableGenericRelation('Relationship',
         content_type_field='from_content_type',
         object_id_field='from_object_id',
         related_name='%(class)s_set'
     )
-    inverse_relationships = generic.GenericRelation('InverseRelationship',
+    inverserelationships = SerializableGenericRelation('InverseRelationship',
         content_type_field='to_content_type',
         object_id_field='to_object_id',
         related_name='%(class)s_inverse_set'
@@ -39,7 +40,7 @@ class RelatedModel(models.Model):
     def all_relationships(self):
         for rel in self.relationships.all():
             yield rel
-        for rel in self.inverse_relationships.all():
+        for rel in self.inverserelationships.all():
             yield rel
 
     class Meta:

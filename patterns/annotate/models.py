@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from wq.db.patterns.base import SerializableGenericRelation
 from django.contrib import admin
 from django.core.exceptions import FieldError
 
@@ -99,13 +100,12 @@ class Annotation(models.Model):
     class Meta:
         db_table = 'wq_annotation'
             
-class AnnotationSet(generic.GenericRelation):
+class AnnotationSet(SerializableGenericRelation):
     def __init__(self, *args, **kwargs):
        if len(args) == 0:
            kwargs['to'] = "Annotation"
        kwargs['related_name'] = None
        super(AnnotationSet, self).__init__(*args, **kwargs)
-       self.serialize = True
 
 class AnnotatedModel(models.Model):
     annotations = AnnotationSet()
