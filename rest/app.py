@@ -257,6 +257,18 @@ class Router(object):
 
         return urlpatterns
 
+    @property
+    def version(self):
+        if not hasattr(self, '_version'):
+            vtxt = getattr(settings, 'VERSION_TXT', None)
+            if vtxt is None:
+                self._version = None 
+            else:
+                vfile = open(vtxt, 'r')
+                self._version = vfile.read()
+                vfile.close()
+        return self._version
+
 router = Router()
 
 def autodiscover():
