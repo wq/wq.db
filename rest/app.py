@@ -126,11 +126,17 @@ class Router(object):
                      info['children'].append(cct.identifier)
 
              for name in ('annotated', 'identified', 'located', 'related'):
-                 info[name] = getattr(ct, 'is_' + name)
+                 if getattr(ct, 'is_' + name):
+                     info[name] = True
+
+             for name in ('annotationtype', 'annotation'):
+                 if ct.identifier != name and getattr(ct, 'is_' + name):
+                     pages[name] = {'alias': ct.identifier}
 
              if ct.identifier in self._custom_config:
                  info.update(self._custom_config[ct.identifier])
              pages[ct.identifier] = info
+
          return {'pages': pages}
 
     def add_page(self, name, config, view=None):

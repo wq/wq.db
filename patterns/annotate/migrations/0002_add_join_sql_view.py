@@ -3,13 +3,21 @@ import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
+from wq.db.patterns.base import swapper
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
+        if swapper.is_swapped('annotate', 'AnnotationType'):
+            return
+
+        if swapper.is_swapped('annotate', 'Annotation'):
+            return
+
         if db.backend_name != 'postgres':
             print "Warning: Non-postgres database detected; convenience view will not be created."
             return
+        
         db.execute('''
 CREATE OR REPLACE VIEW wq_annotation_joined AS 
 SELECT ct.app_label, ct.model, a.object_id, at.id AS type_id, at.name AS type_name, a.value
@@ -18,6 +26,10 @@ JOIN wq_annotationtype at ON at.id = a.type_id
 JOIN django_content_type ct ON a.content_type_id = ct.id;''')
 
     def backwards(self, orm):
+        if swapper.is_swapped('annotate', 'AnnotationType'):
+            return
+        if swapper.is_swapped('annotate', 'Annotation'):
+            return
         if db.backend_name != 'postgres':
             return
         db.execute("DROP VIEW wq_annotation_joined;");

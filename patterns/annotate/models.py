@@ -1,11 +1,14 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation
+from wq.db.patterns.base import SerializableGenericRelation, swapper
 from django.contrib import admin
 from django.core.exceptions import FieldError
 
-class AnnotationType(models.Model):
+ANNOTATIONTYPE_MODEL = swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
+ANNOTATION_MODEL     = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
+
+class BaseAnnotationType(models.Model):
     name        = models.CharField(max_length=255)
     contenttype = models.ForeignKey(ContentType, null=True, blank=True)
 
@@ -32,7 +35,12 @@ class AnnotationType(models.Model):
             self.contenttype = ContentType.objects.get_for_model(self.annotated_model)
 
     class Meta:
+        abstract = True
+
+class AnnotationType(BaseAnnotationType):
+    class Meta:
         db_table = 'wq_annotationtype'
+        swappable = swapper.swappable_setting('annotate', 'AnnotationType')
             
 class AnnotationManager(models.Manager):
 
@@ -77,9 +85,8 @@ class AnnotationManager(models.Manager):
          
         return super(AnnotationManager, self).filter(*args, **kwargs)
 
-class Annotation(models.Model):
-    type      = models.ForeignKey(AnnotationType)
-    value     = models.TextField(null=True, blank=True)
+class BaseAnnotation(models.Model):
+    type      = models.ForeignKey(ANNOTATIONTYPE_MODEL)
 
     # Link can contain a pointer to any model
     # FIXME: restrict to models allowed for given type
@@ -90,7 +97,7 @@ class Annotation(models.Model):
     objects = AnnotationManager()
 
     def __unicode__(self):
-      return ('%(object)s -> %(annot)s: %(value)s'
+        return ('%(object)s -> %(annot)s: %(value)s'
               % {
                   'object': self.content_object,
                   'annot':  self.type,
@@ -98,12 +105,18 @@ class Annotation(models.Model):
                 })
 
     class Meta:
+        abstract = True
+
+class Annotation(BaseAnnotation):
+    value = models.TextField(null=True, blank=True)
+    class Meta:
         db_table = 'wq_annotation'
-            
+        swappable = swapper.swappable_setting('annotate', 'Annotation')
+
 class AnnotationSet(SerializableGenericRelation):
     def __init__(self, *args, **kwargs):
        if len(args) == 0:
-           kwargs['to'] = "Annotation"
+           kwargs['to'] = ANNOTATION_MODEL
        kwargs['related_name'] = None
        super(AnnotationSet, self).__init__(*args, **kwargs)
 
@@ -118,5 +131,5 @@ class AnnotatedModel(models.Model):
         abstract = True
 
 # Tell south not to worry about the "custom" field type
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^wq.db.patterns.annotate.models.AnnotationSet"])
+from south.modelsinspector import add_ignored_fields
+add_ignored_fields(["^wq.db.patterns.annotate.models.AnnotationSet"])

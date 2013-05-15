@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType as DjangoContentType
 from wq.db.patterns.models import AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
 from wq.db.patterns.models import RelationshipType
+from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
 
 class ContentType(DjangoContentType):
     @property
@@ -18,7 +19,17 @@ class ContentType(DjangoContentType):
     def is_annotated(self):
         cls = self.model_class()
         return issubclass(cls, AnnotatedModel)
+    
+    @property
+    def is_annotation(self):
+        cls = self.model_class()
+        return issubclass(cls, BaseAnnotation)
 
+    @property
+    def is_annotationtype(self):
+        cls = self.model_class()
+        return issubclass(cls, BaseAnnotationType)
+        
     @property
     def is_identified(self):
         cls = self.model_class()
