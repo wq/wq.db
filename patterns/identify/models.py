@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from wq.db.patterns.base import SerializableGenericRelation
+from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 
 class IdentifierManager(models.Manager):
@@ -81,6 +82,12 @@ class Identifier(models.Model):
 	else:
             return self.authority.object_url % self.slug
 
+    def save(self, *args, **kwargs):
+        if self.slug is None or self.slug == '':
+            model = self.content_type.name
+            self.slug = type(self).objects.find_unique_slug(self.name, model)
+        super(Identifier, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.name
 
@@ -99,7 +106,7 @@ class PrimaryIdentifier(Identifier):
     class Meta:
         proxy = True
 
-class IdentifiedModelManager(models.Manager):
+class IdentifiedModelManager(NaturalKeyModelManager):
     def get_by_identifier(self, identifier, auto_create=False):
         searches = [
             {'identifiers__slug': identifier, 'identifiers__is_primary': True},
@@ -122,16 +129,20 @@ class IdentifiedModelManager(models.Manager):
                     raise self.model.DoesNotExist('%s "%s" does not exist' % (name, identifier))
 
         if object is None and auto_create:
-            if ('name' in self.model._meta.get_all_field_names()):
-                object = self.create(name = identifier)
-            else:
-                object = self.create()
-            object.identifiers.create(name = identifier, is_primary=True)
+            object = self.create_by_natural_key(identifier)
 
         return object
 
     def get_by_natural_key(self, identifier):
         return self.get_by_identifier(identifier)
+
+    def create_by_natural_key(self, identifier):
+        if ('name' in self.model._meta.get_all_field_names()):
+            object = self.create(name = identifier)
+        else:
+            object = self.create()
+        object.identifiers.create(name = identifier, is_primary=True)
+        return object
 
     def get_query_set(self):
         qs = super(IdentifiedModelManager, self).get_query_set()
@@ -143,10 +154,14 @@ class IdentifiedModelManager(models.Manager):
                LIMIT 1""" % (ct.pk, meta.db_table, meta.pk.get_attname_column()[1])})
         return qs.order_by('wq_id_name')
 
-class IdentifiedModel(models.Model):
+class IdentifiedModel(NaturalKeyModel):
     identifiers = SerializableGenericRelation(Identifier)
     primary_identifiers = generic.GenericRelation(PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary')
     objects     = IdentifiedModelManager()
+
+    @classmethod
+    def get_natural_key_fields(cls):
+        return ['primary_identifiers__slug']
 
     @property
     def primary_identifier(self):
