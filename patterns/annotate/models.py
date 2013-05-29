@@ -8,6 +8,21 @@ from django.core.exceptions import FieldError
 ANNOTATIONTYPE_MODEL = swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
 ANNOTATION_MODEL     = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
 
+class AnnotationTypeManager(models.Manager):
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
+    def resolve_names(self, *names):
+        resolved = {}
+        success = True
+        for name in names:
+            try:
+                resolved[name] = self.get_by_natural_key(name)
+            except self.model.DoesNotExist:
+                success = False
+                resolved[name] = None
+        return resolved, success
+
 class BaseAnnotationType(models.Model):
     name        = models.CharField(max_length=255)
     contenttype = models.ForeignKey(ContentType, null=True, blank=True)
@@ -15,6 +30,8 @@ class BaseAnnotationType(models.Model):
     # Assign a value to annotated_model to automatically set contenttype
     # (Useful for subclasses with a single target model)
     annotated_model = None
+
+    objects = AnnotationTypeManager()
 
     def __unicode__(self):
         for f in self._meta.get_all_related_objects():
@@ -29,6 +46,9 @@ class BaseAnnotationType(models.Model):
                     return unicode(child)
         # Fall back to name
         return self.name
+
+    def natural_key(self):
+        return (self.name,)
 
     def clean(self, *args, **kwargs):
         if self.annotated_model is not None:
@@ -52,7 +72,7 @@ class AnnotationManager(models.Manager):
 
         vals = {}
         for annot in self.all():
-            vals[str(annot.type)] = annot.value
+            vals[annot.type.natural_key()[0]] = annot.value
 
         setattr(self, '_vals', vals)
         return vals
@@ -126,6 +146,18 @@ class AnnotatedModel(models.Model):
     @property
     def vals(self):
         return self.annotations.vals
+
+    @vals.setter
+    def vals(self, vals):
+        AnnotationType = swapper.load_model('annotate', 'AnnotationType')
+        types, success = AnnotationType.objects.resolve_names(*(vals.keys()))
+        if not success:
+            raise TypeError("Could not identify one or more annotation types!")
+
+        for name, atype in types.items():
+            annot, is_new = self.annotations.get_or_create(type=atype)
+            annot.value = vals[name]
+            annot.save()
 
     class Meta:
         abstract = True
