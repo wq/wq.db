@@ -42,7 +42,10 @@ class SimpleView(View):
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
     @property
     def template_name(self):
-        return get_ct(self.model).identifier + '_detail.html'
+        if self.kwargs.get('mode', False) in ('edit', 'new'):
+            return get_ct(self.model).identifier + '_edit.html'
+        else:
+            return get_ct(self.model).identifier + '_detail.html'
 
     def get_slug_field(self):
         if get_ct(self.model).is_identified:
@@ -51,6 +54,9 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
             return 'pk'
     
     def get_object(self, queryset=None):
+        if self.kwargs.get('mode', False) == "new":
+            return self.model()
+
         try:
             obj = super(InstanceModelView, self).get_object(queryset)
         except Http404:
@@ -85,7 +91,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         return response
 
     def create(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).create(request, args, kwargs)
+        response = super(ListOrCreateModelView, self).create(request, *args, **kwargs)
         if not request.accepted_media_type.startswith('text/html'):
             return response
 

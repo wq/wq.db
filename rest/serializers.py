@@ -135,7 +135,7 @@ class ModelSerializer(RestModelSerializer):
 
     def get_nested_field(self, model_field):
         model = model_field.rel.to
-        if 'view' in self.context and hasattr(self.context['view'], 'router'):
+        if 'view' in self.context and getattr(self.context['view'], 'router', None):
             router = self.context['view'].router
             return router.get_serializer_for_model(model)()
         return super(ModelSerializer, self).get_nested_field(model_field)

@@ -17,6 +17,9 @@ class Router(object):
     _views = {}
     _extra_pages = {}
     _custom_config = {}
+    
+    FORMAT = r'\.(?P<format>\w+)$'
+    SLUG = r'(?P<slug>[^\/\?]+)'
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
@@ -179,24 +182,28 @@ class Router(object):
         return MultipleListView.as_view()
 
     def make_patterns(self, urlbase, listview, detailview=None):
+        fmt = self.FORMAT
+        slug = self.SLUG
         if urlbase == '':
-            detailurl = ''
-            listurl   = ''
+            detailurl = '^'
+            listurl   = '^'
         else:
-            detailurl = urlbase + '/' 
-            listurl   = urlbase
+            detailurl = '^' + urlbase + '/' 
+            listurl   = '^' + urlbase
         result = patterns('',
-            url('^' + listurl + r'/?$',  listview),
-            url('^' + listurl + r'\.(?P<format>\w+)$', listview),
+            url(listurl + r'/?$',  listview),
+            url(listurl + fmt,     listview),
         )
         if detailview is None:
             return result
 
-        result += patterns(
-            url('^' + listurl + r'/new$', listview),
-            url('^' + detailurl + r'(?P<slug>[^\/\?]+)\.(?P<format>\w+)$', detailview),
-            url('^' + detailurl + r'(?P<slug>[^\/\?]+)/edit$', detailview),
-            url('^' + detailurl + r'(?P<slug>[^\/\?]+)/?$', detailview)
+        result += patterns('',
+            url(detailurl + r'(?P<mode>new)$',               detailview),
+            url(detailurl + r'(?P<mode>new)' + fmt,          detailview),
+            url(detailurl + slug + fmt,                      detailview),
+            url(detailurl + slug + r'/(?P<mode>edit)$',      detailview),
+            url(detailurl + slug + r'/(?P<mode>edit)' + fmt, detailview),
+            url(detailurl + slug + '/?$',                    detailview)
         )
         return result
 
@@ -242,7 +249,7 @@ class Router(object):
                 purl = '^' + purlbase + r'(?P<' + pct.identifier + '>[^\/\?]+)/' + ct.urlbase
                 urlpatterns += patterns('',
                     url(purl + '/?$', listview),
-                    url(purl + '\.(?P<format>\w+)$', listview),
+                    url(purl + self.FORMAT, listview),
                 )
 
             for cct in ct.get_all_children():
@@ -251,7 +258,7 @@ class Router(object):
                 kwargs = {'target': cbase}
                 urlpatterns += patterns('',
                     url(curl + '/?$', listview, kwargs),
-                    url(curl + '\.(?P<format>\w+)$', listview, kwargs),
+                    url(curl + self.FORMAT, listview, kwargs),
                 )
 
         # View for root url - could be either a custom page or list/detail 

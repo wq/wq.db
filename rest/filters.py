@@ -1,5 +1,5 @@
 from rest_framework.filters import DjangoFilterBackend
-RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug')
+RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
 from .models import get_ct
 
