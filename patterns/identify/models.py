@@ -7,18 +7,9 @@ from django.template.defaultfilters import slugify
 
 class IdentifierManager(models.Manager):
     def filter_by_identifier(self, identifier):
-        searches = [
-            {'slug': identifier, 'is_primary': True},
-            {'name': identifier, 'is_primary': True},
-            {'slug': identifier},
-            {'name': identifier}
-        ]
-        for search in searches:
-            ids = self.filter(**search)
-            if len(ids) == 0:
-                continue
-            return ids
-        return ids
+        return self.filter(
+            models.Q(slug=identifier) | models.Q(name=identifier)
+        ).order_by('-is_primary')
 
     def resolve(self, *args):
         resolved   = None
