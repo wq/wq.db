@@ -3,6 +3,8 @@ from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+from django.conf import settings
+from wq.db.patterns.base import swapper
 from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
 # Custom FileField handles both images and files
@@ -44,7 +46,7 @@ class FileManager(models.Manager):
         else:
             return qs
 
-class File(AnnotatedModel, RelatedModel):
+class BaseFile(AnnotatedModel, RelatedModel):
     name   = models.CharField(max_length=255, null=True, blank=True)     
     type   = models.ForeignKey(FileType, null=True, blank=True)
     file   = FileField(upload_to='.', width_field='width', height_field='height')
@@ -52,17 +54,17 @@ class File(AnnotatedModel, RelatedModel):
     width  = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
 
-    type_name = None
+    type_name = "File"
 
     def get_directory(self):
-        if self.mimetype is not None and 'image' in self.mimetype:
+        if self.is_image:
             return 'images'
         else:
             return 'files'
 
     @property
     def mimetype(self):
-        if self.file is not None:
+        if self.file.name not in (None, ""):
             import magic
             mime = magic.Magic(mime=True)
             self.file.open()
@@ -70,7 +72,11 @@ class File(AnnotatedModel, RelatedModel):
         else:
             return None
 
-    def save(self):
+    @property
+    def is_image(self):
+        return self.mimetype is not None and self.mimetype.startswith('image/')
+
+    def save(self, *args, **kwargs):
         if self.type is None:
             self.type, isnew = FileType.objects.get_or_create(mimetype=self.mimetype,
                                                               name=self.type_name)
@@ -78,7 +84,7 @@ class File(AnnotatedModel, RelatedModel):
             self.size = self.file.size
         if self.name is None or self.name == '':
             self.name = self.file.name
-        super(File, self).save()
+        super(BaseFile, self).save(*args, **kwargs)
 
     def __unicode__(self):
         if self.name is not None:
@@ -87,8 +93,9 @@ class File(AnnotatedModel, RelatedModel):
             return 'File %s' % self.id
 
     class Meta:
-        db_table = 'wq_file'
+        abstract = True
 
-# Tell south not to worry about the "custom" field type
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^wq.db.contrib.files.models.FileField"])
+class File(BaseFile):
+    class Meta:
+        db_table = 'wq_file'
+        swappable = swapper.swappable_setting('files', 'File')

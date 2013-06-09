@@ -6,3 +6,6 @@ class FileAdmin(admin.ModelAdmin):
     inlines = [ AnnotationInline, RelationshipInline, InverseRelationshipInline ]
     list_display = ('__unicode__', 'type')
     list_filter  = ('type', )
+
+admin.site.register(File, FileAdmin)
+admin.site.register(FileType)

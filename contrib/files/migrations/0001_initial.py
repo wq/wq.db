@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from wq.db.patterns.base import swapper
 
 class Migration(SchemaMigration):
 
@@ -16,17 +17,18 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('files', ['FileType'])
 
-        # Adding model 'File'
-        db.create_table('wq_file', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['files.FileType'], null=True, blank=True)),
-            ('file', self.gf('wq.db.files.models.FileField')(max_length=100)),
-            ('size', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('width', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('height', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('files', ['File'])
+        if not swapper.is_swapped('files', 'File'):
+            # Adding model 'File'
+            db.create_table('wq_file', (
+                ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+                ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+                ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['files.FileType'], null=True, blank=True)),
+                ('file', self.gf('wq.db.contrib.files.models.FileField')(max_length=100)),
+                ('size', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+                ('width', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+                ('height', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ))
+            db.send_create_signal('files', ['File'])
 
 
     def backwards(self, orm):
@@ -34,8 +36,9 @@ class Migration(SchemaMigration):
         # Deleting model 'FileType'
         db.delete_table('wq_filetype')
 
-        # Deleting model 'File'
-        db.delete_table('wq_file')
+        if not swapper.is_swapped('files', 'File'):
+            # Deleting model 'File'
+            db.delete_table('wq_file')
 
 
     models = {
@@ -62,7 +65,7 @@ class Migration(SchemaMigration):
         },
         'files.file': {
             'Meta': {'object_name': 'File', 'db_table': "'wq_file'"},
-            'file': ('wq.db.files.models.FileField', [], {'max_length': '100'}),
+            'file': ('wq.db.contrib.files.models.FileField', [], {'max_length': '100'}),
             'height': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
