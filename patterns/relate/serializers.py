@@ -51,4 +51,8 @@ class RelationshipSerializer(ModelSerializer):
             } for key, val in groups.items()
         ]
 
+    def field_from_native(self, data, files, field_name, into):
+        # FIXME: not supported; set to empty array to avoid validation error
+        into[field_name] = []
+
 app.router.register_serializer(Relationship, RelationshipSerializer)
