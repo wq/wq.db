@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.generic import GenericRelation
 from south.modelsinspector import add_ignored_fields
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 # Trick rest_framework into serializing these relationships
 class SerializableGenericRelation(GenericRelation):
@@ -41,6 +42,9 @@ class Swapper(object):
                 return orm['%s.%s' % (app_label, model)]
         
         from django.db.models import get_model
-        return get_model(app_label, model)
+        cls = get_model(app_label, model)
+        if cls is None:
+            raise ImproperlyConfigured("Could not find %s.%s!" % (app_label, model))
+        return cls
 
 swapper = Swapper()
