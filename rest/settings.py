@@ -20,6 +20,7 @@ REST_FRAMEWORK = {
          'rest_framework.renderers.TemplateHTMLRenderer',
          'rest_framework.renderers.JSONRenderer',
          'wq.db.rest.renderers.AMDRenderer',
+         'wq.db.rest.renderers.GeoJSONRenderer',
     ),
     'DEFAULT_MODEL_SERIALIZER_CLASS': 'wq.db.rest.serializers.ModelSerializer',
     'DEFAULT_PAGINATION_SERIALIZER_CLASS': 'wq.db.rest.serializers.PaginationSerializer',

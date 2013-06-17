@@ -25,6 +25,9 @@ class View(generics.GenericAPIView):
         return super(View, self).get_serializer_class()
 
     def get_paginate_by(self, queryset):
+        renderer = self.request.accepted_renderer
+        if getattr(renderer, 'disable_pagination', False):
+            return None
         if self.router is not None and self.model is not None:
             return self.router.get_paginate_by_for_model(self.model)
         return super(View, self).get_paginate_by(queryset)

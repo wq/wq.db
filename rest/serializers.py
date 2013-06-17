@@ -91,7 +91,8 @@ class ModelSerializer(RestModelSerializer):
                 del fields[name]
                 continue
 
-            if many or (saving and not m2m):
+            geo = (self.context['request'].accepted_renderer.format == 'geojson')
+            if not geo and (many or (saving and not m2m)):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
                 # (Except when saving m2m items, in which case we need the nested field)
