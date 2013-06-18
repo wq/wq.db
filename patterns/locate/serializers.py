@@ -2,6 +2,8 @@ from wq.db.rest.serializers import ModelSerializer
 from wq.db.rest import app
 from wq.db.rest.models import get_ct, get_object_id
 
+import json
+
 from .models import Location
 
 class LocationSerializer(ModelSerializer):
@@ -17,7 +19,7 @@ class LocationSerializer(ModelSerializer):
     def to_native(self, loc):
         has_parent = self.parent and hasattr(self.parent.opts, 'model')
         if self.as_geometry and has_parent:
-            return loc.geometry
+            return json.loads(loc.geometry.geojson)
 
         data = super(LocationSerializer, self).to_native(loc)
         if has_parent:
