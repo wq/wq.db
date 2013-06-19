@@ -153,7 +153,11 @@ class AnnotatedModel(models.Model):
         AnnotationType = swapper.load_model('annotate', 'AnnotationType')
         types, success = AnnotationType.objects.resolve_names(*(vals.keys()))
         if not success:
-            raise TypeError("Could not identify one or more annotation types!")
+            missing = [name for name, atype in types.items() if atype is None]
+            raise TypeError(
+                "Could not identify one or more annotation types: %s!"
+                % missing
+            )
 
         for name, atype in types.items():
             annot, is_new = self.annotations.get_or_create(type=atype)
