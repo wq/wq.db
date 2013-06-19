@@ -32,6 +32,8 @@ class IdentifierManager(models.Manager):
             return self.create(**kwargs), True
 
     def find_unique_slug(self, name, model):
+        if len(name) > 45:
+            name = name[:45]
         slug = slugify(name)
         exists = self.filter(
              content_type__name = model,

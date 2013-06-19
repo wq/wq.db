@@ -43,8 +43,38 @@ class RelatedModel(models.Model):
         for rel in self.inverserelationships.all():
             yield rel
 
+    def create_relationship(self, to_obj, name, inverse_name=None, computed=False):
+        return Relationship.objects.create_relationship(
+            from_obj = self,
+            to_obj = to_obj,
+            name = name,
+            inverse_name = inverse_name,
+            computed = computed
+        )
+
     class Meta:
         abstract = True
+
+class RelationshipManager(models.Manager):
+    def create_relationship(self, from_obj, to_obj, name, inverse_name=None, computed=False):
+        from_ct = ContentType.objects.get_for_model(from_obj)
+        to_ct = ContentType.objects.get_for_model(to_obj)
+        reltype, is_new = RelationshipType.objects.get_or_create(
+            from_type = from_ct,
+            to_type = to_ct,
+            name = name,
+            inverse_name = inverse_name,
+            computed = computed,
+        )
+        rel, is_new = self.get_or_create(
+            type = reltype,
+            from_content_type = from_ct,
+            from_object_id = from_obj.pk,
+            to_content_type = to_ct,
+            to_object_id = to_obj.pk,
+            computed = computed,
+        )
+        return rel
 
 class Relationship(models.Model):
 
@@ -61,6 +91,8 @@ class Relationship(models.Model):
 
     computed            = models.BooleanField(default=False)
     
+    objects = RelationshipManager()
+
     @property
     def left(self):
         return self.from_content_object
@@ -87,7 +119,7 @@ class Relationship(models.Model):
     
     def __unicode__(self):
         if self.from_content_type_id and self.type_id and self.to_content_type_id:
-            return '%s %s %s' % (self.left, self.reltype, self.right)
+            return u'%s %s %s' % (self.left, self.reltype, self.right)
 	else:
 	    return 'Undefined'
 

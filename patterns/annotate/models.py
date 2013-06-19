@@ -4,6 +4,7 @@ from django.contrib.contenttypes import generic
 from wq.db.patterns.base import SerializableGenericRelation, swapper
 from django.contrib import admin
 from django.core.exceptions import FieldError
+from collections import OrderedDict
 
 ANNOTATIONTYPE_MODEL = swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
 ANNOTATION_MODEL     = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
@@ -70,7 +71,7 @@ class AnnotationManager(models.Manager):
         if (hasattr(self, '_vals')):
             return getattr(self, '_vals')
 
-        vals = {}
+        vals = OrderedDict()
         for annot in self.all():
             vals[annot.type.natural_key()[0]] = annot.value
 
@@ -111,7 +112,7 @@ class BaseAnnotation(models.Model):
     # Link can contain a pointer to any model
     # FIXME: restrict to models allowed for given type
     content_type   = models.ForeignKey(ContentType)
-    object_id      = models.PositiveIntegerField()
+    object_id      = models.PositiveIntegerField(db_index=True)
     content_object = generic.GenericForeignKey()
 
     objects = AnnotationManager()
