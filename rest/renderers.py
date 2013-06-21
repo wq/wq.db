@@ -22,7 +22,7 @@ class GeoJSONRenderer(JSONRenderer):
         else:
             data = self.render_feature(data)
 
-        if hasattr(settings, 'SRID'):
+        if hasattr(settings, 'SRID') and settings.SRID != 3857:
             data['crs'] = {
                 'type': 'name',
                 'properties': {
@@ -41,7 +41,10 @@ class GeoJSONRenderer(JSONRenderer):
             del obj['id']
 
         if 'latitude' in obj and 'longitude' in obj:
-            feature['geometry'] = [obj['longitude'], obj['latitude']]
+            feature['geometry'] = {
+                'type': 'Point',
+                'coordinates': [obj['longitude'], obj['latitude']]
+            }
             del obj['latitude']
             del obj['longitude']
 
