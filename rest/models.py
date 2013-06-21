@@ -93,7 +93,10 @@ class ContentType(DjangoContentType):
         proxy = True
 
 def get_ct(model):
-    return ContentType.objects.get_for_model(model)
+    ctype = ContentType.objects.get_for_model(model)
+    # FIXME: get_for_model sometimes returns a DjangoContentType!
+    ctype = ContentType.objects.get(pk=ctype.pk)
+    return ctype
 
 def get_object_id(instance):
     ct = get_ct(instance)

@@ -21,7 +21,7 @@ class RelationshipSerializer(ModelSerializer):
         if has_parent:
             pass
         else:
-            # Include pointer to parent object (see annotate/serializers.py)
+            # Include pointer to parent object (see base/serializers.py)
             idname = get_ct(rel.left).identifier + '_id'
             data[idname] = get_object_id(rel.left)
 

@@ -1,28 +1,30 @@
-from wq.db.rest.serializers import ModelSerializer
+from rest_framework import serializers
+from wq.db.patterns.base.serializers import TypedAttachmentSerializer
 from wq.db.rest import app
-from wq.db.rest.models import get_ct, get_object_id
 
-from .models import Identifier
+from .models import Identifier, Authority
 
-class IdentifierSerializer(ModelSerializer):
+class IdentifierSerializer(TypedAttachmentSerializer):
+    type_model = Authority
+    type_field = 'authority'
+    value_field = 'name'
 
-    def to_native(self, ident):
-        data = {
-            'id':         ident.pk,
-            'name':       ident.name,
-            'authority':  getattr(ident.authority, 'name', None),
-            'url':        ident.url,
-            'is_primary': ident.is_primary
-        }
+    url = serializers.Field()
 
-        has_parent = self.parent and hasattr(self.parent.opts, 'model')
-        if has_parent:
-            pass
+    @property
+    def expected_types(self):
+        return [None] + list(Authority.objects.all())
+
+    def create_dict(self, atype, val, existing, index):
+        obj = super(IdentifierSerializer, self).create_dict(atype, val, existing, index)
+        if existing:
+            obj['is_primary'] = existing.is_primary
         else:
-            # Include pointer to parent object (see annotate/serializers.py)
-            idname = get_ct(ident.content_object).identifier + '_id'
-            data[idname] = get_object_id(ident.content_object)
+            obj['is_primary'] = (index == 0)
+        return obj
 
-        return data
+    class Meta(TypedAttachmentSerializer.Meta):
+        exclude = TypedAttachmentSerializer.Meta.exclude + ('valid_from', 'valid_to')
+        read_only_fields = ('slug',)
 
 app.router.register_serializer(Identifier, IdentifierSerializer)

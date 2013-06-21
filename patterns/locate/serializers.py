@@ -48,6 +48,10 @@ class LocationSerializer(ModelSerializer):
         else:
             return None
 
+    def field_from_native(self, data, files, field_name, into):
+        # FIXME: not supported; set to empty array to avoid validation error
+        into[field_name] = []
+
     class Meta:
         exclude = ('content_type_id', 'for', 'object_id')
 

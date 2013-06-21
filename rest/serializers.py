@@ -65,7 +65,8 @@ class ModelSerializer(RestModelSerializer):
     def get_default_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_default_fields(*args, **kwargs)
         fields['id'] = IDField()
-        fields['label'] = Field(source='__unicode__')
+        if 'label' not in self.opts.exclude:
+            fields['label'] = Field(source='__unicode__')
         if 'view' not in self.context and 'router' not in self.context:
             return fields
 
@@ -126,11 +127,7 @@ class ModelSerializer(RestModelSerializer):
             accessor = rel.get_accessor_name()
             if accessor == rel.field.related_query_name():
                 cls = router.get_serializer_for_model(cct.model_class())
-                if self.opts.depth > 1:
-                    serializer = cls(context=self.context)
-                else:
-                    serializer = cls()
-                fields[accessor] = serializer
+                fields[accessor] = cls(context=self.context)
 
         return fields
 
@@ -138,7 +135,7 @@ class ModelSerializer(RestModelSerializer):
         model = model_field.rel.to
         if 'view' in self.context and getattr(self.context['view'], 'router', None):
             router = self.context['view'].router
-            return router.get_serializer_for_model(model)()
+            return router.get_serializer_for_model(model)(context=self.context)
         return super(ModelSerializer, self).get_nested_field(model_field)
 
     # Any IDRelatedField errors should be reported without the '_id' suffix
