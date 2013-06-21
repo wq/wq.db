@@ -46,13 +46,20 @@ class NaturalKeyModelManager(models.Manager):
 
         kwargs = self.natural_key_kwargs(*args) 
         for name, rel_to in self.model.get_natural_key_info():
+            if not rel_to:
+                continue
             # Automatically create any related objects as needed
-            if rel_to:
-                nested_key = rel_to.get_natural_key_fields()
-                nargs = []
-                for nname in nested_key:
-                    nargs.append(kwargs.pop(name + '__' + nname))
-                kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nargs)
+            nested_key = rel_to.get_natural_key_fields()
+            nargs = []
+            has_val = False
+            for nname in nested_key:
+                val = kwargs.pop(name + '__' + nname)
+                if val is not None and val != '':
+                    has_val = True
+                nargs.append(val)
+            if not has_val:
+                continue
+            kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nargs)
         return self.create(**kwargs)
 
     def get_or_create_by_natural_key(self, *args):
