@@ -44,7 +44,15 @@ class ContentType(DjangoContentType):
     def is_related(self):
         cls = self.model_class()
         return issubclass(cls, RelatedModel)
-        
+
+    @property
+    def has_geo_fields(self):
+        cls = self.model_class()
+        for fld in ('latitude', 'longitude', 'geometry'):
+            if fld in cls._meta.get_all_field_names():
+                return True
+        return False
+
     # Get foreign keys for this content type
     def get_parents(self):
         cls = self.model_class()

@@ -132,6 +132,9 @@ class Router(object):
                  if getattr(ct, 'is_' + name):
                      info[name] = True
 
+             if ct.is_located or ct.has_geo_fields:
+                 info['map'] = True
+
              for name in ('annotationtype', 'annotation'):
                  if ct.identifier != name and getattr(ct, 'is_' + name):
                      pages[name] = {'alias': ct.identifier}
