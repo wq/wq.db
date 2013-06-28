@@ -30,6 +30,14 @@ class LocationSerializer(ModelSerializer):
             data[idname] = get_object_id(loc.content_object)
         return data
 
+    def from_native(self, data, files):
+        if 'type' in data and 'geometry' in data:
+            obj = data['properties']
+            obj['id'] = data['id']
+            obj['geometry'] = data['geometry']
+            if 'crs' in data:
+                obj['geometry']['crs'] = data['crs']
+        return super(LocationSerializer, self).from_native(data, files)
 
     def field_to_native(self, obj, field_name):
         if not self.as_geometry:
@@ -49,8 +57,21 @@ class LocationSerializer(ModelSerializer):
             return None
 
     def field_from_native(self, data, files, field_name, into):
-        # FIXME: not supported; set to empty array to avoid validation error
-        into[field_name] = []
+        vals = data.get(field_name, None)
+        if isinstance(vals, basestring):
+            vals = json.loads(vals)
+        if isinstance(vals, dict) and vals.get('type', None) == "FeatureCollection":
+            if 'crs' in vals:
+                features = []
+                for feature in vals['features']:
+                    feature.update({
+                        'crs': vals['crs']
+                    })
+                    features.append(feature)
+            else:
+                features = vals['features']
+            data = { field_name: features }
+        return super(LocationSerializer, self).field_from_native(data, files, field_name, into)
 
     class Meta:
         exclude = ('content_type_id', 'for', 'object_id')

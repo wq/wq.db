@@ -3,6 +3,7 @@ from rest_framework.serializers import Field, WritableField, RelatedField, Prima
 from rest_framework.pagination import PaginationSerializer as RestPaginationSerializer
 
 from django.contrib.gis.db.models.fields import GeometryField as GISGeometryField
+from django.contrib.gis.geos import GEOSGeometry
 
 from django.conf import settings
 
@@ -12,6 +13,22 @@ class GeometryField(WritableField):
     def to_native(self, value):
         import json
         return json.loads(value.geojson)
+
+    def from_native(self, value):
+        import json
+        geom = GEOSGeometry(json.dumps(value))
+        srid = getattr(settings, 'SRID', 4326)
+
+        if 'crs' in value and value['crs'].get('type', None) == 'name':
+            name = value['crs']['properties']['name']
+            if name.startswith('urn:ogc:def:crs:EPSG::'):
+                geom.srid = int(name.replace('urn:ogc:def:crs:EPSG::', ''))
+            
+        if geom.srid is None:
+            geom.srid = 4326
+        if geom.srid != srid:
+            geom.transform(srid)
+        return geom
 
 class LabelRelatedField(RelatedField):
     def field_to_native(self, obj, field_name):

@@ -4,7 +4,7 @@ from django.contrib.contenttypes import generic
 from wq.db.patterns.base import SerializableGenericRelation
 
 from django.conf import settings
-SRID = getattr(settings, 'SRID', 3857)
+SRID = getattr(settings, 'SRID', 4326)
 
 class Location(models.Model):
     name       = models.CharField(max_length=255, null=True, blank=True)
