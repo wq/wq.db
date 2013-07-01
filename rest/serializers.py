@@ -69,10 +69,10 @@ class IDRelatedField(RelatedField):
 class ContentTypeField(RelatedField):
     read_only = False
     def to_native(self, obj):
-        return obj.name
+        return ContentType.objects.get(pk=obj.pk).identifier
 
     def from_native(self, data, files):
-        return ContentType.objects.get(name=data)
+        return get_ct(data)
 
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):

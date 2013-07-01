@@ -1,7 +1,14 @@
-from django.contrib.contenttypes.models import ContentType as DjangoContentType
+from django.contrib.contenttypes.models import (
+    ContentType as DjangoContentType, 
+    ContentTypeManager as DjangoContentTypeManager
+)
 from wq.db.patterns.models import AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
 from wq.db.patterns.models import RelationshipType
 from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
+
+class ContentTypeManager(DjangoContentTypeManager):
+    def get_by_identifier(self, identifier):
+        return self.get(model=identifier)
 
 class ContentType(DjangoContentType):
     @property
@@ -101,9 +108,12 @@ class ContentType(DjangoContentType):
         proxy = True
 
 def get_ct(model):
-    ctype = ContentType.objects.get_for_model(model)
-    # FIXME: get_for_model sometimes returns a DjangoContentType!
-    ctype = ContentType.objects.get(pk=ctype.pk)
+    if isinstance(model, basestring):
+        ctype = ContentType.objects.get_by_identifier(model)
+    else:
+        ctype = ContentType.objects.get_for_model(model)
+        # FIXME: get_for_model sometimes returns a DjangoContentType!
+        ctype = ContentType.objects.get(pk=ctype.pk)
     return ctype
 
 def get_object_id(instance):
