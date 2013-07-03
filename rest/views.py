@@ -3,13 +3,63 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import get_ct, get_object_id, get_by_identifier
 from django.conf import settings
+from django.core.cache import cache
 
 class View(generics.GenericAPIView):
     router = None
+    cached = False
 
     @property
     def template_name(self):
         return type(self).__name__.replace('View', '').lower() + '.html'
+
+    @property
+    def cached_models(self):
+        if not getattr(self, 'model', None):
+            return []
+        ct = get_ct(self.model)
+        models = [ct.identifier]
+        models += [pct for pct in ct.get_all_parents()]
+        models += [cct for cct in ct.get_all_children()]
+        return models
+
+    def can_cache(self, request):
+        if self.cached and request.method.lower() == 'get':
+            return True
+        return False
+
+    def get_cache_key(self, request):
+        key = "view_" + request.path
+        if request.META['QUERY_STRING']:
+            key += '?' + request.META['QUERY_STRING']
+        return key
+        
+    def get_cached(self, request):
+        if not self.can_cache(request):
+            return None
+        data = cache.get(self.get_cache_key(request))
+        if isinstance(data, dict):
+            data['from_cache'] = True
+        return data
+
+    def set_cached(self, request, data):
+        cache.set(self.get_cache_key(request), data, 1000000)
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_cached(request):
+            request = self.initialize_request(request, *args, **kwargs)
+            self.request = request
+            self.args = args
+            self.kwargs = kwargs
+            self.headers = self.default_response_headers
+            self.initial(request, *args, **kwargs)
+            response = Response(self.get_cached(request))
+            self.response = self.finalize_response(request, response, *args, **kwargs)
+        else:
+            response = super(View, self).dispatch(request, *args, **kwargs)
+            if self.can_cache:
+                self.set_cached(request, response.data)
+        return response
 
     def get_template_names(self):
         return [self.template_name]
@@ -43,6 +93,8 @@ class SimpleView(View):
         return Response({})
 
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
+    cached = True
+
     @property
     def template_name(self):
         if self.kwargs.get('mode', False) in ('edit', 'new'):
@@ -79,12 +131,16 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
         return obj
 
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
+    cached = True
+
     @property
     def template_name(self):
         return get_ct(self.model).identifier + '_list.html'
 
     def list(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).list(request, args, kwargs)
+        response = super(ListOrCreateModelView, self).list(request, *args, **kwargs)
+        if not isinstance(response.data, dict):
+            return response
 
         if 'target' in self.kwargs:
             response.data['target'] = self.kwargs['target']

@@ -112,16 +112,18 @@ def get_ct(model):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
         ctype = ContentType.objects.get_for_model(model)
-        # FIXME: get_for_model sometimes returns a DjangoContentType!
-        ctype = ContentType.objects.get(pk=ctype.pk)
+        # get_for_model sometimes returns a DjangoContentType - caching issue?
+        if not isinstance(ctype, ContentType):
+            ctype = ContentType.objects.get(pk=ctype.pk)
+            DjangoContentTypeManager._cache[(ctype.app_label, ctype.model)] = ctype
+            DjangoContentTypeManager._cache[ctype.pk] = ctype
     return ctype
 
 def get_object_id(instance):
     ct = get_ct(instance)
     if ct.is_identified:
-        ids = instance.identifiers.filter(is_primary=True)
-        if len(ids) > 0:
-            return ids[0].slug
+        if instance.primary_identifier:
+            return instance.primary_identifier.slug
     return instance.pk
 
 def get_by_identifier(queryset, ident):

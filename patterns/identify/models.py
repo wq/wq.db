@@ -6,6 +6,25 @@ from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 
 class IdentifierManager(models.Manager):
+    _cache = {}
+
+    @classmethod
+    def update_cache(cls, ident):
+        key = '%s-%s' % (ident.content_type_id, ident.object_id)
+        cls._cache[key] = ident
+
+    def get_for_object(self, obj):
+        ct = ContentType.objects.get_for_model(obj)
+        key = '%s-%s' % (ct.pk, obj.pk)
+        cache = type(self)._cache
+        if key in cache:
+            return cache[key]
+        ids = self.filter(content_type=ct, object_id=obj.pk, is_primary=True)
+        if ids.count() > 0:
+            cache[key] = ids[0]
+            return cache[key]
+        return None
+
     def filter_by_identifier(self, identifier):
         return self.filter(
             models.Q(slug=identifier) | models.Q(name=identifier)
@@ -80,6 +99,7 @@ class Identifier(models.Model):
             model = self.content_type.name
             self.slug = type(self).objects.find_unique_slug(self.name, model)
         super(Identifier, self).save(*args, **kwargs)
+        IdentifierManager.update_cache(self)
 
     def __unicode__(self):
         return self.name
@@ -158,9 +178,7 @@ class IdentifiedModel(NaturalKeyModel):
 
     @property
     def primary_identifier(self):
-        if self.primary_identifiers.count() > 0:
-            return self.primary_identifiers.all()[0]
-        return None
+        return Identifier.objects.get_for_object(self)
 
     def fallback_identifier(self):
         if hasattr(self, 'name'):
