@@ -24,7 +24,7 @@ class NaturalKeyModelManager(models.Manager):
                 continue
 
             # Extract natural key for related object
-            nested_key = self.extract_nested_key(name, rel_to, kwargs)
+            nested_key = extract_nested_key(kwargs, rel_to, name)
             if nested_key:
                 # Update kwargs with related object
                 try:
@@ -48,7 +48,7 @@ class NaturalKeyModelManager(models.Manager):
         for name, rel_to in self.model.get_natural_key_info():
             if not rel_to:
                 continue
-            nested_key = self.extract_nested_key(name, rel_to, kwargs)
+            nested_key = extract_nested_key(kwargs, rel_to, name)
             # Automatically create any related objects as needed
             if nested_key:
                 kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nested_key)
@@ -84,20 +84,6 @@ class NaturalKeyModelManager(models.Manager):
                             % len(natural_key))
         return dict(zip(natural_key, args))
 
-    def extract_nested_key(self, name, rel_to, key):
-        nested_key = rel_to.get_natural_key_fields()
-        values = []
-        has_val = False
-        for nname in nested_key:
-            val = key.pop(name + '__' + nname)
-            if val is not None and val != '':
-                has_val = True
-            values.append(val)
-        if has_val:
-            return values
-        else:
-            return None
-    
 class NaturalKeyModel(models.Model):
     """
     Abstract class with a generic implementation of natural_key.
@@ -151,3 +137,22 @@ class NaturalKeyModel(models.Model):
 
     class Meta:
         abstract = True
+
+def extract_nested_key(key, cls, prefix=''):
+    nested_key = cls.get_natural_key_fields()
+    values = []
+    has_val = False
+    if prefix:
+        prefix += '__'
+    for nname in nested_key:
+        val = key.pop(prefix + nname, None)
+        if not val and nname.endswith('__primary_identifiers__slug'):
+            nname = nname.replace('__primary_identifiers__slug', '')
+            val = key.pop(prefix + nname, None)
+        if val is not None and val != '':
+            has_val = True
+        values.append(val)
+    if has_val:
+        return values
+    else:
+        return None
