@@ -20,20 +20,20 @@ class NaturalKeyModelManager(models.Manager):
         # But, we should call each related model's get_by_natural_key in case 
         # it's been overridden
         for name, rel_to in self.model.get_natural_key_info():
-            if rel_to:
-                # Extract natural key for related object
-                nested_key = rel_to.get_natural_key_fields()
-                nargs = [
-                    kwargs.pop(name + '__' + nname)
-                    for nname in nested_key
-                ]
+            if not rel_to:
+                continue
 
+            # Extract natural key for related object
+            nested_key = self.extract_nested_key(name, rel_to, kwargs)
+            if nested_key:
                 # Update kwargs with related object
                 try:
-                    kwargs[name] = rel_to.objects.get_by_natural_key(*nargs)
+                    kwargs[name] = rel_to.objects.get_by_natural_key(*nested_key)
                 except rel_to.DoesNotExist:
                     # If related object doesn't exist, assume this one doesn't either
                     raise self.model.DoesNotExist()
+            else:
+                kwargs[name] = None
 
         return self.get(**kwargs)
 
@@ -48,18 +48,12 @@ class NaturalKeyModelManager(models.Manager):
         for name, rel_to in self.model.get_natural_key_info():
             if not rel_to:
                 continue
+            nested_key = self.extract_nested_key(name, rel_to, kwargs)
             # Automatically create any related objects as needed
-            nested_key = rel_to.get_natural_key_fields()
-            nargs = []
-            has_val = False
-            for nname in nested_key:
-                val = kwargs.pop(name + '__' + nname)
-                if val is not None and val != '':
-                    has_val = True
-                nargs.append(val)
-            if not has_val:
-                continue
-            kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nargs)
+            if nested_key:
+                kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nested_key)
+            else:
+                kwargs[name] = None
         return self.create(**kwargs)
 
     def get_or_create_by_natural_key(self, *args):
@@ -90,7 +84,20 @@ class NaturalKeyModelManager(models.Manager):
                             % len(natural_key))
         return dict(zip(natural_key, args))
 
-        
+    def extract_nested_key(self, name, rel_to, key):
+        nested_key = rel_to.get_natural_key_fields()
+        values = []
+        has_val = False
+        for nname in nested_key:
+            val = key.pop(name + '__' + nname)
+            if val is not None and val != '':
+                has_val = True
+            values.append(val)
+        if has_val:
+            return values
+        else:
+            return None
+    
 class NaturalKeyModel(models.Model):
     """
     Abstract class with a generic implementation of natural_key.

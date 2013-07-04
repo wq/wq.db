@@ -99,7 +99,8 @@ class Identifier(models.Model):
             model = self.content_type.name
             self.slug = type(self).objects.find_unique_slug(self.name, model)
         super(Identifier, self).save(*args, **kwargs)
-        IdentifierManager.update_cache(self)
+        if self.is_primary:
+            IdentifierManager.update_cache(self)
 
     def __unicode__(self):
         return self.name
