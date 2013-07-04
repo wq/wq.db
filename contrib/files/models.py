@@ -96,6 +96,11 @@ class BaseFile(AnnotatedModel, RelatedModel):
         abstract = True
 
 class File(BaseFile):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
     class Meta:
         db_table = 'wq_file'
         swappable = swapper.swappable_setting('files', 'File')
+
+# Tell south not to worry about the "custom" field type
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^wq.db.contrib.files.models.FileField"])
