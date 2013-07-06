@@ -8,6 +8,7 @@ from django.core.cache import cache
 class View(generics.GenericAPIView):
     router = None
     cached = False
+    depth = 0
 
     @property
     def template_name(self):
@@ -71,7 +72,7 @@ class View(generics.GenericAPIView):
 
     def get_serializer_class(self):
         if self.router is not None and self.model is not None:
-            return self.router.get_serializer_for_model(self.model)
+            return self.router.get_serializer_for_model(self.model, self.depth)
         return super(View, self).get_serializer_class()
 
     def get_paginate_by(self, queryset):
@@ -94,6 +95,7 @@ class SimpleView(View):
 
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
     cached = True
+    depth = 1 
 
     @property
     def template_name(self):
@@ -132,6 +134,7 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
 
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
     cached = True
+    depth = 0
 
     @property
     def template_name(self):

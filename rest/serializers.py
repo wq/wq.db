@@ -97,12 +97,26 @@ class ModelSerializer(RestModelSerializer):
         else:
             saving = self.context.get('saving', False)
 
+        def add_labels(name, field, qs):
+            # Add _id and _label for context
+            fields[name + '_id'] = IDRelatedField(
+                source   = name,
+                required = field.required,
+                queryset = qs
+            )
+            fields[name + '_label'] = LabelRelatedField(queryset=qs)
+                
         # Special handling for related fields
         for name, field in fields.items():
-            if not isinstance(field, PrimaryKeyRelatedField):
+
+            if not isinstance(field, ModelSerializer) and not isinstance(field, PrimaryKeyRelatedField):
                 continue
 
             model_field, model, direct, m2m = self.opts.model._meta.get_field_by_name(name)
+            if isinstance(field, ModelSerializer):
+                if not field.many and not m2m:
+                    add_labels(name, field, field.object)
+                continue
 
             if model_field.rel.to == DjangoContentType:
                 fields['for'] = ContentTypeField(source=name, queryset=field.queryset)
@@ -110,7 +124,7 @@ class ModelSerializer(RestModelSerializer):
                 continue
 
             geo = (self.context['request'].accepted_renderer.format == 'geojson')
-            if not geo and (many or (saving and not m2m)):
+            if self.opts.depth < 1 or (not geo and (many or (saving and not m2m))):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
                 # (Except when saving m2m items, in which case we need the nested field)
@@ -126,24 +140,19 @@ class ModelSerializer(RestModelSerializer):
             # Stop processing if this is a many-to-many-field
             if field.many or m2m:
                 continue
+            else:
+                add_labels(name, field, field.queryset)
+            
 
-            # Add _id and _label to context
-            fields[name + '_id'] = IDRelatedField(
-                source   = name,
-                queryset = field.queryset,
-                required = field.required
-            )
-            fields[name + '_label'] = LabelRelatedField(queryset=field.queryset)
-                
         # Add child objects (serialize with registered serializers)
-        if not router:
+        if not router or not self.opts.depth:
             return fields
 
         ct = get_ct(self.opts.model)
         for cct, rel in ct.get_children(include_rels=True):
             accessor = rel.get_accessor_name()
             if accessor == rel.field.related_query_name():
-                cls = router.get_serializer_for_model(cct.model_class())
+                cls = router.get_serializer_for_model(cct.model_class(), self.opts.depth-1)
                 fields[accessor] = cls(context=self.context)
 
         return fields
@@ -152,7 +161,8 @@ class ModelSerializer(RestModelSerializer):
         model = model_field.rel.to
         if 'view' in self.context and getattr(self.context['view'], 'router', None):
             router = self.context['view'].router
-            return router.get_serializer_for_model(model)(context=self.context)
+            cls = router.get_serializer_for_model(model, self.opts.depth-1)
+            return cls(context=self.context)
         return super(ModelSerializer, self).get_nested_field(model_field)
 
     # Any IDRelatedField errors should be reported without the '_id' suffix

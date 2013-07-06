@@ -30,7 +30,7 @@ class Router(object):
     def register_views(self, model, listview=None, instanceview=None):
         self._views[model] = listview, instanceview
 
-    def get_serializer_for_model(self, model_class):
+    def get_serializer_for_model(self, model_class, serializer_depth=None):
 
         if model_class in self._serializers:
             serializer = self._serializers[model_class]
@@ -44,6 +44,7 @@ class Router(object):
 
         class Serializer(serializer):
             class Meta(serializer.Meta):
+                depth = serializer_depth
                 model = model_class
         return Serializer
 
