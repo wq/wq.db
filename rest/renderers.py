@@ -14,7 +14,7 @@ class AMDRenderer(JSONPRenderer):
     default_callback = 'define'
 
 class GeoJSONRenderer(JSONRenderer):
-    media_type = 'application/geo+json'
+    media_type = 'application/json'
     format = 'geojson'
     disable_pagination = True
 
