@@ -1,6 +1,13 @@
 from rest_framework.renderers import JSONPRenderer, JSONRenderer
 from django.conf import settings
 
+class JSONRenderer(JSONRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if renderer_context and 'request' in renderer_context:
+            if not renderer_context['request'].is_ajax():
+                renderer_context['indent'] = 4
+        return super(JSONRenderer, self).render(data, accepted_media_type, renderer_context)
+
 class AMDRenderer(JSONPRenderer):
     media_type = 'application/javascript'
     format = 'js'
