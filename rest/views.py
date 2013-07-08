@@ -202,3 +202,4 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         response.data['parent_label'] = unicode(parent)
         response.data['parent_id']    = objid
         response.data['parent_url']   = '%s%s' % (urlbase, objid)
+        response.data['parent_is_' + ct.identifier] = True
