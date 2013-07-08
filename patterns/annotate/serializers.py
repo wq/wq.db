@@ -8,7 +8,7 @@ Annotation = swapper.load_model('annotate', 'Annotation')
 AnnotationType = swapper.load_model('annotate', 'AnnotationType')
 
 class AnnotationSerializer(TypedAttachmentSerializer):
-    value_field = 'value'
+    attachment_fields = ['id', 'value']
     type_model = AnnotationType
 
     @property

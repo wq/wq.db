@@ -5,7 +5,7 @@ from wq.db.rest.models import get_ct, get_object_id
 from wq.db.patterns.base import swapper
 
 class TypedAttachmentSerializer(ModelSerializer):
-    value_field = 'value'
+    attachment_fields = ['id']
     type_model = None
     type_field = 'type'
 
@@ -32,28 +32,14 @@ class TypedAttachmentSerializer(ModelSerializer):
     def expected_types(self):
         return self.type_model.objects.all()
 
-    def get_existing(self, atype, field_name):
-        if self.parent.object is None:
-            return None
-
-        filt = {}
-        if atype:
-            filt = {self.type_field: atype.pk}
-        else:
-            filt = {'%s__isnull' % self.type_field: True}
-
-        existing = getattr(self.parent.object, field_name).filter(**filt)
-        if existing.count() > 0:
-            return existing[0]
-        else:
-            return None
-
-    def create_dict(self, atype, val, existing, index):
-        return {
-            'id': existing.pk if existing else None,
+    def create_dict(self, atype, data, fields, index):
+        attachment = {
             self.type_field: atype.pk if atype else None,
-            self.value_field: val,
         }
+        for field in fields:
+            if fields[field] in data:
+                 attachment[field] = data[fields[field]]
+        return attachment
 
     def field_from_native(self, data, files, field_name, into):
         # Handle attachments that are submitted together with their parent object
@@ -72,13 +58,20 @@ class TypedAttachmentSerializer(ModelSerializer):
         ct = get_ct(self.opts.model)
         i = 0 
         for atype in self.expected_types:
-            fname = '%s-%s' % (ct.identifier, get_object_id(atype) if atype else '')
-            if fname not in data:
-                continue
-            existing = self.get_existing(atype, field_name)
-            for val in data.getlist(fname):
-                obj = self.create_dict(atype, val, existing, i)
-                attachments.append(obj)
+            fields = {
+                afield: '%s-%s-%s' % (
+                     ct.identifier,
+                     get_object_id(atype) if atype else '',
+                     afield
+                ) for afield in self.attachment_fields
+            }
+            found = False
+            for key in fields.values():
+                 if key in data:
+                     found = True
+            if found:
+                attachment = self.create_dict(atype, data, fields, i)
+                attachments.append(attachment)
                 i += 1
 
         # Send modified object to default implementation
@@ -88,4 +81,4 @@ class TypedAttachmentSerializer(ModelSerializer):
 
     class Meta:
         # Don't validate these fields (items are saved with their parent object)
-        exclude = ("content_type_id", "object_id", "label", "for")
+        exclude = ("content_type", "content_type_id", "object_id", "label", "for")

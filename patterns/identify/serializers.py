@@ -7,7 +7,7 @@ from .models import Identifier, Authority
 class IdentifierSerializer(TypedAttachmentSerializer):
     type_model = Authority
     type_field = 'authority'
-    value_field = 'name'
+    attachment_fields = ['id', 'name', 'slug', 'is_primary']
 
     url = serializers.Field()
 
@@ -15,11 +15,9 @@ class IdentifierSerializer(TypedAttachmentSerializer):
     def expected_types(self):
         return [None] + list(Authority.objects.all())
 
-    def create_dict(self, atype, val, existing, index):
-        obj = super(IdentifierSerializer, self).create_dict(atype, val, existing, index)
-        if existing:
-            obj['is_primary'] = existing.is_primary
-        else:
+    def create_dict(self, atype, data, fields, index):
+        obj = super(IdentifierSerializer, self).create_dict(atype, data, fields, index)
+        if 'is_primary' not in obj:
             obj['is_primary'] = (index == 0)
         return obj
 
