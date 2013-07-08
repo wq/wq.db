@@ -136,6 +136,14 @@ class Router(object):
              if ct.is_located or ct.has_geo_fields:
                  info['map'] = True
 
+             for field in cls._meta.fields:
+                 if field.choices:
+                      info.setdefault('choices', {})
+                      info['choices'][field.name] = [{
+                          'value': val,
+                          'label': unicode(label)
+                      } for val, label in field.choices]
+
              for name in ('annotationtype', 'annotation'):
                  if ct.identifier != name and getattr(ct, 'is_' + name):
                      pages[name] = {'alias': ct.identifier}
