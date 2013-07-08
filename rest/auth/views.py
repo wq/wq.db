@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from wq.db.rest import app
 from wq.db.rest.views import View, InstanceModelView
 
-class LoginView(View):
+class AuthView(View):
     def user_info(self, request):
         user_dict = app.router.serialize(request.user)
         user_dict['id'] = request.user.pk
@@ -15,12 +15,20 @@ class LoginView(View):
             'config': app.router.get_config(request.user),
             'csrftoken': csrf.get_token(request),
         })
+    
+    def csrf_info(self, request):
+        response = {}
+        token = csrf.get_token(request)
+        if token:
+            response['csrftoken'] = token
+        return Response(response)
 
+class LoginView(AuthView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             return self.user_info(request)
         else:
-            return Response({})
+            return self.csrf_info(request)
 
     def post(self, request, *args, **kwargs):
         username = request.POST['username']
@@ -32,11 +40,11 @@ class LoginView(View):
         else:
             raise AuthenticationFailed(detail="Invalid username or password")
 
-class LogoutView(View):
+class LogoutView(AuthView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             logout(request)
-        return Response({})
+        return self.csrf_info()
 
 class UserDetailView(InstanceModelView):
     def get_slug_field(self):
