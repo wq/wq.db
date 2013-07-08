@@ -122,18 +122,17 @@ class ModelSerializer(RestModelSerializer):
                 continue
 
             model_field, model, direct, m2m = self.opts.model._meta.get_field_by_name(name)
-            if isinstance(field, ModelSerializer):
-                if not field.many and not m2m:
-                    add_labels(name, field, field.object)
-                continue
 
             if model_field.rel.to == DjangoContentType:
-                fields['for'] = ContentTypeField(source=name, queryset=field.queryset)
+                fields['for'] = ContentTypeField(
+                    source=name,
+                    queryset=getattr(field, 'object', getattr(field, 'queryset', None))
+                )
                 del fields[name]
                 continue
 
             geo = (self.context['request'].accepted_renderer.format == 'geojson')
-            if self.opts.depth < 1 or (not geo and (many or (saving and not m2m))):
+            if self.opts.depth < 1 and not geo and (not saving or not m2m):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
                 # (Except when saving m2m items, in which case we need the nested field)
@@ -150,7 +149,7 @@ class ModelSerializer(RestModelSerializer):
             if field.many or m2m:
                 continue
             else:
-                add_labels(name, field, field.queryset)
+                add_labels(name, field, getattr(field, 'object', getattr(field, 'queryset', None)))
             
 
         # Add child objects (serialize with registered serializers)
