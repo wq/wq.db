@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer as RestModelSerializer
-from rest_framework.serializers import Field, WritableField, RelatedField, PrimaryKeyRelatedField
+from rest_framework.serializers import Field, DateTimeField, WritableField, RelatedField, PrimaryKeyRelatedField
 from rest_framework.pagination import PaginationSerializer as RestPaginationSerializer
 
 from django.contrib.gis.db.models.fields import GeometryField as GISGeometryField
@@ -74,6 +74,12 @@ class ContentTypeField(RelatedField):
     def from_native(self, data, files):
         return get_ct(data)
 
+class LocalDateTimeField(Field):
+    read_only = True
+    def to_native(self, obj):
+        from django.utils import timezone
+        return timezone.localtime(obj).strftime('%Y-%m-%d %I:%M %p')
+
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
         self.field_mapping[GISGeometryField] = GeometryField
@@ -108,6 +114,9 @@ class ModelSerializer(RestModelSerializer):
                 
         # Special handling for related fields
         for name, field in fields.items():
+
+            if isinstance(field, DateTimeField):
+                fields[name + '_label'] = LocalDateTimeField(name)
 
             if not isinstance(field, ModelSerializer) and not isinstance(field, PrimaryKeyRelatedField):
                 continue
