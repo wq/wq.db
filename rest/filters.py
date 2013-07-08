@@ -26,7 +26,7 @@ class FilterBackend(DjangoFilterBackend):
                     del kwargs[key]
                     pcls = f.rel.to
                     router = getattr(view, 'router', None)
-                    if router and pcls in router._views:
+                    if router and pcls in router._views and router._views[pcls][1]:
                         lv, dv = router._views[pcls]
                         slug = dv().get_slug_field()
                         kwargs[f.name] = pcls.objects.get(**{slug: val})

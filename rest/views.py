@@ -188,7 +188,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             return
 
         pcls = ct.model_class()
-        if self.router and pcls in self.router._views:
+        if self.router and pcls in self.router._views and self.router._views[pcls][1]:
             lv, dv = self.router._views[pcls]
             slug = dv().get_slug_field()
             parent = pcls.objects.get(**{slug: pid})
