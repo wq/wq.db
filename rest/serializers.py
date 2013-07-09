@@ -132,7 +132,7 @@ class ModelSerializer(RestModelSerializer):
                 continue
 
             geo = (self.context['request'].accepted_renderer.format == 'geojson')
-            if self.opts.depth < 1 and not geo and (not saving or not m2m):
+            if (self.opts.depth < 1 and not geo and not (saving and m2m)) or (saving and not m2m):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
                 # (Except when saving m2m items, in which case we need the nested field)
@@ -149,8 +149,10 @@ class ModelSerializer(RestModelSerializer):
             if field.many or m2m:
                 continue
             else:
-                add_labels(name, field, getattr(field, 'object', getattr(field, 'queryset', None)))
-            
+                if isinstance(field, PrimaryKeyRelatedField):
+                    add_labels(name, field, field.queryset)
+                else:
+                    add_labels(name, field, field.opts.model.objects)
 
         # Add child objects (serialize with registered serializers)
         if not router or not self.opts.depth:

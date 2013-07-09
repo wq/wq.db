@@ -39,6 +39,8 @@ class TypedAttachmentSerializer(ModelSerializer):
         for field in fields:
             if fields[field] in data:
                  attachment[field] = data[fields[field]]
+                 if field == 'id':
+                     attachment[field] = int(attachment[field])
         return attachment
 
     def field_from_native(self, data, files, field_name, into):
