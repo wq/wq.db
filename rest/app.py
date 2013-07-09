@@ -48,13 +48,17 @@ class Router(object):
                 model = model_class
         return Serializer
 
-    def serialize(self, obj, many=False):
+    def serialize(self, obj, many=False, depth=None):
         if many:
             # assume obj is a queryset
             model = obj.model
+            if depth is None:
+                depth = 0
         else:
             model = obj
-        serializer = self.get_serializer_for_model(model)
+            if depth is None:
+                depth = 1
+        serializer = self.get_serializer_for_model(model, depth)
         return serializer(obj, many=many).data
 
     def get_paginate_by_for_model(self, model_class):
