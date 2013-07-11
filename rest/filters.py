@@ -7,7 +7,7 @@ class FilterBackend(DjangoFilterBackend):
     def filter_queryset(self, request, queryset, view):
         kwargs = {}
         for key, val in view.kwargs.items() + request.GET.items():
-            if key in RESERVED_PARAMETERS:
+            if key in RESERVED_PARAMETERS or key in view.ignore_kwargs:
                 continue
             kwargs[key] = val if isinstance(val, unicode) else val[0]
         model = getattr(view, 'model', None) or queryset.model

@@ -4,6 +4,7 @@ from rest_framework.pagination import PaginationSerializer as RestPaginationSeri
 
 from django.contrib.gis.db.models.fields import GeometryField as GISGeometryField
 from django.contrib.gis.geos import GEOSGeometry
+from django.utils import timezone
 
 from django.conf import settings
 
@@ -77,7 +78,8 @@ class ContentTypeField(RelatedField):
 class LocalDateTimeField(Field):
     read_only = True
     def to_native(self, obj):
-        from django.utils import timezone
+        if obj is None:
+            return None
         return timezone.localtime(obj).strftime('%Y-%m-%d %I:%M %p')
 
 class ModelSerializer(RestModelSerializer):
@@ -131,7 +133,7 @@ class ModelSerializer(RestModelSerializer):
                 del fields[name]
                 continue
 
-            geo = (self.context['request'].accepted_renderer.format == 'geojson')
+            geo = ('request' in self.context and self.context['request'].accepted_renderer.format == 'geojson')
             if (self.opts.depth < 1 and not geo and not (saving and m2m)) or (saving and not m2m):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).

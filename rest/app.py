@@ -36,9 +36,9 @@ class Router(object):
             serializer = self._serializers[model_class]
         else:
             # Make sure we're not dealing with a proxy
-            model_class = get_ct(model_class).model_class()
-            if model_class in self._serializers:
-                serializer = self._serializers[model_class]
+            real_model = get_ct(model_class).model_class()
+            if real_model in self._serializers:
+                serializer = self._serializers[real_model]
             else:
                 serializer = api_settings.DEFAULT_MODEL_SERIALIZER_CLASS
 
@@ -59,7 +59,7 @@ class Router(object):
             if depth is None:
                 depth = 1
         serializer = self.get_serializer_for_model(model, depth)
-        return serializer(obj, many=many).data
+        return serializer(obj, many=many, context={'router': self}).data
 
     def get_paginate_by_for_model(self, model_class):
         name = get_ct(model_class).identifier
@@ -89,9 +89,9 @@ class Router(object):
             listview, detailview = self._views[model]
         else:
             # Make sure we're not dealing with a proxy
-            model = get_ct(model).model_class()
-            if model in self._views:
-                listview, detailview = self._views[model]
+            real_model = get_ct(model).model_class()
+            if real_model in self._views:
+                listview, detailview = self._views[real_model]
             else:
                 listview, detailview = None, None
         listview = listview or ListOrCreateModelView

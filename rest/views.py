@@ -9,6 +9,7 @@ class View(generics.GenericAPIView):
     router = None
     cached = False
     depth = 0
+    ignore_kwargs = []
 
     @property
     def template_name(self):
@@ -203,3 +204,4 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         response.data['parent_id']    = objid
         response.data['parent_url']   = '%s%s' % (urlbase, objid)
         response.data['parent_is_' + ct.identifier] = True
+        return parent

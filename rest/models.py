@@ -111,7 +111,7 @@ def get_ct(model):
     if isinstance(model, basestring):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
-        ctype = ContentType.objects.get_for_model(model)
+        ctype = ContentType.objects.get_for_model(model, for_concrete_model=False)
         # get_for_model sometimes returns a DjangoContentType - caching issue?
         if not isinstance(ctype, ContentType):
             ctype = ContentType.objects.get(pk=ctype.pk)
