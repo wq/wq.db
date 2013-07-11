@@ -107,11 +107,11 @@ class ContentType(DjangoContentType):
     class Meta:
         proxy = True
 
-def get_ct(model):
+def get_ct(model, for_concrete_model=False):
     if isinstance(model, basestring):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
-        ctype = ContentType.objects.get_for_model(model, for_concrete_model=False)
+        ctype = ContentType.objects.get_for_model(model, for_concrete_model=for_concrete_model)
         # get_for_model sometimes returns a DjangoContentType - caching issue?
         if not isinstance(ctype, ContentType):
             ctype = ContentType.objects.get(pk=ctype.pk)

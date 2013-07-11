@@ -36,7 +36,7 @@ class Router(object):
             serializer = self._serializers[model_class]
         else:
             # Make sure we're not dealing with a proxy
-            real_model = get_ct(model_class).model_class()
+            real_model = get_ct(model_class, True).model_class()
             if real_model in self._serializers:
                 serializer = self._serializers[real_model]
             else:
@@ -89,7 +89,7 @@ class Router(object):
             listview, detailview = self._views[model]
         else:
             # Make sure we're not dealing with a proxy
-            real_model = get_ct(model).model_class()
+            real_model = get_ct(model, True).model_class()
             if real_model in self._views:
                 listview, detailview = self._views[real_model]
             else:
