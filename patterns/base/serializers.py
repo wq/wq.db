@@ -8,6 +8,7 @@ class TypedAttachmentSerializer(ModelSerializer):
     attachment_fields = ['id']
     type_model = None
     type_field = 'type'
+    object_field = 'content_object'
 
     def to_native(self, obj):
         data = super(TypedAttachmentSerializer, self).to_native(obj)
@@ -24,8 +25,9 @@ class TypedAttachmentSerializer(ModelSerializer):
             # This lets us pretend the generic foreign key is a regular one in client.
             # For the value, Use get_object_id insted of obj.object_id, in case the
             # the content object is an IdentifiedModel
-            idname = get_ct(obj.content_object).identifier + '_id'
-            data[idname] = get_object_id(obj.content_object)
+            parent_obj = getattr(obj, self.object_field)
+            idname = get_ct(parent_obj).identifier + '_id'
+            data[idname] = get_object_id(parent_obj)
         return data
 
     @property

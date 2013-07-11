@@ -105,6 +105,7 @@ class Relationship(models.Model):
     def right(self, value):
         self.to_content_object = value
 
+    @property
     def right_object_id(self):
         return self.to_object_id
 
@@ -146,12 +147,13 @@ class InverseRelationship(Relationship):
     def right(self, value):
         self.from_content_object = value
 
+    @property
     def right_object_id(self):
         return self.from_object_id
 
     @property
     def reltype(self):
-        return InverseRelationshipType.objects.filter(pk=self.type.pk)[0]
+        return InverseRelationshipType.objects.get(pk=self.type.pk)
     
     class Meta:
         proxy = True

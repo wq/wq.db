@@ -1,58 +1,60 @@
-from wq.db.rest.serializers import ModelSerializer
+from wq.db.rest.serializers import ModelSerializer, ContentTypeField
+from wq.db.patterns.base.serializers import TypedAttachmentSerializer
 from wq.db.rest import app
-from wq.db.rest.models import get_ct, get_object_id
+from wq.db.rest.models import get_ct, get_object_id, get_by_identifier
 
-from .models import Relationship, InverseRelationship
+from .models import Relationship, InverseRelationship, RelationshipType, InverseRelationshipType
 
-class RelationshipSerializer(ModelSerializer):
+class RelationshipSerializer(TypedAttachmentSerializer):
+    attachment_fields = ['id', 'item_id']
+    type_model = RelationshipType
+    object_field = 'left'
+    item_id_field = 'to_object_id'
+    parent_id_field = 'from_object_id'
+
+    def get_default_fields(self):
+        fields = super(RelationshipSerializer, self).get_default_fields()
+        del fields[self.parent_id_field]
+        return fields
 
     def to_native(self, rel):
+        data = super(RelationshipSerializer, self).to_native(rel)
+        del data[self.item_id_field]
         oid = get_object_id(rel.right)
         ct = get_ct(rel.right)
-        data = {
-            'id':    rel.pk,
-            'type':  unicode(rel.reltype),
-            'label': unicode(rel.right),
-            'id':    oid,
-            'url':   '%s/%s' % (ct.urlbase, oid)
-        }
-
-        has_parent = self.parent and hasattr(self.parent.opts, 'model')
-        if has_parent:
-            pass
-        else:
-            # Include pointer to parent object (see base/serializers.py)
-            idname = get_ct(rel.left).identifier + '_id'
-            data[idname] = get_object_id(rel.left)
-
+        data.update({
+            'item_label': unicode(rel.right),
+            'item_url':   '%s/%s' % (ct.urlbase, oid),
+            'item_page': ct.identifier,
+            'item_id': oid
+        })
         return data
 
-    def field_to_native(self, obj, field_name):
-        # Group relationships by type to facilitate cleaner template rendering
+    def create_dict(self, atype, data, fields, index):
+        attachment = super(RelationshipSerializer, self).create_dict(atype, data, fields, index)
+        if 'item_id' in attachment and 'type' in attachment:
+             type = self.type_model.objects.get(pk=attachment['type'])
+             cls = type.left.model_class()
+             obj = get_by_identifier(cls.objects, attachment['item_id'])
+             attachment[self.item_id_field] = obj.pk
+             del attachment['item_id']
+        return attachment
 
-        has_parent = self.parent and hasattr(self.parent.opts, 'model')
-        if not has_parent:
-            return super(RelationshipSerializer, self).field_to_native(obj, field_name)
 
-        groups = {}
-        rels = getattr(obj, field_name).all()
+class InverseRelationshipSerializer(RelationshipSerializer):
+    item_id_field = 'from_object_id'
+    parent_id_field = 'to_object_id'
+    def get_default_fields(self):
+        fields = super(InverseRelationshipSerializer, self).get_default_fields()
+        fields['type_label'].source = 'reltype'
+        return fields
 
-        for rel in rels:
-            data = self.to_native(rel)
-            if data['type'] not in groups:
-                groups[data['type']] = []
-            groups[data['type']].append(data)
-            del data['type']
-
-        return [
-            {
-                'type': key,
-                'list': val
-            } for key, val in groups.items()
-        ]
-
-    def field_from_native(self, data, files, field_name, into):
-        # FIXME: not supported; set to empty array to avoid validation error
-        into[field_name] = []
+class RelationshipTypeSerializer(ModelSerializer):
+    from_type = ContentTypeField()
+    to_type = ContentTypeField()
+    class Meta:
+        exclude = ('for',)
 
 app.router.register_serializer(Relationship, RelationshipSerializer)
+app.router.register_serializer(InverseRelationship, InverseRelationshipSerializer)
+app.router.register_serializer(RelationshipType, RelationshipTypeSerializer)
