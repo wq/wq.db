@@ -34,7 +34,7 @@ class RelationshipSerializer(TypedAttachmentSerializer):
         attachment = super(RelationshipSerializer, self).create_dict(atype, data, fields, index)
         if 'item_id' in attachment and 'type' in attachment:
              type = self.type_model.objects.get(pk=attachment['type'])
-             cls = type.left.model_class()
+             cls = type.right.model_class()
              obj = get_by_identifier(cls.objects, attachment['item_id'])
              attachment[self.item_id_field] = obj.pk
              del attachment['item_id']
@@ -44,6 +44,7 @@ class RelationshipSerializer(TypedAttachmentSerializer):
 class InverseRelationshipSerializer(RelationshipSerializer):
     item_id_field = 'from_object_id'
     parent_id_field = 'to_object_id'
+    type_model = InverseRelationshipType
     def get_default_fields(self):
         fields = super(InverseRelationshipSerializer, self).get_default_fields()
         fields['type_label'].source = 'reltype'

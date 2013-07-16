@@ -6,6 +6,7 @@ from wq.db.patterns.base import swapper
 
 class TypedAttachmentSerializer(ModelSerializer):
     attachment_fields = ['id']
+    required_fields = []
     type_model = None
     type_field = 'type'
     object_field = 'content_object'
@@ -41,8 +42,11 @@ class TypedAttachmentSerializer(ModelSerializer):
         for field in fields:
             if fields[field] in data:
                  attachment[field] = data[fields[field]]
-                 if field == 'id':
+                 if field == 'id' and attachment[field]:
                      attachment[field] = int(attachment[field])
+        for field in self.required_fields:
+            if not attachment.get(field, None):
+                 return None
         return attachment
 
     def field_from_native(self, data, files, field_name, into):
@@ -75,7 +79,8 @@ class TypedAttachmentSerializer(ModelSerializer):
                      found = True
             if found:
                 attachment = self.create_dict(atype, data, fields, i)
-                attachments.append(attachment)
+                if attachment:
+                    attachments.append(attachment)
                 i += 1
 
         # Send modified object to default implementation

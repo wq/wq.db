@@ -31,10 +31,11 @@ class LocationSerializer(ModelSerializer):
         return data
 
     def from_native(self, data, files):
-        if 'type' in data and 'geometry' in data:
+        if data.get('type', None) == 'Feature' and 'properties' in data and 'geometry' in data:
             obj = data['properties']
-            obj['id'] = data['id']
             obj['geometry'] = data['geometry']
+            if 'id' in data:
+                obj['id'] = data['id']
             if 'crs' in data:
                 obj['geometry']['crs'] = data['crs']
         return super(LocationSerializer, self).from_native(data, files)
@@ -58,7 +59,7 @@ class LocationSerializer(ModelSerializer):
 
     def field_from_native(self, data, files, field_name, into):
         vals = data.get(field_name, None)
-        if isinstance(vals, basestring):
+        if isinstance(vals, basestring) and vals.strip() != '':
             vals = json.loads(vals)
         if isinstance(vals, dict) and vals.get('type', None) == "FeatureCollection":
             if 'crs' in vals:
@@ -71,6 +72,8 @@ class LocationSerializer(ModelSerializer):
             else:
                 features = vals['features']
             data = { field_name: features }
+        else:
+            data = { field_name: [] }
         return super(LocationSerializer, self).field_from_native(data, files, field_name, into)
 
     class Meta:
