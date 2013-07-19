@@ -3,7 +3,8 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import get_ct, get_object_id, get_by_identifier
 from django.conf import settings
-from django.core.cache import cache
+
+from .caching import jc_backend, MIDDLEWARE_SECONDS
 
 class View(generics.GenericAPIView):
     router = None
@@ -20,32 +21,44 @@ class View(generics.GenericAPIView):
         if not getattr(self, 'model', None):
             return []
         ct = get_ct(self.model)
-        models = [ct.identifier]
-        models += [pct for pct in ct.get_all_parents()]
-        models += [cct for cct in ct.get_all_children()]
-        return models
+        ctypes = [ct]
+        ctypes += [pct for pct in ct.get_all_parents()]
+        ctypes += [cct for cct in ct.get_all_children()]
+        return [ctype.model_class() for ctype in ctypes]
 
     def can_cache(self, request):
-        if self.cached and request.method.lower() == 'get':
+        if jc_backend and self.cached and request.method.lower() == 'get':
             return True
         return False
 
     def get_cache_key(self, request):
-        key = "view_" + request.path
-        if request.META['QUERY_STRING']:
-            key += '?' + request.META['QUERY_STRING']
-        return key
+        def resolve_table(model):
+            return model._meta.db_table
+        tables = map(resolve_table, self.cached_models)
+        genkey = jc_backend.keyhandler.get_generation(*tables)
+        
+        pathkey = jc_backend.keyhandler.keygen.gen_key(
+            request.path, 
+            request.META.get('QUERY_STRING', "")
+        )
+        return "%s_wq_view_%s.%s" % (
+            jc_backend.keyhandler.prefix, genkey, pathkey
+        )
         
     def get_cached(self, request):
         if not self.can_cache(request):
             return None
-        data = cache.get(self.get_cache_key(request))
+        data = jc_backend.cache_backend.get(self.get_cache_key(request))
         if isinstance(data, dict):
             data['from_cache'] = True
         return data
 
     def set_cached(self, request, data):
-        cache.set(self.get_cache_key(request), data, 1000000)
+        jc_backend.cache_backend.set(
+            self.get_cache_key(request),
+            data,
+            MIDDLEWARE_SECONDS
+        )
 
     def dispatch(self, request, *args, **kwargs):
         if self.get_cached(request):
