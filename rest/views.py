@@ -72,7 +72,7 @@ class View(generics.GenericAPIView):
             self.response = self.finalize_response(request, response, *args, **kwargs)
         else:
             response = super(View, self).dispatch(request, *args, **kwargs)
-            if self.can_cache:
+            if self.can_cache(request):
                 self.set_cached(request, response.data)
         return response
 
