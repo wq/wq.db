@@ -89,9 +89,9 @@ class Identifier(models.Model):
 
     @property
     def url(self):
-        if (self.authority is None or self.authority.object_url is None):
-            return self.slug
-	else:
+        if (not self.authority or not self.authority.object_url):
+            return None
+        else:
             return self.authority.object_url % self.slug
 
     def save(self, *args, **kwargs):
