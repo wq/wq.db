@@ -44,7 +44,7 @@ class LogoutView(AuthView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             logout(request)
-        return self.csrf_info()
+        return self.csrf_info(request)
 
 class UserDetailView(InstanceModelView):
     def get_slug_field(self):
