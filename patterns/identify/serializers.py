@@ -25,7 +25,6 @@ class IdentifierSerializer(TypedAttachmentSerializer):
         return obj
 
     class Meta(TypedAttachmentSerializer.Meta):
-        exclude = TypedAttachmentSerializer.Meta.exclude + ('valid_from', 'valid_to')
         read_only_fields = ('slug',)
 
 app.router.register_serializer(Identifier, IdentifierSerializer)

@@ -77,8 +77,6 @@ class Identifier(models.Model):
     slug       = models.SlugField()
     authority  = models.ForeignKey('Authority', blank=True, null=True)
     is_primary = models.BooleanField()
-    valid_from = models.DateField(blank=True, null=True)
-    valid_to   = models.DateField(blank=True, null=True)
 
     # Identifer can contain a pointer to any model
     content_type   = models.ForeignKey(ContentType)

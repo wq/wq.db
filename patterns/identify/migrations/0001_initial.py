@@ -15,8 +15,6 @@ class Migration(SchemaMigration):
             ('slug', self.gf('django.db.models.fields.SlugField')(max_length=50, db_index=True)),
             ('authority', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['identify.Authority'], null=True, blank=True)),
             ('is_primary', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('valid_from', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('valid_to', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
             ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
             ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
@@ -71,9 +69,7 @@ class Migration(SchemaMigration):
             'is_primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'}),
-            'valid_from': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'valid_to': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'})
         }
     }
 

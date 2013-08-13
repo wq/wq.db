@@ -49,9 +49,7 @@ LEFT OUTER JOIN wq_identifiertype a ON i.authority_id = a.id;''')
             'is_primary': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'}),
-            'valid_from': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'valid_to': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
+            'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50', 'db_index': 'True'})
         }
     }
 
