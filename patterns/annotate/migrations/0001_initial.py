@@ -29,7 +29,7 @@ class Migration(SchemaMigration):
                 ('type', self.gf('django.db.models.fields.related.ForeignKey')(to=AnnotationType)),
                 ('value', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
                 ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
-                ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')()),
+                ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')(db_index=True)),
             ))
             db.send_create_signal('annotate', ['Annotation'])
 
