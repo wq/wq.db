@@ -80,7 +80,9 @@ class LocalDateTimeField(Field):
     def to_native(self, obj):
         if obj is None:
             return None
-        return timezone.localtime(obj).strftime('%Y-%m-%d %I:%M %p')
+        if obj.tzinfo:
+            obj = timezone.localtime(obj)
+        return obj.strftime('%Y-%m-%d %I:%M %p')
 
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
