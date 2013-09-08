@@ -2,7 +2,7 @@ from rest_framework.serializers import ModelSerializer as RestModelSerializer
 from rest_framework.serializers import Field, DateTimeField, WritableField, RelatedField, PrimaryKeyRelatedField
 from rest_framework.pagination import PaginationSerializer as RestPaginationSerializer
 
-from django.contrib.gis.db.models.fields import GeometryField as GISGeometryField
+from django.contrib.gis.db.models import fields
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
 
@@ -12,6 +12,8 @@ from .models import DjangoContentType, ContentType, get_ct, get_object_id, get_b
 
 class GeometryField(WritableField):
     def to_native(self, value):
+        if value is None:
+            return None
         import json
         return json.loads(value.geojson)
 
@@ -86,7 +88,10 @@ class LocalDateTimeField(Field):
 
 class ModelSerializer(RestModelSerializer):
     def __init__(self, *args, **kwargs):
-        self.field_mapping[GISGeometryField] = GeometryField
+        for field in ('Geometry', 'GeometryCollection',
+                      'Point', 'LineString', 'Polygon',
+                      'MultiPoint', 'MultiLineString', 'MultiPolygon'):
+             self.field_mapping[getattr(fields, field + 'Field')] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
     def get_default_fields(self, *args, **kwargs):
