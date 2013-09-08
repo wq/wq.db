@@ -33,7 +33,7 @@ class Swapper(object):
             for model in models
         }
 
-    def load_model(self, app_label, model, orm=None):
+    def load_model(self, app_label, model, orm=None, required=True):
         swapped = self.is_swapped(app_label, model)
         if swapped:
             app_label, model = swapped.split('.')
@@ -43,7 +43,7 @@ class Swapper(object):
         
         from django.db.models import get_model
         cls = get_model(app_label, model)
-        if cls is None:
+        if cls is None and required:
             raise ImproperlyConfigured("Could not find %s.%s!" % (app_label, model))
         return cls
 
