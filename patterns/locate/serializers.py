@@ -6,6 +6,7 @@ import json
 
 from .models import Location
 
+
 class LocationSerializer(ModelSerializer):
 
     @property
@@ -31,7 +32,8 @@ class LocationSerializer(ModelSerializer):
         return data
 
     def from_native(self, data, files):
-        if data.get('type', None) == 'Feature' and 'properties' in data and 'geometry' in data:
+        if (data.get('type', None) == 'Feature'
+                and 'properties' in data and 'geometry' in data):
             obj = data['properties']
             obj['geometry'] = data['geometry']
             if 'id' in data:
@@ -42,7 +44,9 @@ class LocationSerializer(ModelSerializer):
 
     def field_to_native(self, obj, field_name):
         if not self.as_geometry:
-            return super(LocationSerializer, self).field_to_native(obj, field_name)
+            return super(LocationSerializer, self).field_to_native(
+                obj, field_name
+            )
 
         loc = getattr(obj, field_name or self.source)
         if loc.count() == 1:
@@ -61,7 +65,8 @@ class LocationSerializer(ModelSerializer):
         vals = data.get(field_name, None)
         if isinstance(vals, basestring) and vals.strip() != '':
             vals = json.loads(vals)
-        if isinstance(vals, dict) and vals.get('type', None) == "FeatureCollection":
+        if (isinstance(vals, dict) and
+                vals.get('type', None) == "FeatureCollection"):
             if 'crs' in vals:
                 features = []
                 for feature in vals['features']:
@@ -71,10 +76,12 @@ class LocationSerializer(ModelSerializer):
                     features.append(feature)
             else:
                 features = vals['features']
-            data = { field_name: features }
+            data = {field_name: features}
         else:
-            data = { field_name: [] }
-        return super(LocationSerializer, self).field_from_native(data, files, field_name, into)
+            data = {field_name: []}
+        return super(LocationSerializer, self).field_from_native(
+            data, files, field_name, into
+        )
 
     class Meta:
         exclude = ('content_type_id', 'for', 'object_id')

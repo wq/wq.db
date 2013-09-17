@@ -5,6 +5,7 @@ from itertools import chain
 # to make the 'type' field readonly for existing annotations in an
 # AnnotationInline. This is done here by extending the Select widget.
 
+
 class SelectOnce(Select):
     def render(self, name, value, attrs=None, choices=()):
         if value is None:
@@ -12,9 +13,12 @@ class SelectOnce(Select):
         else:
             for option_value, option_label in chain(self.choices, choices):
                 if str(option_value) == str(value):
-                    return ("<p>%s</p><input type='hidden' name='%s' value='%s'>"
-                             % (option_label, name, value))
-        return "<p>Not Found</p>" 
+                    return (
+                        "<p>%s</p><input type='hidden' name='%s' value='%s'>"
+                        % (option_label, name, value)
+                    )
+        return "<p>Not Found</p>"
+
 
 class AnnotationForm(ModelForm):
     class Meta:

@@ -2,6 +2,7 @@ from rest_framework import resources
 from wq.db.rest import util
 from wq.db.patterns.models import Identifier, Annotation
 
+
 class SearchResource(resources.Resource):
     def search(self, query, auto=True):
 
@@ -12,7 +13,9 @@ class SearchResource(resources.Resource):
         id_like_matches = Identifier.objects.filter(name__icontains=query)
         annot_like_matches = Annotation.objects.filter(value__icontains=query)
 
-        result = util.MultiQuerySet(id_matches, id_like_matches, annot_like_matches)
+        result = util.MultiQuerySet(
+            id_matches, id_like_matches, annot_like_matches
+        )
         return result
 
     def serialize_model(self, obj):
@@ -22,8 +25,8 @@ class SearchResource(resources.Resource):
         else:
             ctype = util.get_ct(obj)
         return {
-            'url':   '%s/%s' % (util.geturlbase(ctype),
-                                util.get_object_id(obj)),
-            'type':  unicode(ctype),
+            'url': '%s/%s' % (util.geturlbase(ctype),
+                              util.get_object_id(obj)),
+            'type': unicode(ctype),
             'label': unicode(obj)
         }

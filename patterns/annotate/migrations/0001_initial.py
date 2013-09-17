@@ -5,6 +5,7 @@ from south.v2 import SchemaMigration
 from django.db import models
 from wq.db.patterns.base import swapper
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
@@ -37,7 +38,6 @@ class Migration(SchemaMigration):
             db.execute("""CREATE INDEX wq_annotation_idx ON wq_annotation
                              (content_type_id, object_id)""")
 
-
     def backwards(self, orm):
 
         if not swapper.is_swapped('annotate', 'AnnotationType'):
@@ -46,11 +46,10 @@ class Migration(SchemaMigration):
 
         if not swapper.is_swapped('annotate', 'Annotation'):
             # Drop index
-            db.execute("DROP INDEX wq_annotation_idx;");
-        
+            db.execute("DROP INDEX wq_annotation_idx;")
+
             # Deleting model 'Annotation'
             db.delete_table('wq_annotation')
-
 
     models = {
         'annotate.annotation': {

@@ -1,7 +1,11 @@
-import Image, ImageOps
+import Image
+import ImageOps
 import StringIO
-import os, magic, subprocess
+import os
+import magic
+import subprocess
 from django.conf import settings
+
 
 def generate_image(image, size):
     size = int(size)
@@ -13,7 +17,7 @@ def generate_image(image, size):
     elif mime.startswith('video/'):
         thumbpath = '%s/thumb/%s.jpg' % (settings.MEDIA_ROOT, image)
         if not os.path.exists(thumbpath):
-            subprocess.call(['avconv','-i', path,'-vframes','1',thumbpath])
+            subprocess.call(['avconv', '-i', path, '-vframes', '1', thumbpath])
         img = Image.open(thumbpath)
     else:
         return None

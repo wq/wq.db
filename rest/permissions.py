@@ -8,6 +8,7 @@ _FORBIDDEN_MODELS = getattr(settings, 'FORBIDDEN_MODELS', [])
 
 # _FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
 
+
 class ModelPermissions(BasePermission):
     METHOD_PERM = {
         'GET': 'view',
@@ -25,13 +26,14 @@ class ModelPermissions(BasePermission):
         result = has_perm(user, ct, self.METHOD_PERM[request.method])
         return result
 
+
 def has_perm(user, ct, perm):
     if not isinstance(ct, ContentType):
         perm = '%s_%s' % (ct, perm)
     elif ct.app_label in _FORBIDDEN_APPS:
         return False
     elif "%s.%s" % (ct.app_label, ct.model) in _FORBIDDEN_MODELS:
-        return False  
+        return False
     elif perm == 'view':
         return True
     else:

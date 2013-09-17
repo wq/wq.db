@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class NaturalKeyModelManager(models.Manager):
     """
     Manager for use with subclasses of NaturalKeyModel.
@@ -17,7 +18,7 @@ class NaturalKeyModelManager(models.Manager):
         # Since kwargs already has __ lookups in it, we could just do this:
         # return self.get(**kwargs)
 
-        # But, we should call each related model's get_by_natural_key in case 
+        # But, we should call each related model's get_by_natural_key in case
         # it's been overridden
         for name, rel_to in self.model.get_natural_key_info():
             if not rel_to:
@@ -28,9 +29,11 @@ class NaturalKeyModelManager(models.Manager):
             if nested_key:
                 # Update kwargs with related object
                 try:
-                    kwargs[name] = rel_to.objects.get_by_natural_key(*nested_key)
+                    kwargs[name] = rel_to.objects.get_by_natural_key(
+                        *nested_key
+                    )
                 except rel_to.DoesNotExist:
-                    # If related object doesn't exist, assume this one doesn't either
+                    # If related object doesn't exist, assume this one doesn't
                     raise self.model.DoesNotExist()
             else:
                 kwargs[name] = None
@@ -44,14 +47,16 @@ class NaturalKeyModelManager(models.Manager):
         their natural keys.
         """
 
-        kwargs = self.natural_key_kwargs(*args) 
+        kwargs = self.natural_key_kwargs(*args)
         for name, rel_to in self.model.get_natural_key_info():
             if not rel_to:
                 continue
             nested_key = extract_nested_key(kwargs, rel_to, name)
             # Automatically create any related objects as needed
             if nested_key:
-                kwargs[name], is_new = rel_to.objects.get_or_create_by_natural_key(*nested_key)
+                kwargs[name], is_new = (
+                    rel_to.objects.get_or_create_by_natural_key(*nested_key)
+                )
             else:
                 kwargs[name] = None
         return self.create(**kwargs)
@@ -76,13 +81,14 @@ class NaturalKeyModelManager(models.Manager):
 
     def natural_key_kwargs(self, *args):
         """
-        Convert args into kwargs by merging with model's natural key field names
+        Convert args into kwargs by merging with model's natural key fieldnames
         """
         natural_key = self.model.get_natural_key_fields()
         if len(args) != len(natural_key):
             raise TypeError("Wrong number of values, expected %s"
                             % len(natural_key))
         return dict(zip(natural_key, args))
+
 
 class NaturalKeyModel(models.Model):
     """
@@ -122,7 +128,6 @@ class NaturalKeyModel(models.Model):
                     for nname in nested_key
                 ])
         return natural_key
-        
 
     def natural_key(self):
         """
@@ -137,6 +142,7 @@ class NaturalKeyModel(models.Model):
 
     class Meta:
         abstract = True
+
 
 def extract_nested_key(key, cls, prefix=''):
     nested_key = cls.get_natural_key_fields()
@@ -156,7 +162,7 @@ def extract_nested_key(key, cls, prefix=''):
                 time = key.pop(nname + '_time', None)
                 if date and time:
                     val = '%s %s' % (date, time)
-            
+
         if val is not None and val != '':
             has_val = True
         values.append(val)

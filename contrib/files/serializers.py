@@ -3,6 +3,7 @@ from wq.db.rest import serializers
 from wq.db.rest import app
 from .models import FileField, File
 
+
 class FileSerializer(serializers.ModelSerializer):
     is_image = Field('is_image')
 
@@ -15,7 +16,7 @@ class FileSerializer(serializers.ModelSerializer):
         if 'request' in self.context and obj and obj.user is None:
             user = self.context['request'].user
             if user.is_authenticated():
-               obj.user = user
+                obj.user = user
         return obj
 
 app.router.register_serializer(File, FileSerializer)

@@ -4,6 +4,7 @@ from wq.db.rest import app
 
 from .models import Identifier, Authority
 
+
 class IdentifierSerializer(TypedAttachmentSerializer):
     type_model = Authority
     type_field = 'authority'
@@ -17,7 +18,9 @@ class IdentifierSerializer(TypedAttachmentSerializer):
         return [None] + list(Authority.objects.all())
 
     def create_dict(self, atype, data, fields, index):
-        obj = super(IdentifierSerializer, self).create_dict(atype, data, fields, index)
+        obj = super(IdentifierSerializer, self).create_dict(
+            atype, data, fields, index
+        )
         if obj is None:
             return obj
         if 'is_primary' not in obj:

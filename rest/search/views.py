@@ -5,16 +5,17 @@ from .resources import SearchResource
 
 SEARCH_PARAMETER = 'q'
 
+
 class SearchView(PaginatorMixin, View):
     resource = SearchResource
     auto = False
     search = None
-        
+
     def get(self, request, *args, **kwargs):
         self.search = request.GET.get(SEARCH_PARAMETER, None)
         self.auto = request.GET.get('auto', self.auto)
         if not self.search:
-            return [] 
+            return []
 
         results = self._resource.search(self.search, self.auto)
         if results.count() == 1 and self.auto:
@@ -25,7 +26,7 @@ class SearchView(PaginatorMixin, View):
     def auto_redirect(self, item):
         item = self._resource.serialize_model(item)
         return response.Response(
-            status.HTTP_302_FOUND, 
+            status.HTTP_302_FOUND,
             {'message': 'Found', 'search': self.search},
             {'Location': '/' + item['url']}
         )

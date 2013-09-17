@@ -6,6 +6,7 @@ from django.conf import settings
 
 from .caching import jc_backend, MIDDLEWARE_SECONDS
 
+
 class View(generics.GenericAPIView):
     router = None
     cached = False
@@ -36,15 +37,15 @@ class View(generics.GenericAPIView):
             return model._meta.db_table
         tables = map(resolve_table, self.cached_models)
         genkey = jc_backend.keyhandler.get_generation(*tables)
-        
+
         pathkey = jc_backend.keyhandler.keygen.gen_key(
-            request.path, 
+            request.path,
             request.META.get('QUERY_STRING', "")
         )
         return "%s_wq_view_%s.%s" % (
             jc_backend.keyhandler.prefix, genkey, pathkey
         )
-        
+
     def get_cached(self, request):
         if not self.can_cache(request):
             return None
@@ -69,7 +70,9 @@ class View(generics.GenericAPIView):
             self.headers = self.default_response_headers
             self.initial(request, *args, **kwargs)
             response = Response(self.get_cached(request))
-            self.response = self.finalize_response(request, response, *args, **kwargs)
+            self.response = self.finalize_response(
+                request, response, *args, **kwargs
+            )
         else:
             response = super(View, self).dispatch(request, *args, **kwargs)
             if self.can_cache(request):
@@ -98,18 +101,22 @@ class View(generics.GenericAPIView):
         return super(View, self).get_paginate_by(queryset)
 
     def perform_content_negotiation(self, request, force=False):
-        renderer, media_type = super(View, self).perform_content_negotiation(request, force)
+        renderer, media_type = super(View, self).perform_content_negotiation(
+            request, force
+        )
         if media_type.startswith('text'):
             media_type += "; charset=%s" % (settings.DEFAULT_CHARSET)
         return renderer, media_type
+
 
 class SimpleView(View):
     def get(self, request, *args, **kwargs):
         return Response({})
 
+
 class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
     cached = True
-    depth = 1 
+    depth = 1
 
     @property
     def template_name(self):
@@ -123,7 +130,7 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
             return 'primary_identifiers__slug'
         else:
             return 'pk'
-    
+
     def get_object(self, queryset=None):
         if self.kwargs.get('mode', False) == "new":
             return self.model()
@@ -140,11 +147,12 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
                 obj = self.model.objects.get_by_identifier(slug)
             except:
                 raise Http404("Could not find %s with id '%s'" % (
-                      self.model._meta.verbose_name,
-                      slug
+                    self.model._meta.verbose_name,
+                    slug
                 ))
             #TODO: automatically redirect to primary identifier?
         return obj
+
 
 class ListOrCreateModelView(View, generics.ListCreateAPIView):
     cached = True
@@ -155,7 +163,9 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         return get_ct(self.model).identifier + '_list.html'
 
     def list(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).list(request, *args, **kwargs)
+        response = super(ListOrCreateModelView, self).list(
+            request, *args, **kwargs
+        )
         if not isinstance(response.data, dict):
             return response
 
@@ -167,7 +177,9 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         return response
 
     def create(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).create(request, *args, **kwargs)
+        response = super(ListOrCreateModelView, self).create(
+            request, *args, **kwargs
+        )
         if not request.accepted_media_type.startswith('text/html'):
             return response
 
@@ -178,8 +190,8 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             url = '/%s/%s' % (ct.urlbase, oid)
             return Response(
                 {'detail': 'Created'},
-                status = status.HTTP_302_FOUND,
-                headers = {'Location': url}
+                status=status.HTTP_302_FOUND,
+                headers={'Location': url}
             )
         else:
             errors = [{
@@ -189,11 +201,11 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             template = get_ct(self.model).identifier + '_error.html'
             return Response(
                 {
-                   'errors': errors,
-                   'post': request.DATA
+                    'errors': errors,
+                    'post': request.DATA
                 },
-                status = response.status_code,
-                template_name = template
+                status=response.status_code,
+                template_name=template
             )
 
     def get_parent(self, ct, response):
@@ -202,7 +214,8 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             return
 
         pcls = ct.model_class()
-        if self.router and pcls in self.router._views and self.router._views[pcls][1]:
+        if (self.router and pcls in self.router._views
+                and self.router._views[pcls][1]):
             lv, dv = self.router._views[pcls]
             slug = dv().get_slug_field()
             parent = pcls.objects.get(**{slug: pid})
@@ -214,7 +227,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             urlbase = ct.urlbase + '/'
         objid = get_object_id(parent)
         response.data['parent_label'] = unicode(parent)
-        response.data['parent_id']    = objid
-        response.data['parent_url']   = '%s%s' % (urlbase, objid)
+        response.data['parent_id'] = objid
+        response.data['parent_url'] = '%s%s' % (urlbase, objid)
         response.data['parent_is_' + ct.identifier] = True
         return parent

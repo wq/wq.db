@@ -5,6 +5,7 @@ from wq.db.patterns.base import SerializableGenericRelation
 from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 
+
 class IdentifierManager(models.Manager):
     _cache = {}
 
@@ -31,15 +32,17 @@ class IdentifierManager(models.Manager):
         ).order_by('-is_primary')
 
     def resolve(self, *args):
-        resolved   = None
+        resolved = None
         unresolved = None
         for identifier in args:
             ids = self.filter_by_identifier(identifier)
             if len(ids) == 1:
-                if not resolved: resolved = {}
+                if resolved is None:
+                    resolved = {}
                 resolved[identifier] = ids[0]
             else:
-                if not unresolved: unresolved = {}
+                if unresolved is None:
+                    unresolved = {}
                 unresolved[identifier] = ids
         return resolved, unresolved
 
@@ -55,15 +58,15 @@ class IdentifierManager(models.Manager):
             name = name[:45]
         slug = slugify(name)
         exists = self.filter(
-             content_type__name = model,
-             slug               = slug
+            content_type__name=model,
+            slug=slug
         )
         num = ''
         while exists.count() > 0:
             slug = slugify('%s %s' % (name, num))
             exists = self.filter(
-                 content_type__name = model,
-                 slug               = slug
+                content_type__name=model,
+                slug=slug
             )
             if num == '':
                 num = 1
@@ -73,14 +76,14 @@ class IdentifierManager(models.Manager):
 
 
 class Identifier(models.Model):
-    name       = models.CharField(max_length=255, db_index=True)
-    slug       = models.SlugField()
-    authority  = models.ForeignKey('Authority', blank=True, null=True)
+    name = models.CharField(max_length=255, db_index=True)
+    slug = models.SlugField()
+    authority = models.ForeignKey('Authority', blank=True, null=True)
     is_primary = models.BooleanField()
 
     # Identifer can contain a pointer to any model
-    content_type   = models.ForeignKey(ContentType)
-    object_id      = models.PositiveIntegerField()
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey()
 
     objects = IdentifierManager()
@@ -106,6 +109,7 @@ class Identifier(models.Model):
     class Meta:
         db_table = 'wq_identifier'
 
+
 class PrimaryIdentifierManager(IdentifierManager):
     use_for_related_fields = True
 
@@ -113,10 +117,13 @@ class PrimaryIdentifierManager(IdentifierManager):
         qs = super(PrimaryIdentifierManager, self).get_query_set()
         return qs.filter(is_primary=True)
 
+
 class PrimaryIdentifier(Identifier):
     objects = PrimaryIdentifierManager()
+
     class Meta:
         proxy = True
+
 
 class IdentifiedModelManager(NaturalKeyModelManager):
     def get_by_identifier(self, identifier, auto_create=False):
@@ -125,7 +132,7 @@ class IdentifiedModelManager(NaturalKeyModelManager):
             {'identifiers__name': identifier, 'identifiers__is_primary': True},
             {'identifiers__slug': identifier},
             {'identifiers__name': identifier},
-            {'pk':                identifier}
+            {'pk': identifier}
         ]
 
         object = None
@@ -138,7 +145,9 @@ class IdentifiedModelManager(NaturalKeyModelManager):
                     continue
                 elif (not auto_create):
                     name = self.model._meta.object_name
-                    raise self.model.DoesNotExist('%s "%s" does not exist' % (name, identifier))
+                    raise self.model.DoesNotExist(
+                        '%s "%s" does not exist' % (name, identifier)
+                    )
 
         if object is None and auto_create:
             object = self.create_by_natural_key(identifier)
@@ -150,26 +159,31 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
     def create_by_natural_key(self, identifier):
         if ('name' in self.model._meta.get_all_field_names()):
-            object = self.create(name = identifier)
+            object = self.create(name=identifier)
         else:
             object = self.create()
-        object.identifiers.create(name = identifier, is_primary=True)
+        object.identifiers.create(name=identifier, is_primary=True)
         return object
 
     def get_query_set(self):
         qs = super(IdentifiedModelManager, self).get_query_set()
         ct = ContentType.objects.get_for_model(self.model)
         meta = self.model._meta
-        qs = qs.extra(select={'wq_id_name': """
-               SELECT name FROM wq_identifier
-               WHERE content_type_id=%s AND object_id=%s.%s AND is_primary
-               LIMIT 1""" % (ct.pk, meta.db_table, meta.pk.get_attname_column()[1])})
+        query = (
+            """ SELECT name FROM wq_identifier
+                WHERE content_type_id=%s AND object_id=%s.%s AND is_primary
+                LIMIT 1 """
+            % (ct.pk, meta.db_table, meta.pk.get_attname_column()[1]))
+        qs = qs.extra(select={'wq_id_name': query})
         return qs.order_by('wq_id_name')
+
 
 class IdentifiedModel(NaturalKeyModel):
     identifiers = SerializableGenericRelation(Identifier)
-    primary_identifiers = generic.GenericRelation(PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary')
-    objects     = IdentifiedModelManager()
+    primary_identifiers = generic.GenericRelation(
+        PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary'
+    )
+    objects = IdentifiedModelManager()
 
     @classmethod
     def get_natural_key_fields(cls):
@@ -200,10 +214,11 @@ class IdentifiedModel(NaturalKeyModel):
     class Meta:
         abstract = True
 
+
 class Authority(models.Model):
-    name       = models.CharField(max_length=255)
-    homepage   = models.URLField(null=True,blank=True)
-    object_url = models.URLField(null=True,blank=True)
+    name = models.CharField(max_length=255)
+    homepage = models.URLField(null=True, blank=True)
+    object_url = models.URLField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'authorities'

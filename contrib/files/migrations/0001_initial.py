@@ -5,10 +5,11 @@ from south.v2 import SchemaMigration
 from django.db import models
 from wq.db.patterns.base import swapper
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'FileType'
         db.create_table('wq_filetype', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -32,16 +33,14 @@ class Migration(SchemaMigration):
             ))
             db.send_create_signal('files', ['File'])
 
-
     def backwards(self, orm):
-        
+
         # Deleting model 'FileType'
         db.delete_table('wq_filetype')
 
         if not swapper.is_swapped('files', 'File'):
             # Deleting model 'File'
             db.delete_table('wq_file')
-
 
     models = {
         u'annotate.annotation': {

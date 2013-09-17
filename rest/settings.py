@@ -16,17 +16,24 @@ SESSION_COOKIE_HTTPONLY = False
 REST_FRAMEWORK = {
     'PAGINATE_BY': 50,
     'PAGINATE_BY_PARAM': 'limit',
+
     'DEFAULT_RENDERER_CLASSES': (
-         'rest_framework.renderers.TemplateHTMLRenderer',
-         'wq.db.rest.renderers.JSONRenderer',
-         'wq.db.rest.renderers.AMDRenderer',
-         'wq.db.rest.renderers.GeoJSONRenderer',
+        'rest_framework.renderers.TemplateHTMLRenderer',
+        'wq.db.rest.renderers.JSONRenderer',
+        'wq.db.rest.renderers.AMDRenderer',
+        'wq.db.rest.renderers.GeoJSONRenderer',
     ),
-    'DEFAULT_MODEL_SERIALIZER_CLASS': 'wq.db.rest.serializers.ModelSerializer',
-    'DEFAULT_PAGINATION_SERIALIZER_CLASS': 'wq.db.rest.serializers.PaginationSerializer',
+
+    'DEFAULT_MODEL_SERIALIZER_CLASS':
+    'wq.db.rest.serializers.ModelSerializer',
+
+    'DEFAULT_PAGINATION_SERIALIZER_CLASS':
+    'wq.db.rest.serializers.PaginationSerializer',
+
     'DEFAULT_PERMISSION_CLASSES': (
         'wq.db.rest.permissions.ModelPermissions',
     ),
+
     'FILTER_BACKEND': 'wq.db.rest.filters.FilterBackend'
 }
 

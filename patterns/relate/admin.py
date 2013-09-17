@@ -2,17 +2,23 @@ from django.contrib.contenttypes import generic
 from django.contrib import admin
 from django import forms
 
-from .models import Relationship, InverseRelationship, RelationshipType, InverseRelationshipType, RelatedModel
+from .models import (
+    Relationship, InverseRelationship, RelatedModel
+    RelationshipType, InverseRelationshipType
+)
+
 
 class RelationshipForm(forms.ModelForm):
     type = forms.models.ModelChoiceField(
-        queryset = RelationshipType.objects.filter(computed=False)
+        queryset=RelationshipType.objects.filter(computed=False)
     )
+
 
 class InverseRelationshipForm(forms.ModelForm):
     type = forms.models.ModelChoiceField(
-        queryset = InverseRelationshipType.objects.filter(computed=False)
+        queryset=InverseRelationshipType.objects.filter(computed=False)
     )
+
 
 class RelationshipInline(generic.GenericTabularInline):
     model = Relationship
@@ -25,6 +31,7 @@ class RelationshipInline(generic.GenericTabularInline):
     def queryset(self, request):
         return Relationship.objects.filter(computed=False)
 
+
 class InverseRelationshipInline(generic.GenericTabularInline):
     model = InverseRelationship
     ct_field = "to_content_type"
@@ -36,9 +43,10 @@ class InverseRelationshipInline(generic.GenericTabularInline):
     def queryset(self, request):
         return InverseRelationship.objects.filter(computed=False)
 
+
 class RelatedModelAdmin(admin.ModelAdmin):
     model = RelatedModel
     inlines = [
-      RelationshipInline,
-      InverseRelationshipInline
+        RelationshipInline,
+        InverseRelationshipInline
     ]

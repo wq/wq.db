@@ -6,10 +6,11 @@ from django.db import models
 
 from wq.db.patterns.locate.models import SRID
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'Location'
         db.create_table('wq_location', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -26,15 +27,13 @@ class Migration(SchemaMigration):
         db.execute("""CREATE INDEX wq_location_idx ON wq_location
                          (content_type_id, object_id)""")
 
-
     def backwards(self, orm):
 
         # Drop index
-        db.execute("DROP INDEX wq_location_idx;");
-        
+        db.execute("DROP INDEX wq_location_idx;")
+
         # Deleting model 'Location'
         db.delete_table('wq_location')
-
 
     models = {
         'contenttypes.contenttype': {

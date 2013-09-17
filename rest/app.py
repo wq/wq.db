@@ -11,19 +11,20 @@ from .models import ContentType, get_ct
 from .permissions import has_perm
 from .views import View, SimpleView, InstanceModelView, ListOrCreateModelView
 
+
 class Router(object):
     _serializers = {}
     _querysets = {}
     _views = {}
     _extra_pages = {}
     _custom_config = {}
-    
+
     FORMAT = r'\.(?P<format>\w+)$'
     SLUG = r'(?P<slug>[^\/\?]+)'
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
-    
+
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
 
@@ -74,10 +75,14 @@ class Router(object):
         paginate_by = self.get_paginate_by_for_model(model)
         paginator = Paginator(self.get_queryset_for_model(model), paginate_by)
         page = paginator.page(page_num)
+
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
             class Meta:
                 object_serializer_class = obj_serializer
-        return Serializer(instance=page, context={'router': self, 'request': request}).data
+        return Serializer(
+            instance=page,
+            context={'router': self, 'request': request}
+        ).data
 
     def get_queryset_for_model(self, model):
         if model in self._querysets:
@@ -98,65 +103,71 @@ class Router(object):
         detailview = detailview or InstanceModelView
         serializer = self.get_serializer_for_model(model)
 
-        # pass router to view so that serializer can load appropriate model serializers
+        # pass router to view for use by get_serializer_class
         listview = listview.as_view(
-            model = model,
-            router = self
+            model=model,
+            router=self
         )
         detailview = detailview.as_view(
-            model = model,
-            router = self
+            model=model,
+            router=self
         )
         return listview, detailview
 
     def get_config(self, user):
-         pages = {}
-         for page in self._extra_pages:
-             conf, view = self.get_page(page)
-             pages[page] = conf
-         for ct in ContentType.objects.all():
-             if not has_perm(user, ct, 'view'):
-                 continue
-             cls = ct.model_class()
-             if cls is None:
-                 continue
-             info = {'name': ct.name, 'url': ct.urlbase, 'list': True, 'parents': [], 'children': []}
-             for perm in ('add', 'change', 'delete'):
-                 if has_perm(user, ct, perm):
-                     info['can_' + perm] = True
+        pages = {}
+        for page in self._extra_pages:
+            conf, view = self.get_page(page)
+            pages[page] = conf
+        for ct in ContentType.objects.all():
+            if not has_perm(user, ct, 'view'):
+                continue
+            cls = ct.model_class()
+            if cls is None:
+                continue
+            info = {
+                'name': ct.name,
+                'url': ct.urlbase,
+                'list': True,
+                'parents': [],
+                'children': []
+            }
+            for perm in ('add', 'change', 'delete'):
+                if has_perm(user, ct, perm):
+                    info['can_' + perm] = True
 
-             for pct in ct.get_parents():
-                 if has_perm(user, pct, 'view'):
-                     info['parents'].append(pct.identifier)
+            for pct in ct.get_parents():
+                if has_perm(user, pct, 'view'):
+                    info['parents'].append(pct.identifier)
 
-             for cct in ct.get_children():
-                 if has_perm(user, cct, 'view'):
-                     info['children'].append(cct.identifier)
+            for cct in ct.get_children():
+                if has_perm(user, cct, 'view'):
+                    info['children'].append(cct.identifier)
 
-             for name in ('annotated', 'identified', 'located', 'related'):
-                 if getattr(ct, 'is_' + name):
-                     info[name] = True
+            for name in ('annotated', 'identified', 'located', 'related'):
+                if getattr(ct, 'is_' + name):
+                    info[name] = True
 
-             if ct.is_located or ct.has_geo_fields:
-                 info['map'] = True
+            if ct.is_located or ct.has_geo_fields:
+                info['map'] = True
 
-             for field in cls._meta.fields:
-                 if field.choices:
-                      info.setdefault('choices', {})
-                      info['choices'][field.name] = [{
-                          'value': val,
-                          'label': unicode(label)
-                      } for val, label in field.choices]
+            for field in cls._meta.fields:
+                if field.choices:
+                    info.setdefault('choices', {})
+                    info['choices'][field.name] = [{
+                        'value': val,
+                        'label': unicode(label)
+                    } for val, label in field.choices]
 
-             for name in ('annotationtype', 'annotation'):
-                 if ct.identifier != name and getattr(ct, 'is_' + name):
-                     pages[name] = {'alias': ct.identifier}
+            for name in ('annotationtype', 'annotation'):
+                if ct.identifier != name and getattr(ct, 'is_' + name):
+                    pages[name] = {'alias': ct.identifier}
 
-             if ct.identifier in self._custom_config:
-                 info.update(self._custom_config[ct.identifier])
-             pages[ct.identifier] = info
+            if ct.identifier in self._custom_config:
+                info.update(self._custom_config[ct.identifier])
+            pages[ct.identifier] = info
 
-         return {'pages': pages}
+        return {'pages': pages}
 
     def add_page(self, name, config, view=None):
         self._extra_pages[name] = config, view
@@ -183,7 +194,8 @@ class Router(object):
             def get(this, request, *args, **kwargs):
                 conf_by_url = {
                     conf['url']: (page, conf)
-                    for page, conf in self.get_config(request.user)['pages'].items()
+                    for page, conf
+                    in self.get_config(request.user)['pages'].items()
                 }
                 urls = request.GET.get('lists', '').split(',')
                 result = {}
@@ -202,28 +214,28 @@ class Router(object):
         slug = self.SLUG
         if urlbase == '':
             detailurl = '^'
-            listurl   = '^'
+            listurl = '^'
         else:
-            detailurl = '^' + urlbase + '/' 
-            listurl   = '^' + urlbase
+            detailurl = '^' + urlbase + '/'
+            listurl = '^' + urlbase
         result = patterns('',
-            url(listurl + r'/?$',  listview),
-            url(listurl + fmt,     listview),
+            url(listurl + r'/?$', listview),
+            url(listurl + fmt, listview),
         )
         if detailview is None:
             return result
 
         result += patterns('',
-            url(detailurl + r'(?P<mode>new)$',               detailview),
-            url(detailurl + r'(?P<mode>new)' + fmt,          detailview),
-            url(detailurl + slug + fmt,                      detailview),
-            url(detailurl + slug + r'/(?P<mode>edit)$',      detailview),
+            url(detailurl + r'(?P<mode>new)$', detailview),
+            url(detailurl + r'(?P<mode>new)' + fmt, detailview),
+            url(detailurl + slug + fmt, detailview),
+            url(detailurl + slug + r'/(?P<mode>edit)$', detailview),
             url(detailurl + slug + r'/(?P<mode>edit)' + fmt, detailview),
-            url(detailurl + slug + '/?$',                    detailview)
+            url(detailurl + slug + '/?$', detailview)
         )
         return result
 
-    @property 
+    @property
     def urls(self):
         root_views = None, None
 
@@ -243,7 +255,7 @@ class Router(object):
 
         # Model list & detail views
         for ct in ContentType.objects.all():
-                
+
             cls = ct.model_class()
             if cls is None:
                 continue
@@ -262,7 +274,10 @@ class Router(object):
                     purlbase = ''
                 else:
                     purlbase = pct.urlbase + '/'
-                purl = '^' + purlbase + r'(?P<' + pct.identifier + '>[^\/\?]+)/' + ct.urlbase
+                purl = (
+                    '^' + purlbase + r'(?P<' + pct.identifier
+                    + '>[^\/\?]+)/' + ct.urlbase
+                )
                 urlpatterns += patterns('',
                     url(purl + '/?$', listview),
                     url(purl + self.FORMAT, listview),
@@ -270,16 +285,17 @@ class Router(object):
 
             for cct in ct.get_all_children():
                 cbase = cct.urlbase
-                curl = '^%s-by-%s'% (cbase, ct.identifier)
+                curl = '^%s-by-%s' % (cbase, ct.identifier)
                 kwargs = {'target': cbase}
                 urlpatterns += patterns('',
                     url(curl + '/?$', listview, kwargs),
                     url(curl + self.FORMAT, listview, kwargs),
                 )
 
-        # View for root url - could be either a custom page or list/detail 
-        # views for a model. In the latter case /[slug] will catch any unmatched
-        # url and point it to the detail view, which is why this rule is last.
+        # View for root url - could be either a custom page or list/detail
+        # views for a model. In the latter case /[slug] will catch any
+        # unmatched url and point it to the detail view, which is why this
+        # rule is last.
         if root_views[0] is not None:
             listview, detailview = root_views
             urlpatterns += self.make_patterns('', listview, detailview)
@@ -291,7 +307,7 @@ class Router(object):
         if not hasattr(self, '_version'):
             vtxt = getattr(settings, 'VERSION_TXT', None)
             if vtxt is None:
-                self._version = None 
+                self._version = None
             else:
                 vfile = open(vtxt, 'r')
                 self._version = vfile.read()
@@ -299,6 +315,7 @@ class Router(object):
         return self._version
 
 router = Router()
+
 
 def autodiscover():
     for app_name in settings.INSTALLED_APPS:

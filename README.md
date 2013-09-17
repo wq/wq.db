@@ -20,7 +20,7 @@ app.autodiscover()
 app.router.add_page('index', {'map': True})
 
 urlpatterns = patterns('',
-    url(r'^',       include(app.router.urls))
+    url(r'^', include(app.router.urls))
 # ...
 ```
 

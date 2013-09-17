@@ -1,14 +1,18 @@
 from django.contrib.contenttypes.models import (
-    ContentType as DjangoContentType, 
+    ContentType as DjangoContentType,
     ContentTypeManager as DjangoContentTypeManager
 )
-from wq.db.patterns.models import AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
+from wq.db.patterns.models import (
+    AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
+)
 from wq.db.patterns.models import RelationshipType
 from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
+
 
 class ContentTypeManager(DjangoContentTypeManager):
     def get_by_identifier(self, identifier):
         return self.get(model=identifier)
+
 
 class ContentType(DjangoContentType):
     @property
@@ -19,14 +23,14 @@ class ContentType(DjangoContentType):
     def urlbase(self):
         cls = self.model_class()
         if cls is None:
-             return None
+            return None
         return getattr(cls, 'slug', self.identifier + 's')
 
     @property
     def is_annotated(self):
         cls = self.model_class()
         return issubclass(cls, AnnotatedModel)
-    
+
     @property
     def is_annotation(self):
         cls = self.model_class()
@@ -36,7 +40,7 @@ class ContentType(DjangoContentType):
     def is_annotationtype(self):
         cls = self.model_class()
         return issubclass(cls, BaseAnnotationType)
-        
+
     @property
     def is_identified(self):
         cls = self.model_class()
@@ -46,7 +50,7 @@ class ContentType(DjangoContentType):
     def is_located(self):
         cls = self.model_class()
         return issubclass(cls, LocatedModel)
-        
+
     @property
     def is_related(self):
         cls = self.model_class()
@@ -86,7 +90,7 @@ class ContentType(DjangoContentType):
     def get_children(self, include_rels=False):
         cls = self.model_class()
         if cls is None:
-            return [];
+            return []
         rels = cls._meta.get_all_related_objects()
         if include_rels:
             return [(get_ct(rel.model), rel) for rel in rels]
@@ -107,17 +111,23 @@ class ContentType(DjangoContentType):
     class Meta:
         proxy = True
 
+
 def get_ct(model, for_concrete_model=False):
     if isinstance(model, basestring):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
-        ctype = ContentType.objects.get_for_model(model, for_concrete_model=for_concrete_model)
+        ctype = ContentType.objects.get_for_model(
+            model, for_concrete_model=for_concrete_model
+        )
         # get_for_model sometimes returns a DjangoContentType - caching issue?
         if not isinstance(ctype, ContentType):
             ctype = ContentType.objects.get(pk=ctype.pk)
-            DjangoContentTypeManager._cache[(ctype.app_label, ctype.model)] = ctype
+            DjangoContentTypeManager._cache[
+                (ctype.app_label, ctype.model)
+            ] = ctype
             DjangoContentTypeManager._cache[ctype.pk] = ctype
     return ctype
+
 
 def get_object_id(instance):
     ct = get_ct(instance)
@@ -126,14 +136,17 @@ def get_object_id(instance):
             return instance.primary_identifier.slug
     return instance.pk
 
+
 def get_by_identifier(queryset, ident):
     if hasattr(queryset, 'get_by_identifier'):
         return queryset.get_by_identifier(ident)
     else:
         return queryset.get(pk=ident)
 
+
 class MultiQuerySet(object):
     querysets = []
+
     def __init__(self, *args, **kwargs):
         self.querysets = args
 
@@ -143,17 +156,17 @@ class MultiQuerySet(object):
         else:
             multi = False
             index = slice(index, index + 1)
-        
+
         result = []
         for qs in self.querysets:
-             if index.start < qs.count():
-                 result.extend(qs[index])
-             index = slice(index.start - qs.count(),
-                           index.stop  - qs.count())
-             if index.start < 0:
-                 if index.stop < 0:
-                     break
-                 index = slice(0, index.stop)
+            if index.start < qs.count():
+                result.extend(qs[index])
+            index = slice(index.start - qs.count(),
+                          index.stop - qs.count())
+            if index.start < 0:
+                if index.stop < 0:
+                    break
+                index = slice(0, index.stop)
         if multi:
             return (item for item in result)
         else:

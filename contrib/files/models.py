@@ -7,6 +7,7 @@ from django.conf import settings
 from wq.db.patterns.base import swapper
 from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
+
 # Custom FileField handles both images and files
 class FileField(models.ImageField):
     # Use base forms.FileField to skip ImageField validation
@@ -14,15 +15,16 @@ class FileField(models.ImageField):
         kwargs['form_class'] = forms.FileField
         return super(FileField, self).formfield(**kwargs)
 
-    # Only update_dimension_fields for images 
+    # Only update_dimension_fields for images
     def update_dimension_fields(self, instance, force=False, *args, **kwargs):
-        if getattr(instance, 'mimetype', None) is not None and 'image' in instance.mimetype:
+        if (getattr(instance, 'mimetype', None) is not None
+                and 'image' in instance.mimetype):
             super(FileField, self).update_dimension_fields(instance, force,
                                                            *args, **kwargs)
         else:
             pass
 
-    # Allow model to specify upload directory 
+    # Allow model to specify upload directory
     def generate_filename(self, instance, filename):
         if hasattr(instance, 'get_directory'):
             self.upload_to = instance.get_directory()
@@ -30,13 +32,15 @@ class FileField(models.ImageField):
 
 
 class FileType(models.Model):
-    name     = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     mimetype = models.CharField(max_length=255)
+
     def __unicode__(self):
         return '%s (%s)' % (self.name, self.mimetype)
 
     class Meta:
         db_table = 'wq_filetype'
+
 
 class FileManager(models.Manager):
     def get_query_set(self):
@@ -46,12 +50,13 @@ class FileManager(models.Manager):
         else:
             return qs
 
+
 class BaseFile(AnnotatedModel, RelatedModel):
-    name   = models.CharField(max_length=255, null=True, blank=True)     
-    type   = models.ForeignKey(FileType, null=True, blank=True)
-    file   = FileField(upload_to='.', width_field='width', height_field='height')
-    size   = models.IntegerField(null=True, blank=True)
-    width  = models.IntegerField(null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    type = models.ForeignKey(FileType, null=True, blank=True)
+    file = FileField(upload_to='.', width_field='width', height_field='height')
+    size = models.IntegerField(null=True, blank=True)
+    width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
 
     type_name = "File"
@@ -78,8 +83,10 @@ class BaseFile(AnnotatedModel, RelatedModel):
 
     def save(self, *args, **kwargs):
         if self.type is None:
-            self.type, isnew = FileType.objects.get_or_create(mimetype=self.mimetype,
-                                                              name=self.type_name)
+            self.type, isnew = FileType.objects.get_or_create(
+                mimetype=self.mimetype,
+                name=self.type_name
+            )
         if self.size is None:
             self.size = self.file.size
         if self.name is None or self.name == '':
@@ -95,8 +102,10 @@ class BaseFile(AnnotatedModel, RelatedModel):
     class Meta:
         abstract = True
 
+
 class File(BaseFile):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+
     class Meta:
         db_table = 'wq_file'
         swappable = swapper.swappable_setting('files', 'File')

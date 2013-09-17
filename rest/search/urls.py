@@ -4,7 +4,7 @@ from django.conf import settings
 from .views import SearchView, DisambiguateView
 
 urlpatterns = patterns('',
-    url('^search/?$',                SearchView.as_view()),
+    url('^search/?$', SearchView.as_view()),
     url('^search\.(?P<format>\w+)$', SearchView.as_view())
 )
 

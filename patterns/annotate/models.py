@@ -6,8 +6,11 @@ from django.contrib import admin
 from django.core.exceptions import FieldError
 from collections import OrderedDict
 
-ANNOTATIONTYPE_MODEL = swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
-ANNOTATION_MODEL     = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
+ANNOTATIONTYPE_MODEL = (
+    swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
+)
+ANNOTATION_MODEL = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
+
 
 class AnnotationTypeManager(models.Manager):
     def get_by_natural_key(self, name):
@@ -24,8 +27,9 @@ class AnnotationTypeManager(models.Manager):
                 resolved[name] = None
         return resolved, success
 
+
 class BaseAnnotationType(models.Model):
-    name        = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     contenttype = models.ForeignKey(ContentType, null=True, blank=True)
 
     # Assign a value to annotated_model to automatically set contenttype
@@ -53,16 +57,20 @@ class BaseAnnotationType(models.Model):
 
     def clean(self, *args, **kwargs):
         if self.annotated_model is not None:
-            self.contenttype = ContentType.objects.get_for_model(self.annotated_model)
+            self.contenttype = ContentType.objects.get_for_model(
+                self.annotated_model
+            )
 
     class Meta:
         abstract = True
+
 
 class AnnotationType(BaseAnnotationType):
     class Meta:
         db_table = 'wq_annotationtype'
         swappable = swapper.swappable_setting('annotate', 'AnnotationType')
-            
+
+
 class AnnotationManager(models.Manager):
 
     # Collapse annotations into dict for simple access
@@ -103,43 +111,49 @@ class AnnotationManager(models.Manager):
             for key in kwargs.keys():
                 if key == rname or key.startswith(rname + '__'):
                     add_content_type(rel.model)
-         
+
         return super(AnnotationManager, self).filter(*args, **kwargs)
 
+
 class BaseAnnotation(models.Model):
-    type      = models.ForeignKey(ANNOTATIONTYPE_MODEL)
+    type = models.ForeignKey(ANNOTATIONTYPE_MODEL)
 
     # Link can contain a pointer to any model
     # FIXME: restrict to models allowed for given type
-    content_type   = models.ForeignKey(ContentType)
-    object_id      = models.PositiveIntegerField(db_index=True)
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField(db_index=True)
     content_object = generic.GenericForeignKey()
 
     objects = AnnotationManager()
 
     def __unicode__(self):
-        return ('%(object)s -> %(annot)s: %(value)s'
-              % {
-                  'object': self.content_object,
-                  'annot':  self.type,
-                  'value':  self.value
-                })
+        return (
+            '%(object)s -> %(annot)s: %(value)s'
+            % {
+                'object': self.content_object,
+                'annot': self.type,
+                'value': self.value
+            })
 
     class Meta:
         abstract = True
 
+
 class Annotation(BaseAnnotation):
     value = models.TextField(null=True, blank=True)
+
     class Meta:
         db_table = 'wq_annotation'
         swappable = swapper.swappable_setting('annotate', 'Annotation')
 
+
 class AnnotationSet(SerializableGenericRelation):
     def __init__(self, *args, **kwargs):
-       if len(args) == 0:
-           kwargs['to'] = ANNOTATION_MODEL
-       kwargs['related_name'] = None
-       super(AnnotationSet, self).__init__(*args, **kwargs)
+        if len(args) == 0:
+            kwargs['to'] = ANNOTATION_MODEL
+        kwargs['related_name'] = None
+        super(AnnotationSet, self).__init__(*args, **kwargs)
+
 
 class AnnotatedModel(models.Model):
     annotations = AnnotationSet()

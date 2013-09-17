@@ -3,6 +3,7 @@ from south.modelsinspector import add_ignored_fields
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+
 # Trick rest_framework into serializing these relationships
 class SerializableGenericRelation(GenericRelation):
     def __init__(self, *args, **kwargs):
@@ -10,6 +11,7 @@ class SerializableGenericRelation(GenericRelation):
         self.serialize = True
 
 add_ignored_fields(["^wq.db.patterns.base.SerializableGenericRelation"])
+
 
 # Utility for determining whether models have been swapped
 class Swapper(object):
@@ -40,11 +42,13 @@ class Swapper(object):
         else:
             if orm is not None:
                 return orm['%s.%s' % (app_label, model)]
-        
+
         from django.db.models import get_model
         cls = get_model(app_label, model)
         if cls is None and required:
-            raise ImproperlyConfigured("Could not find %s.%s!" % (app_label, model))
+            raise ImproperlyConfigured(
+                "Could not find %s.%s!" % (app_label, model)
+            )
         return cls
 
 swapper = Swapper()

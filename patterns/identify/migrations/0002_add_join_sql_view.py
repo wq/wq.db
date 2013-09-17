@@ -4,6 +4,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -11,7 +12,7 @@ class Migration(DataMigration):
             print "Warning: Non-postgres database detected; convenience view will not be created."
             return
         db.execute('''
-CREATE OR REPLACE VIEW wq_identifier_joined AS 
+CREATE OR REPLACE VIEW wq_identifier_joined AS
 SELECT
   ct.app_label, ct.model, i.object_id, i.name AS identifier,
   i.is_primary, a.name authority,
@@ -23,8 +24,7 @@ LEFT OUTER JOIN wq_identifiertype a ON i.authority_id = a.id;''')
     def backwards(self, orm):
         if db.backend_name != 'postgres':
             return
-        db.execute("DROP VIEW wq_identifier_joined;");
-
+        db.execute("DROP VIEW wq_identifier_joined;")
 
     models = {
         'contenttypes.contenttype': {

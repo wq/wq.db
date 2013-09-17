@@ -3,6 +3,7 @@ RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
 from .models import get_ct
 
+
 class FilterBackend(DjangoFilterBackend):
     def filter_queryset(self, request, queryset, view):
         kwargs = {}
@@ -26,7 +27,8 @@ class FilterBackend(DjangoFilterBackend):
                     del kwargs[key]
                     pcls = f.rel.to
                     router = getattr(view, 'router', None)
-                    if router and pcls in router._views and router._views[pcls][1]:
+                    if (router and pcls in router._views
+                            and router._views[pcls][1]):
                         lv, dv = router._views[pcls]
                         slug = dv().get_slug_field()
                         kwargs[f.name] = pcls.objects.get(**{slug: val})
@@ -40,11 +42,13 @@ class FilterBackend(DjangoFilterBackend):
                     if pct.identifier == key:
                         pclass = pct.model_class()
                         if pct.is_identified:
-                            parent = pclass.objects.get_by_identifier(kwargs[key])
+                            parent = pclass.objects.get_by_identifier(
+                                kwargs[key]
+                            )
                         else:
                             parent = pclass.objects.get(pk=kwargs[key])
                         del kwargs[key]
                         objs = model.objects.filter_by_related(parent)
                         kwargs['pk__in'] = objs.values_list('pk', flat=True)
-                
+
         return queryset.filter(**kwargs)
