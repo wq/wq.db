@@ -1,10 +1,10 @@
-from rest_framework.filters import DjangoFilterBackend
+from rest_framework.filters import BaseFilterBackend
 RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
 from .models import get_ct
 
 
-class FilterBackend(DjangoFilterBackend):
+class FilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         kwargs = {}
         for key, val in view.kwargs.items() + request.GET.items():
