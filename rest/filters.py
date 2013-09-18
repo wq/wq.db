@@ -20,7 +20,8 @@ class FilterBackend(BaseFilterBackend):
                 continue
             found = False
             for f in model._meta.fields:
-                if f.name != key and ctype.identifier + f.name != key:
+                if ((f.name != key and ctype.identifier + f.name != key)
+                        or f.name == ctype.model):
                     continue
                 found = True
                 if getattr(f, 'rel', None):
