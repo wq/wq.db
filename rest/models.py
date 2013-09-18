@@ -182,3 +182,6 @@ class MultiQuerySet(object):
         for qs in self.querysets:
             result += qs.count()
         return result
+
+    def __len__(self):
+        return self.count()

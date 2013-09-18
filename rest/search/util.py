@@ -1,5 +1,11 @@
 from wq.db.rest.models import MultiQuerySet
-from wq.db.patterns.models import Identifier, Annotation
+from wq.db.patterns.models import Identifier
+from wq.db.patterns.base import swapper
+
+if swapper.is_swapped('annotate', 'Annotation'):
+    Annotation = None
+else:
+    Annotation = swapper.load_model('annotate', 'Annotation')
 
 
 def search(query, auto=True):
@@ -13,8 +19,10 @@ def search(query, auto=True):
     ).exclude(
         id__in=id_matches.values_list('id', flat=True)
     )
-    annot_like_matches = Annotation.objects.filter(value__icontains=query)
+    if Annotation:
+        annot_like_matches = Annotation.objects.filter(value__icontains=query)
+        results = [id_matches, id_like_matches, annot_like_matches]
+    else:
+        results = [id_matches, id_like_matches]
 
-    return MultiQuerySet(
-        id_matches, id_like_matches, annot_like_matches
-    )
+    return MultiQuerySet(*results)
