@@ -3,7 +3,7 @@ from django.contrib import admin
 from django import forms
 
 from .models import (
-    Relationship, InverseRelationship, RelatedModel
+    Relationship, InverseRelationship, RelatedModel,
     RelationshipType, InverseRelationshipType
 )
 
