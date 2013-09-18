@@ -219,7 +219,10 @@ class ModelSerializer(RestModelSerializer):
                 and getattr(self.context['view'], 'router', None)):
             router = self.context['view'].router
             cls = router.get_serializer_for_model(model, self.opts.depth - 1)
-            return cls(context=self.context)
+            return cls(
+                context=self.context,
+                required=not(model_field.null or model_field.blank)
+            )
         return super(ModelSerializer, self).get_nested_field(model_field)
 
     # Any IDRelatedField errors should be reported without the '_id' suffix
