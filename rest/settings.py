@@ -53,6 +53,7 @@ SOCIAL_AUTH_PIPELINE = (
 ANONYMOUS_PERMISSIONS = tuple()
 SRID = 3857
 DEFAULT_AUTH_GROUP = "Users"
+DISAMBIGUATE = True
 FORBIDDEN_APPS = (
     'auth',
     'sessions',

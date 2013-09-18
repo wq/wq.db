@@ -1,32 +1,22 @@
-from rest_framework import resources
-from wq.db.rest import util
-from wq.db.patterns.models import Identifier, Annotation
+from rest_framework.serializers import Serializer
+from wq.db.rest.models import get_ct, ContentType, get_object_id
 
 
-class SearchResource(resources.Resource):
-    def search(self, query, auto=True):
-
-        id_matches = Identifier.objects.filter_by_identifier(query)
-        if id_matches.count() == 1 and auto:
-            return id_matches
-
-        id_like_matches = Identifier.objects.filter(name__icontains=query)
-        annot_like_matches = Annotation.objects.filter(value__icontains=query)
-
-        result = util.MultiQuerySet(
-            id_matches, id_like_matches, annot_like_matches
-        )
-        return result
-
-    def serialize_model(self, obj):
-        if hasattr(obj, 'content_type') and hasattr(obj, 'content_object'):
-            ctype = obj.content_type
+class SearchResultSerializer(Serializer):
+    def to_native(self, obj):
+        if hasattr(obj, 'content_type_id') and hasattr(obj, 'content_object'):
+            ctype = ContentType.objects.get(pk=obj.content_type_id)
             obj = obj.content_object
         else:
-            ctype = util.get_ct(obj)
+            ctype = get_ct(obj)
+
+        url = ctype.urlbase
+        if url:
+            url += '/'
+        url += get_object_id(obj)
+
         return {
-            'url': '%s/%s' % (util.geturlbase(ctype),
-                              util.get_object_id(obj)),
+            'url': url,
             'type': unicode(ctype),
             'label': unicode(obj)
         }

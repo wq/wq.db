@@ -1,64 +1,56 @@
-from wq.db.rest.views import View, PaginatorMixin
-from rest_framework import status, response
-from wq.db.rest import util
-from .resources import SearchResource
+from django.http import Http404
+from rest_framework.generics import MultipleObjectAPIView
+from rest_framework.mixins import ListModelMixin
+from rest_framework.response import Response
+from rest_framework import status
+from wq.db.rest.views import View
+
+from .util import search
+from .serializers import SearchResultSerializer
 
 SEARCH_PARAMETER = 'q'
 
 
-class SearchView(PaginatorMixin, View):
-    resource = SearchResource
+class SearchView(View, MultipleObjectAPIView, ListModelMixin):
     auto = False
     search = None
+    serializer_class = SearchResultSerializer
+
+    def get_queryset(self):
+        if not self.search:
+            return []
+        return search(self.search, self.auto)
+
+    def filter_queryset(self, queryset):
+        return queryset
 
     def get(self, request, *args, **kwargs):
         self.search = request.GET.get(SEARCH_PARAMETER, None)
         self.auto = request.GET.get('auto', self.auto)
-        if not self.search:
-            return []
+        response = self.list(request, args, kwargs)
 
-        results = self._resource.search(self.search, self.auto)
-        if results.count() == 1 and self.auto:
-            return self.auto_redirect(results[0])
+        if response.data['count'] == 1 and self.auto:
+            return self.auto_redirect(response)
         else:
-            return results
+            return response
 
-    def auto_redirect(self, item):
-        item = self._resource.serialize_model(item)
-        return response.Response(
-            status.HTTP_302_FOUND,
-            {'message': 'Found', 'search': self.search},
-            {'Location': '/' + item['url']}
+    def auto_redirect(self, response):
+        item = response.data['list'][0]
+        return Response(
+            status=status.HTTP_302_FOUND,
+            data={'message': 'Found', 'search': self.search},
+            headers={'Location': '/' + item['url']}
         )
-
-    def filter_response(self, obj):
-        if isinstance(obj, dict):
-            return obj
-        result = super(SearchView, self).filter_response(obj)
-        result['list'] = result['results']
-        del result['results']
-        result['search'] = self.search
-        return result
 
 
 class DisambiguateView(SearchView):
-    resource = SearchResource
-
     def get(self, request, *args, **kwargs):
         self.search = kwargs['slug']
-        results = self._resource.search(self.search, True)
-        if results.count() == 0:
-            raise response.ErrorResponse(status.HTTP_404_NOT_FOUND, {
-                'slug': self.search,
-                'message': "Page Not Found"
-            })
-        elif results.count() == 1:
-            return self.auto_redirect(results[0])
-        return results
-
-    def filter_response(self, obj):
-        if isinstance(obj, dict):
-            return obj
-        result = super(DisambiguateView, self).filter_response(obj)
-        result['message'] = "Multiple Matches Found"
-        return result
+        response = self.list(request, *args, **kwargs)
+        if response.data['count'] == 0:
+            raise Http404("Could not find %s", self.search)
+        elif response.data['count'] == 1:
+            return self.auto_redirect(response)
+        else:
+            response.data['message'] = "Multiple Matches Found"
+            return response

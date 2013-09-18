@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls import patterns, include, url
 from django.conf import settings
 
 from .views import SearchView, DisambiguateView
@@ -8,7 +8,7 @@ urlpatterns = patterns('',
     url('^search\.(?P<format>\w+)$', SearchView.as_view())
 )
 
-if 'wq.db.identify' in settings.INSTALLED_APPS:
+if getattr(settings, 'DISAMBIGUATE', False):
     urlpatterns += patterns('',
         url('^(?P<slug>[^\/]+)$', DisambiguateView.as_view())
     )
