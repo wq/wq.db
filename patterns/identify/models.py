@@ -167,8 +167,10 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
     def get_query_set(self):
         qs = super(IdentifiedModelManager, self).get_query_set()
-        ct = ContentType.objects.get_for_model(self.model)
         meta = self.model._meta
+        if meta.ordering:
+            return qs
+        ct = ContentType.objects.get_for_model(self.model)
         query = (
             """ SELECT name FROM wq_identifier
                 WHERE content_type_id=%s AND object_id=%s.%s AND is_primary
