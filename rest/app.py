@@ -180,7 +180,6 @@ class Router(object):
         if view is None:
             class PageView(SimpleView):
                 template_name = page + '.html'
-                
                 def get(self, request, *args, **kwargs):
                     return Response(config)
             view = PageView
