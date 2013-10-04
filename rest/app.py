@@ -185,6 +185,10 @@ class Router(object):
             view = PageView
         return config, view.as_view()
 
+    def get_page_config(self, name, user):
+        config = self.get_config(user)
+        return config['pages'].get(name, None)
+
     def get_config_view(self):
         class ConfigView(View):
             def get(this, request, *args, **kwargs):

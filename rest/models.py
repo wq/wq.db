@@ -15,6 +15,8 @@ class ContentTypeManager(DjangoContentTypeManager):
 
 
 class ContentType(DjangoContentType):
+    objects = ContentTypeManager()
+
     @property
     def identifier(self):
         return self.model
@@ -107,6 +109,10 @@ class ContentType(DjangoContentType):
             ctype = ContentType.objects.get(pk=ctype.pk)
             children.append(ctype)
         return children
+
+    def get_config(self, user):
+        from .app import router # avoid circular import
+        return router.get_page_config(self.identifier, user)
 
     class Meta:
         proxy = True

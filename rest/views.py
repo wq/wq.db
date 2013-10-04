@@ -181,12 +181,24 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             request, *args, **kwargs
         )
         if not request.accepted_media_type.startswith('text/html'):
+            # JSON request, assume client will handle redirect
             return response
 
-        # text/html probably means a form post from an older browser
+        # HTML request, probably a form post from an older browser
         if response.status_code == status.HTTP_201_CREATED:
             ct = get_ct(self.model)
-            oid = response.data['id']
+            conf = ct.get_config(request.user)
+
+            # Redirect to detail view
+            postsave = conf.get('postsave', ct.identifier)
+            if postsave != ct.identifier:
+                # Optional: return to detail view of a parent model
+                ct = get_ct(postsave)
+                oid = response.data.get(postsave + '_id', None) or ""
+            else:
+                # Default: return to detail view of the saved model
+                oid = response.data['id']
+
             url = '/%s/%s' % (ct.urlbase, oid)
             return Response(
                 {'detail': 'Created'},
