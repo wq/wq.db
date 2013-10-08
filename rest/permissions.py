@@ -15,6 +15,7 @@ class ModelPermissions(BasePermission):
         'HEAD': 'view',
         'POST': 'add',
         'PUT': 'change',
+        'PATCH': 'change',
         'DELETE': 'delete',
     }
 
