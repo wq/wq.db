@@ -1,7 +1,4 @@
-[<img src="https://raw.github.com/wq/wq/master/images/512/wq.db.png"
-  width="256" height="256"
-  alt="wq.db">]
-  (http://wq.io/wq.db)
+[![wq.db](https://raw.github.com/wq/wq/master/images/256/wq.db.png)](http://wq.io/wq.db)
   
 **[wq.db]** is a collection of Django modules for building robust, flexible schemas and REST APIs for use in field data collection apps and (more generally) progressively enhanced mobile-first websites.  wq.db is a submodule of [wq] and contains three sub-submodules:
 * **[wq.db.rest]**: Django Rest Framework extensions for creating self-describing REST APIs with built-in support for progressive enhancement
