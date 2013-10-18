@@ -115,6 +115,15 @@ class ModelSerializer(RestModelSerializer):
             ] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
+    @property
+    def router(self):
+        if 'view' not in self.context and 'router' not in self.context:
+            return None
+        if 'view' in self.context:
+            return self.context['view'].router
+        else:
+            return self.context['router']
+
     def get_default_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_default_fields(
             *args, **kwargs
@@ -122,13 +131,10 @@ class ModelSerializer(RestModelSerializer):
         fields['id'] = IDField()
         if 'label' not in self.opts.exclude:
             fields['label'] = Field(source='__unicode__')
-        if 'view' not in self.context and 'router' not in self.context:
+
+        if not self.router:
             return fields
 
-        if 'view' in self.context:
-            router = self.context['view'].router
-        else:
-            router = self.context['router']
         many = self.many or self.source == 'object_list'
         if ('request' in self.context and
                 self.context['request'].method != 'GET'):
@@ -199,14 +205,14 @@ class ModelSerializer(RestModelSerializer):
                     add_labels(name, field, field.opts.model.objects)
 
         # Add child objects (serialize with registered serializers)
-        if not router or not self.opts.depth:
+        if not self.opts.depth:
             return fields
 
         ct = get_ct(self.opts.model)
         for cct, rel in ct.get_children(include_rels=True):
             accessor = rel.get_accessor_name()
             if accessor == rel.field.related_query_name():
-                cls = router.get_serializer_for_model(
+                cls = self.router.get_serializer_for_model(
                     cct.model_class(), self.opts.depth - 1
                 )
                 fields[accessor] = cls(context=self.context)
@@ -215,10 +221,8 @@ class ModelSerializer(RestModelSerializer):
 
     def get_nested_field(self, model_field):
         model = model_field.rel.to
-        if ('view' in self.context
-                and getattr(self.context['view'], 'router', None)):
-            router = self.context['view'].router
-            cls = router.get_serializer_for_model(model, self.opts.depth - 1)
+        if self.router:
+            cls = self.router.get_serializer_for_model(model, self.opts.depth - 1)
             return cls(
                 context=self.context,
                 required=not(model_field.null or model_field.blank)
