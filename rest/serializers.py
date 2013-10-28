@@ -222,7 +222,9 @@ class ModelSerializer(RestModelSerializer):
     def get_nested_field(self, model_field):
         model = model_field.rel.to
         if self.router:
-            cls = self.router.get_serializer_for_model(model, self.opts.depth - 1)
+            cls = self.router.get_serializer_for_model(
+                model, self.opts.depth - 1
+            )
             return cls(
                 context=self.context,
                 required=not(model_field.null or model_field.blank)

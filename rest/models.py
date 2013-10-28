@@ -111,7 +111,7 @@ class ContentType(DjangoContentType):
         return children
 
     def get_config(self, user):
-        from .app import router # avoid circular import
+        from .app import router  # avoid circular import
         return router.get_page_config(self.identifier, user)
 
     class Meta:
