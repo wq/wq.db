@@ -46,6 +46,8 @@ class LabelRelatedField(RelatedField):
     def field_to_native(self, obj, field_name):
         if field_name.endswith('_label'):
             field_name = field_name[:-6]
+            if getattr(obj, field_name + '_id') is None:
+                return None
         val = getattr(obj, self.source or field_name)
         if self.many:
             return [unicode(item) for item in val.all()]
@@ -64,6 +66,8 @@ class IDRelatedField(RelatedField):
 
     def field_to_native(self, obj, field_name):
         if field_name.endswith('_id'):
+            if getattr(obj, field_name) is None:
+                return None
             field_name = field_name[:-3]
         val = getattr(obj, self.source or field_name)
         if val is None:

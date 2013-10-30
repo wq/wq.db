@@ -1,8 +1,5 @@
 from wq.db.rest.serializers import ModelSerializer
-from wq.db.rest import app
 from wq.db.rest.models import get_ct, get_object_id
-
-from wq.db.patterns.base import swapper
 
 
 class TypedAttachmentSerializer(ModelSerializer):

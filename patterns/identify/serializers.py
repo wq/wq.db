@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from wq.db.patterns.base.serializers import TypedAttachmentSerializer
-from wq.db.rest import app
-
 from .models import Identifier, Authority
 
 
@@ -29,5 +27,3 @@ class IdentifierSerializer(TypedAttachmentSerializer):
 
     class Meta(TypedAttachmentSerializer.Meta):
         read_only_fields = ('slug',)
-
-app.router.register_serializer(Identifier, IdentifierSerializer)

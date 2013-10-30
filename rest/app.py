@@ -3,6 +3,8 @@ from django.utils.module_loading import module_has_submodule
 from django.conf.urls import patterns, include, url
 from django.core.paginator import Paginator
 
+from django.contrib.auth.models import AnonymousUser
+
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
 from rest_framework.settings import api_settings
@@ -19,14 +21,14 @@ class Router(DefaultRouter):
     _querysets = {}
     _viewsets = {}
     _extra_pages = {}
-    _custom_config = {}
+    _config = {}
 
     include_root_view = False
     include_config_view = True
     include_multi_view = True
 
     def __init__(self, trailing_slash=False):
-        # Add trailing slash for list views
+        # Add trailing slash for HTML list views
         self.routes.append(Route(
             url=r'^{prefix}/$',
             mapping={
@@ -39,8 +41,13 @@ class Router(DefaultRouter):
         super(Router, self).__init__(trailing_slash=trailing_slash)
 
     def register_model(self, model, viewset=None, serializer=None,
-                       queryset=None):
+                       queryset=None, **kwargs):
+        if isinstance(model, basestring) and '.' in model:
+            from django.db.models import get_model
+            model = get_model(*model.split('.'))
         self._models.add(model)
+        ct = get_ct(model)
+
         if viewset:
             self.register_viewset(model, viewset)
         if serializer:
@@ -48,9 +55,12 @@ class Router(DefaultRouter):
         if queryset:
             self.register_queryset(model, queryset)
 
-        ct = get_ct(model)
-        viewset = self.get_viewset_for_model(model)
-        self.register(ct.urlbase, viewset, ct.identifier)
+        if 'name' not in kwargs:
+            kwargs['name'] = ct.identifier
+        if 'url' not in kwargs:
+            kwargs['url'] = model._meta.verbose_name_plural
+
+        self.register_config(model, kwargs)
 
     def register_viewset(self, model, viewset):
         self._viewsets[model] = viewset
@@ -60,6 +70,9 @@ class Router(DefaultRouter):
 
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
+
+    def register_config(self, model, config):
+        self._config[model] = config
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
         if model_class in self._serializers:
@@ -92,11 +105,10 @@ class Router(DefaultRouter):
         return serializer(obj, many=many, context={'router': self}).data
 
     def get_paginate_by_for_model(self, model_class):
-        name = get_ct(model_class).identifier
-        if name in self._custom_config:
-            paginate_by = self._custom_config[name].get('per_page', None)
-            if paginate_by:
-                return paginate_by
+        config = self._config[model_class]
+        paginate_by = config.get('per_page', None)
+        if paginate_by:
+            return paginate_by
         return api_settings.PAGINATE_BY
 
     def paginate(self, model, page_num, request=None):
@@ -141,7 +153,9 @@ class Router(DefaultRouter):
 
         return ViewSet
 
-    def get_config(self, user):
+    def get_config(self, user=None):
+        if user is None:
+            user = AnonymousUser()
         pages = {}
         for page in self._extra_pages:
             conf, view = self.get_page(page)
@@ -150,24 +164,25 @@ class Router(DefaultRouter):
             ct = get_ct(model)
             if not has_perm(user, ct, 'view'):
                 continue
-            info = {
-                'name': ct.name,
-                'url': ct.urlbase,
-                'list': True,
-                'parents': [],
-                'children': []
-            }
+            info = self._config[model]
+            info['list'] = True
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
                     info['can_' + perm] = True
 
-            for pct in ct.get_parents():
-                if has_perm(user, pct, 'view'):
-                    info['parents'].append(pct.identifier)
+            if 'parents' not in info:
+                info['parents'] = []
+                for pct in ct.get_parents():
+                    if pct.model_class() in self._models:
+                        if has_perm(user, pct, 'view'):
+                            info['parents'].append(pct.identifier)
 
-            for cct in ct.get_children():
-                if has_perm(user, cct, 'view'):
-                    info['children'].append(cct.identifier)
+            if 'children' not in info:
+                info['children'] = []
+                for cct in ct.get_children():
+                    if cct.model_class() in self._models:
+                        if has_perm(user, cct, 'view'):
+                            info['children'].append(cct.identifier)
 
             for name in ('annotated', 'identified', 'located', 'related'):
                 if getattr(ct, 'is_' + name):
@@ -188,8 +203,6 @@ class Router(DefaultRouter):
                 if ct.identifier != name and getattr(ct, 'is_' + name):
                     pages[name] = {'alias': ct.identifier}
 
-            if ct.identifier in self._custom_config:
-                info.update(self._custom_config[ct.identifier])
             pages[ct.identifier] = info
 
         return {'pages': pages}
@@ -202,17 +215,16 @@ class Router(DefaultRouter):
                 def list(self, request, *args, **kwargs):
                     return Response(config)
             view = PageView
-        url = config.get('url', name)
+        if 'name' not in config:
+            config['name'] = name
+        if 'url' not in config:
+            config['url'] = name
         self._extra_pages[name] = config, view
-        self.register(url, view, name)
-
-    def customize_page(self, name, config):
-        self._custom_config[name] = config
 
     def get_page(self, page):
         return self._extra_pages[page]
 
-    def get_page_config(self, name, user):
+    def get_page_config(self, name, user=None):
         config = self.get_config(user)
         return config['pages'].get(name, None)
 
@@ -243,7 +255,27 @@ class Router(DefaultRouter):
         return MultipleListView
 
     def get_urls(self):
-        # Register a few extra views before returning urls
+        # Register viewsets with DefaultRouter just before returning urls
+
+        # The root viewset (with a url of "") should be registered last
+        root = {}
+
+        def register(config, viewset):
+            if config['url'] == "":
+                root['view'] = viewset
+                root['name'] = config['name']
+            else:
+                self.register(config['url'], viewset, config['name'])
+
+        # List (model) views
+        for model in self._models:
+            viewset = self.get_viewset_for_model(model)
+            config = self._config[model]
+            register(config, viewset)
+
+        # Extra/custom viewsets
+        for name in self._extra_pages:
+            register(*self._extra_pages[name])
 
         if self.include_config_view:
             # /config.js
@@ -253,6 +285,10 @@ class Router(DefaultRouter):
             # /multi.json
             self.register('multi', self.get_multi_view(), 'multi')
 
+        if root:
+            # /
+            self.register('', root['view'], root['name'])
+
         return super(Router, self).get_urls()
 
     def get_routes(self, viewset):
@@ -260,6 +296,8 @@ class Router(DefaultRouter):
         model = getattr(viewset, "model", None)
         if not model:
             return routes
+
+        # FIXME: need special routes for viewset at root url
 
         # Custom routes
 
@@ -284,13 +322,15 @@ class Router(DefaultRouter):
             ))
 
         for cct in ct.get_all_children():
+            if cct.model_class() not in self._models:
+                continue
             cbase = cct.urlbase
-            routes.append(
+            routes.append(Route(
                 url='^%s-by-{prefix}' % cbase,
                 mapping={'get': 'list'},
                 name="%s-by-%s" % (cct.identifier, ct.identifier),
                 initkwargs={'target': cbase, 'suffix': 'List'},
-            )
+            ))
 
         return routes
 

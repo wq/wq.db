@@ -1,9 +1,6 @@
 from wq.db.rest.serializers import ModelSerializer
-from wq.db.rest import app
 from wq.db.rest.models import get_ct, get_object_id
-
 import json
-
 from .models import Location
 
 
@@ -85,5 +82,3 @@ class LocationSerializer(ModelSerializer):
 
     class Meta:
         exclude = ('content_type_id', 'for', 'object_id')
-
-app.router.register_serializer(Location, LocationSerializer)

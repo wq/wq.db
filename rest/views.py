@@ -12,12 +12,15 @@ from .caching import jc_backend, MIDDLEWARE_SECONDS
 class GenericAPIView(RestGenericAPIView):
     router = None
     cached = False
-    depth = 0
     ignore_kwargs = []
 
     @property
     def template_name(self):
         return type(self).__name__.replace('View', '').lower() + '.html'
+
+    @property
+    def depth(self):
+        return 0
 
     @property
     def cached_models(self):
@@ -111,30 +114,76 @@ class SimpleView(GenericAPIView):
 
 
 class SimpleViewSet(viewsets.ViewSet, GenericAPIView):
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         return Response({})
 
 
 class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
+    target = None
+
     @property
     def template_name(self):
         basename = get_ct(self.model).identifier
         if self.action in ('list', 'edit'):
             suffix = self.action
-        else:
+        else:  # e.g retrieve
             suffix = 'detail'
         return "%s_%s.html" % (basename, suffix)
 
+    @property
+    def depth(self):
+        if self.action in ('retrieve', 'edit'):
+            return 1
+        else:
+            return 0
+
     @link(**{})
     def edit(self, request, *args, **kwargs):
+        """
+        Generates a context appropriate for editing a form
+        """
         response = self.retrieve(request, *args, **kwargs)
-        response.data['edit'] = True
+        self.add_lookups(response.data)
         return response
 
-    def get_object_FIXME(self, queryset=None):
-        if self.kwargs.get('mode', False) == "new":
-            return self.model()
+    def new(self, request):
+        """
+        new is a variant of the "edit" action, but with no existing model
+        to lookup.
+        """
+        self.action = 'edit'
+        init = request.GET.dict()
+        obj = self.model(**init)
+        serializer = self.get_serializer(obj)
+        data = serializer.data
+        self.add_lookups(data)
+        return Response(data)
 
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Custom retrieve watches for "new" lookup value and switches modes
+        accordingly
+        """
+        if hasattr(self, 'lookup_url_kwarg'):
+            # New in DRF 2.4?
+            lookup = self.lookup_url_kwarg or self.lookup_field
+        else:
+            lookup = self.lookup_field
+
+        if self.kwargs.get(lookup, "") == "new":
+            # new/edit mode
+            return self.new(request)
+        else:
+            # Normal detail view
+            return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
+
+    def add_lookups(self, context):
+        # FIXME: mimic _addLookups in wq.app/app.js
+        context.update({
+            'edit': True
+        })
+
+    def get_object(self, queryset=None):
         try:
             obj = super(ModelViewSet, self).get_object(queryset)
         except Http404:
@@ -176,7 +225,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return response
 
         # HTML request, probably a form post from an older browser
-        if response.status_code == status.HTTP_202_CREATED:
+        if response.status_code == status.HTTP_201_CREATED:
             ct = get_ct(self.model)
             conf = ct.get_config(request.user)
 
@@ -217,10 +266,9 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return
 
         pcls = ct.model_class()
-        if (self.router and pcls in self.router._views
-                and self.router._views[pcls][1]):
-            lv, dv = self.router._views[pcls]
-            slug = dv().get_slug_field()
+        if self.router and pcls in self.router._viewsets:
+            pv = self.router._viewsets[pcls]
+            slug = dv().lookup_field
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)
