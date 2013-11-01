@@ -1,6 +1,5 @@
 from wq.db.rest.serializers import ModelSerializer, ContentTypeField
 from wq.db.patterns.base.serializers import TypedAttachmentSerializer
-from wq.db.rest import app
 from wq.db.rest.models import get_ct, get_object_id, get_by_identifier
 
 from .models import (
@@ -66,9 +65,3 @@ class RelationshipTypeSerializer(ModelSerializer):
 
     class Meta:
         exclude = ('for',)
-
-app.router.register_serializer(Relationship, RelationshipSerializer)
-app.router.register_serializer(
-    InverseRelationship, InverseRelationshipSerializer
-)
-app.router.register_serializer(RelationshipType, RelationshipTypeSerializer)

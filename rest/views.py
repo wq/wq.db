@@ -1,21 +1,26 @@
 from django.http import Http404
-from rest_framework import generics, status
+from rest_framework.generics import GenericAPIView as RestGenericAPIView
 from rest_framework.response import Response
+from rest_framework.decorators import link
+from rest_framework import status, viewsets
 from .models import get_ct, get_object_id, get_by_identifier
 from django.conf import settings
 
 from .caching import jc_backend, MIDDLEWARE_SECONDS
 
 
-class View(generics.GenericAPIView):
+class GenericAPIView(RestGenericAPIView):
     router = None
     cached = False
-    depth = 0
     ignore_kwargs = []
 
     @property
     def template_name(self):
         return type(self).__name__.replace('View', '').lower() + '.html'
+
+    @property
+    def depth(self):
+        return 0
 
     @property
     def cached_models(self):
@@ -74,7 +79,9 @@ class View(generics.GenericAPIView):
                 request, response, *args, **kwargs
             )
         else:
-            response = super(View, self).dispatch(request, *args, **kwargs)
+            response = super(GenericAPIView, self).dispatch(
+                request, *args, **kwargs
+            )
             if self.can_cache(request):
                 self.set_cached(request, response.data)
         return response
@@ -85,58 +92,100 @@ class View(generics.GenericAPIView):
     def get_queryset(self):
         if self.router is not None and self.model is not None:
             return self.router.get_queryset_for_model(self.model)
-        return super(View, self).get_queryset()
+        return super(GenericAPIView, self).get_queryset()
 
     def get_serializer_class(self):
         if self.router is not None and self.model is not None:
             return self.router.get_serializer_for_model(self.model, self.depth)
-        return super(View, self).get_serializer_class()
+        return super(GenericAPIView, self).get_serializer_class()
 
-    def get_paginate_by(self, queryset):
+    def get_paginate_by(self):
         renderer = self.request.accepted_renderer
         if getattr(renderer, 'disable_pagination', False):
             return None
         if self.router is not None and self.model is not None:
             return self.router.get_paginate_by_for_model(self.model)
-        return super(View, self).get_paginate_by(queryset)
-
-    def perform_content_negotiation(self, request, force=False):
-        renderer, media_type = super(View, self).perform_content_negotiation(
-            request, force
-        )
-        if media_type.startswith('text'):
-            media_type += "; charset=%s" % (settings.DEFAULT_CHARSET)
-        return renderer, media_type
+        return super(GenericAPIView, self).get_paginate_by()
 
 
-class SimpleView(View):
+class SimpleView(GenericAPIView):
     def get(self, request, *args, **kwargs):
         return Response({})
 
 
-class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
-    cached = True
-    depth = 1
+class SimpleViewSet(viewsets.ViewSet, GenericAPIView):
+    def list(self, request, *args, **kwargs):
+        return Response({})
+
+
+class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
+    target = None
 
     @property
     def template_name(self):
-        if self.kwargs.get('mode', False) in ('edit', 'new'):
-            return get_ct(self.model).identifier + '_edit.html'
+        basename = get_ct(self.model).identifier
+        if self.action in ('retrieve', 'create', 'update', 'delete'):
+            suffix = 'detail'
         else:
-            return get_ct(self.model).identifier + '_detail.html'
+            suffix = self.action
+        return "%s_%s.html" % (basename, suffix)
 
-    def get_slug_field(self):
-        if get_ct(self.model).is_identified:
-            return 'primary_identifiers__slug'
+    @property
+    def depth(self):
+        if self.action in ('retrieve', 'edit'):
+            return 1
         else:
-            return 'pk'
+            return 0
+
+    @link()
+    def edit(self, request, *args, **kwargs):
+        """
+        Generates a context appropriate for editing a form
+        """
+        response = self.retrieve(request, *args, **kwargs)
+        self.add_lookups(response.data)
+        return response
+
+    def new(self, request):
+        """
+        new is a variant of the "edit" action, but with no existing model
+        to lookup.
+        """
+        self.action = 'edit'
+        init = request.GET.dict()
+        obj = self.model(**init)
+        serializer = self.get_serializer(obj)
+        data = serializer.data
+        self.add_lookups(data)
+        return Response(data)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Custom retrieve watches for "new" lookup value and switches modes
+        accordingly
+        """
+        if hasattr(self, 'lookup_url_kwarg'):
+            # New in DRF 2.4?
+            lookup = self.lookup_url_kwarg or self.lookup_field
+        else:
+            lookup = self.lookup_field
+
+        if self.kwargs.get(lookup, "") == "new":
+            # new/edit mode
+            return self.new(request)
+        else:
+            # Normal detail view
+            return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
+
+    def add_lookups(self, context):
+        # FIXME: mimic _addLookups in wq.app/app.js
+        context.update({
+            'edit': True
+        })
 
     def get_object(self, queryset=None):
-        if self.kwargs.get('mode', False) == "new":
-            return self.model()
-
         try:
-            obj = super(InstanceModelView, self).get_object(queryset)
+            obj = super(ModelViewSet, self).get_object(queryset)
         except Http404:
             if not get_ct(self.model).is_identified:
                 raise
@@ -153,17 +202,8 @@ class InstanceModelView(View, generics.RetrieveUpdateDestroyAPIView):
             #TODO: automatically redirect to primary identifier?
         return obj
 
-
-class ListOrCreateModelView(View, generics.ListCreateAPIView):
-    cached = True
-    depth = 0
-
-    @property
-    def template_name(self):
-        return get_ct(self.model).identifier + '_list.html'
-
     def list(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).list(
+        response = super(ModelViewSet, self).list(
             request, *args, **kwargs
         )
         if not isinstance(response.data, dict):
@@ -177,7 +217,7 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
         return response
 
     def create(self, request, *args, **kwargs):
-        response = super(ListOrCreateModelView, self).create(
+        response = super(ModelViewSet, self).create(
             request, *args, **kwargs
         )
         if not request.accepted_media_type.startswith('text/html'):
@@ -226,10 +266,9 @@ class ListOrCreateModelView(View, generics.ListCreateAPIView):
             return
 
         pcls = ct.model_class()
-        if (self.router and pcls in self.router._views
-                and self.router._views[pcls][1]):
-            lv, dv = self.router._views[pcls]
-            slug = dv().get_slug_field()
+        if self.router and pcls in self.router._viewsets:
+            pv = self.router._viewsets[pcls]
+            slug = dv().lookup_field
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)

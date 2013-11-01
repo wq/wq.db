@@ -54,12 +54,3 @@ ANONYMOUS_PERMISSIONS = tuple()
 SRID = 3857
 DEFAULT_AUTH_GROUP = "Users"
 DISAMBIGUATE = True
-FORBIDDEN_APPS = (
-    'auth',
-    'sessions',
-    'admin',
-    'contenttypes',
-    'reversion',
-    'south',
-    'social_auth'
-)

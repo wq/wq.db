@@ -4,10 +4,10 @@ from django.middleware import csrf
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from wq.db.rest import app
-from wq.db.rest.views import View, InstanceModelView
+from wq.db.rest.views import SimpleViewSet, ModelViewSet
 
 
-class AuthView(View):
+class AuthView(SimpleViewSet):
     def user_info(self, request):
         user_dict = app.router.serialize(request.user)
         user_dict['id'] = request.user.pk
@@ -26,13 +26,13 @@ class AuthView(View):
 
 
 class LoginView(AuthView):
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             return self.user_info(request)
         else:
             return self.csrf_info(request)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
@@ -44,17 +44,16 @@ class LoginView(AuthView):
 
 
 class LogoutView(AuthView):
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             logout(request)
         return self.csrf_info(request)
 
 
-class UserDetailView(InstanceModelView):
-    def get_slug_field(self):
-        return 'username'
+class UserViewSet(ModelViewSet):
+    lookup_field = 'username'
 
 app.router.add_page('login', {'name': 'Log in', 'url': 'login'}, LoginView)
 app.router.add_page('logout', {'name': 'Log out', 'url': 'logout'}, LogoutView)
 
-app.router.register_views(User, listview=None, instanceview=UserDetailView)
+app.router.register_viewset(User, UserViewSet)

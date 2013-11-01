@@ -7,6 +7,8 @@ from django.conf import settings
 from wq.db.patterns.base import swapper
 from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
+from wq.io.util import guess_type
+
 
 # Custom FileField handles both images and files
 class FileField(models.ImageField):
@@ -70,10 +72,8 @@ class BaseFile(AnnotatedModel, RelatedModel):
     @property
     def mimetype(self):
         if self.file.name not in (None, ""):
-            import magic
-            mime = magic.Magic(mime=True)
             self.file.open()
-            return mime.from_buffer(self.file.read(1024))
+            return guess_type(self.file.name, self.file.read(1024))
         else:
             return None
 

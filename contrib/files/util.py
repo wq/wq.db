@@ -1,8 +1,7 @@
-import Image
-import ImageOps
+from PIL import Image, ImageOps
 import StringIO
 import os
-import magic
+from wq.io.util import guess_type
 import subprocess
 from django.conf import settings
 
@@ -10,7 +9,7 @@ from django.conf import settings
 def generate_image(image, size):
     size = int(size)
     path = '%s/%s' % (settings.MEDIA_ROOT, image)
-    mime = magic.from_file(path, mime=True)
+    mime = guess_type(path)
     image = os.path.basename(image)
     if mime.startswith('image/'):
         img = Image.open(path)
