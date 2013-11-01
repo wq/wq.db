@@ -58,7 +58,8 @@ class Router(DefaultRouter):
         if 'name' not in kwargs:
             kwargs['name'] = ct.identifier
         if 'url' not in kwargs:
-            kwargs['url'] = model._meta.verbose_name_plural
+            url = unicode(model._meta.verbose_name_plural)
+            kwargs['url'] = url.replace(' ', '')
 
         self.register_config(model, kwargs)
 
