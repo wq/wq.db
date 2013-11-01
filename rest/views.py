@@ -124,10 +124,10 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
     @property
     def template_name(self):
         basename = get_ct(self.model).identifier
-        if self.action in ('list', 'edit'):
-            suffix = self.action
-        else:  # e.g retrieve
+        if self.action in ('retrieve', 'create', 'update', 'delete'):
             suffix = 'detail'
+        else:
+            suffix = self.action
         return "%s_%s.html" % (basename, suffix)
 
     @property
@@ -137,7 +137,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             return 0
 
-    @link(**{})
+    @link()
     def edit(self, request, *args, **kwargs):
         """
         Generates a context appropriate for editing a form

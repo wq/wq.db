@@ -26,7 +26,11 @@ class ContentType(DjangoContentType):
         cls = self.model_class()
         if cls is None:
             return None
-        return self.get_config()['url']
+        config = self.get_config()
+        if config:
+            return config['url']
+        urlbase = unicode(cls._meta.verbose_name_plural)
+        return urlbase.replace(' ', '')
 
     @property
     def is_annotated(self):
