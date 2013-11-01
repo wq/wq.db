@@ -1,7 +1,6 @@
 from rest_framework.serializers import FileField as RestFileField, Field
 from wq.db.rest import serializers
-from wq.db.rest import app
-from .models import FileField, File
+from .models import FileField
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -18,5 +17,3 @@ class FileSerializer(serializers.ModelSerializer):
             if user.is_authenticated():
                 obj.user = user
         return obj
-
-app.router.register_serializer(File, FileSerializer)
