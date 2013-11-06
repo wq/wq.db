@@ -75,10 +75,10 @@ class ContentType(DjangoContentType):
         cls = self.model_class()
         if cls is None:
             return []
-        parents = []
+        parents = set()
         for f in cls._meta.fields:
             if f.rel is not None and type(f.rel).__name__ == 'ManyToOneRel':
-                parents.append(get_ct(f.rel.to))
+                parents.add(get_ct(f.rel.to))
         return parents
 
     # Get foreign keys and RelationshipType parents for this content type
@@ -90,7 +90,7 @@ class ContentType(DjangoContentType):
             ctype = rtype.from_type
             # This is a DjangoContentType, swap for our custom version
             ctype = ContentType.objects.get(pk=ctype.pk)
-            parents.append(ctype)
+            parents.add(ctype)
         return parents
 
     def get_children(self, include_rels=False):
@@ -99,9 +99,9 @@ class ContentType(DjangoContentType):
             return []
         rels = cls._meta.get_all_related_objects()
         if include_rels:
-            return [(get_ct(rel.model), rel) for rel in rels]
+            return set([(get_ct(rel.model), rel) for rel in rels])
         else:
-            return [get_ct(rel.model) for rel in rels]
+            return set([get_ct(rel.model) for rel in rels])
 
     def get_all_children(self):
         children = self.get_children()
@@ -111,7 +111,7 @@ class ContentType(DjangoContentType):
             ctype = rtype.to_type
             # This is a DjangoContentType, swap for our custom version
             ctype = ContentType.objects.get(pk=ctype.pk)
-            children.append(ctype)
+            children.add(ctype)
         return children
 
     def get_config(self, user=None):
@@ -144,14 +144,17 @@ def get_object_id(instance):
     if ct.is_identified:
         if instance.primary_identifier:
             return instance.primary_identifier.slug
-    return instance.pk
+    lookup = ct.get_config().get('lookup', 'pk')
+    return getattr(instance, lookup)
 
 
 def get_by_identifier(queryset, ident):
     if hasattr(queryset, 'get_by_identifier'):
         return queryset.get_by_identifier(ident)
     else:
-        return queryset.get(pk=ident)
+        ct = get_ct(queryset.model)
+        lookup = ct.get_config().get('lookup', 'pk')
+        return queryset.get(**{lookup: ident})
 
 
 class MultiQuerySet(object):

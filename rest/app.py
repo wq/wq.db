@@ -132,6 +132,7 @@ class Router(DefaultRouter):
         return model.objects.all()
 
     def get_viewset_for_model(self, model_class):
+        config = self._config[model_class]
         if model_class in self._viewsets:
             viewset = self._viewsets[model_class]
         else:
@@ -145,7 +146,7 @@ class Router(DefaultRouter):
         if get_ct(model_class).is_identified:
             lookup = 'primary_identifiers__slug'
         else:
-            lookup = 'pk'
+            lookup = config.get('lookup', 'pk')
 
         class ViewSet(viewset):
             model = model_class
