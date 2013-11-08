@@ -54,7 +54,7 @@ class LogoutView(AuthView):
 class UserViewSet(ModelViewSet):
     lookup_field = 'username'
 
-app.router.add_page('login', {'name': 'Log in', 'url': 'login'}, LoginView)
-app.router.add_page('logout', {'name': 'Log out', 'url': 'logout'}, LogoutView)
+app.router.add_page('login', {'url': 'login'}, LoginView)
+app.router.add_page('logout', {'url': 'logout'}, LogoutView)
 
 app.router.register_viewset(User, UserViewSet)
