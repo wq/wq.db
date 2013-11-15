@@ -19,6 +19,7 @@ class Router(DefaultRouter):
     _models = set()
     _serializers = {}
     _querysets = {}
+    _filters = {}
     _viewsets = {}
     _extra_pages = {}
     _config = {}
@@ -41,7 +42,7 @@ class Router(DefaultRouter):
         super(Router, self).__init__(trailing_slash=trailing_slash)
 
     def register_model(self, model, viewset=None, serializer=None,
-                       queryset=None, **kwargs):
+                       queryset=None, filter=None, **kwargs):
         if isinstance(model, basestring) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
@@ -54,6 +55,8 @@ class Router(DefaultRouter):
             self.register_serializer(model, serializer)
         if queryset:
             self.register_queryset(model, queryset)
+        if filter:
+            self.register_filter(model, filter)
 
         if 'name' not in kwargs:
             kwargs['name'] = ct.identifier
@@ -71,6 +74,9 @@ class Router(DefaultRouter):
 
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
+
+    def register_filter(self, model, queryset):
+        self._filters[model] = queryset
 
     def register_config(self, model, config):
         self._config[model] = config
@@ -115,7 +121,10 @@ class Router(DefaultRouter):
     def paginate(self, model, page_num, request=None):
         obj_serializer = self.get_serializer_for_model(model)
         paginate_by = self.get_paginate_by_for_model(model)
-        paginator = Paginator(self.get_queryset_for_model(model), paginate_by)
+        paginator = Paginator(
+            self.get_queryset_for_model(model, request),
+            paginate_by
+        )
         page = paginator.page(page_num)
 
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
@@ -126,13 +135,24 @@ class Router(DefaultRouter):
             context={'router': self, 'request': request}
         ).data
 
-    def get_queryset_for_model(self, model):
+    def get_queryset_for_model(self, model, request=None):
+        config = self._config[model]
         if model in self._querysets:
-            return self._querysets[model]
-        return model.objects.all()
+            qs = self._querysets[model]
+        else:
+            qs = model.objects.all()
+        if request and model in self._filters:
+            qs = self._filters[model](qs, request)
+        return qs
+
+    def get_lookup_for_model(self, model_class):
+        config = self._config[model_class]
+        if get_ct(model_class).is_identified:
+            return 'primary_identifiers__slug'
+        else:
+            return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
-        config = self._config[model_class]
         if model_class in self._viewsets:
             viewset = self._viewsets[model_class]
         else:
@@ -142,11 +162,7 @@ class Router(DefaultRouter):
                 viewset = self._viewsets[real_model]
             else:
                 viewset = ModelViewSet
-
-        if get_ct(model_class).is_identified:
-            lookup = 'primary_identifiers__slug'
-        else:
-            lookup = config.get('lookup', 'pk')
+        lookup = self.get_lookup_for_model(model_class)
 
         class ViewSet(viewset):
             model = model_class

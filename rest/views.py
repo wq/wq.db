@@ -91,7 +91,7 @@ class GenericAPIView(RestGenericAPIView):
 
     def get_queryset(self):
         if self.router is not None and self.model is not None:
-            return self.router.get_queryset_for_model(self.model)
+            return self.router.get_queryset_for_model(self.model, self.request)
         return super(GenericAPIView, self).get_queryset()
 
     def get_serializer_class(self):
@@ -266,9 +266,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return
 
         pcls = ct.model_class()
-        if self.router and pcls in self.router._viewsets:
-            pv = self.router._viewsets[pcls]
-            slug = dv().lookup_field
+        if self.router:
+            slug = router.get_lookup_for_model(pcls)
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)

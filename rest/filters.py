@@ -28,9 +28,8 @@ class FilterBackend(BaseFilterBackend):
                     del kwargs[key]
                     pcls = f.rel.to
                     router = getattr(view, 'router', None)
-                    if router and pcls in router._viewsets:
-                        pv = router._viewsets[pcls]
-                        slug = pv().lookup_field
+                    if router:
+                        slug = router.get_lookup_for_model(pcls)
                         kwargs[f.name] = pcls.objects.get(**{slug: val})
                     elif get_ct(f.rel.to).is_identified:
                         kwargs[f.name] = pcls.objects.get_by_identifier(val)
