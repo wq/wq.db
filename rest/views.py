@@ -121,7 +121,7 @@ class SimpleViewSet(viewsets.ViewSet, GenericAPIView):
 class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
     cached = True
     target = None
-    
+
     @property
     def template_name(self):
         basename = get_ct(self.model).identifier
