@@ -9,7 +9,7 @@ SRID = getattr(settings, 'SRID', 4326)
 
 class Location(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
-    is_primary = models.BooleanField()
+    is_primary = models.BooleanField(default=False)
     geometry = models.GeometryField(srid=SRID)
     accuracy = models.IntegerField(null=True, blank=True)
 

@@ -79,7 +79,7 @@ class Identifier(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField()
     authority = models.ForeignKey('Authority', blank=True, null=True)
-    is_primary = models.BooleanField()
+    is_primary = models.BooleanField(default=False)
 
     # Identifer can contain a pointer to any model
     content_type = models.ForeignKey(ContentType)
