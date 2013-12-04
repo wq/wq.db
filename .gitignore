@@ -3,4 +3,4 @@
 build
 dist
 README.rst
-wq/__init__.py
+wq/

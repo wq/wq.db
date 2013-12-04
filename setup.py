@@ -44,9 +44,24 @@ def create_wq_namespace():
     init.close()
 
 
+def create_wqdb_namespace():
+    """
+    Since tests aren't picking up package_dir, populate wq.db namespace with
+    symlinks back to top level directories.
+    """
+    if os.path.isdir("wq/db"):
+        return
+    os.makedirs("wq/db")
+    for folder in ("rest", "contrib", "patterns"):
+        os.symlink("../../" + folder, "wq/db/" + folder)
+    init = open(os.path.join("wq/db", "__init__.py"), 'w')
+    init.write("")
+    init.close()
+
+
 def find_wq_packages(submodule):
     """
-    Add submodule prefix to found packages.  The packages within each wq
+    Add submodule prefix to found packages, since the packages within each wq
     submodule exist at the top level of their respective repositories.
     """
     packages = ['wq', submodule]
@@ -63,6 +78,7 @@ def find_wq_packages(submodule):
 
 create_wq_namespace()
 packages, package_dir = find_wq_packages('wq.db')
+create_wqdb_namespace()
 
 setup(
     name='wq.db',
@@ -95,4 +111,5 @@ setup(
         'Topic :: Scientific/Engineering :: GIS',
         'Topic :: Database :: Database Engines/Servers',
     ],
+    test_suite='tests.runtests.main',
 )
