@@ -2,6 +2,8 @@
   
 **[wq.db]** is a collection of Python modules for building robust, flexible schemas and REST APIs for use in field data collection apps and (more generally) progressively enhanced mobile-first websites.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
+[![Build Status](https://travis-ci.org/wq/wq.db.png?branch=master)](https://travis-ci.org/wq/wq.db)
+
 ## Getting Started
 
 ```bash
