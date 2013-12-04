@@ -3,6 +3,12 @@ python:
  - "2.7"
 env:
  - DJANGO="django==1.6" DRF="djangorestframework==2.3.9"
+before_script:
+ - sudo apt-add-repository -y ppa:ubuntugis/ubuntugis-unstable
+ - sudo apt-get update 
+ - sudo apt-get install postgresql-9.1-postgis
+ - createdb -Upostgres wqdb_test
+ - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
  - pip install $DJANGO
  - pip install $DRF

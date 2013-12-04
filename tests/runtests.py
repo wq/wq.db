@@ -4,7 +4,13 @@ from django.conf import settings
 
 def main():
     settings.configure(
-        DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3'}},
+        DATABASES={
+            'default': {
+                'ENGINE': 'django.contrib.gis.db.backends.postgis',
+                'NAME': 'wqdb_test',
+                'USER': 'postgres',
+            }
+        },
         ROOT_URLCONF="tests.urls",
         INSTALLED_APPS=(
             'wq.db.rest.auth',

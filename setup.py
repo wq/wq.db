@@ -112,4 +112,5 @@ setup(
         'Topic :: Database :: Database Engines/Servers',
     ],
     test_suite='tests.runtests.main',
+    tests_require=['psycopg2'],
 )
