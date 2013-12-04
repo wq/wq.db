@@ -97,7 +97,7 @@ setup(
         'djangorestframework>=2.3.0',
         'south',
         'pystache',
-        'django-social-auth'
+        'python-social-auth'
     ],
     classifiers=[
         'Framework :: Django',
