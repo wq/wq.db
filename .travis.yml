@@ -4,9 +4,7 @@ python:
 env:
  - DJANGO="django==1.6" DRF="djangorestframework==2.3.9"
 before_script:
- - sudo apt-add-repository -y ppa:ubuntugis/ppa
- - sudo apt-get update 
- - sudo apt-get install postgresql-9.1-postgis
+ - sudo apt-get install postgresql-9.1-postgis-2.1
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
