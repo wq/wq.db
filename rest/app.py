@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
+from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 
@@ -303,19 +304,39 @@ class Router(DefaultRouter):
             # /multi.json
             self.register('multi', self.get_multi_view(), 'multi')
 
-        if root:
-            # /
-            self.register('', root['view'], root['name'])
+        urls = super(Router, self).get_urls()
 
-        return super(Router, self).get_urls()
+        if root:
+            # / - Skip registration and directly generate custom URLs
+            urls.extend(self.get_root_urls(root['view'], root['name']))
+
+        return urls
+
+    def get_root_urls(self, viewset, name):
+        lookup = self.get_lookup_regex(viewset)
+        routes = self.get_routes(viewset)
+        urls = []
+        for route in routes:
+            pattern = route.url.format(
+                prefix='',
+                lookup=lookup,
+                trailing_slash=self.trailing_slash,
+            )
+
+            # Remove leading slash from detail view URLs
+            pattern = pattern.replace('/', '', 1)
+
+            mapping = self.get_method_map(viewset, route.mapping)
+            view = viewset.as_view(mapping, **route.initkwargs)
+            urls.append(url(pattern, view, name=name))
+
+        return format_suffix_patterns(urls)
 
     def get_routes(self, viewset):
         routes = super(Router, self).get_routes(viewset)
         model = getattr(viewset, "model", None)
         if not model:
             return routes
-
-        # FIXME: need special routes for viewset at root url
 
         # Custom routes
 
