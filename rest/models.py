@@ -141,11 +141,12 @@ def get_ct(model, for_concrete_model=False):
 
 def get_object_id(instance):
     ct = get_ct(instance)
-    if ct.is_identified:
-        if instance.primary_identifier:
-            return instance.primary_identifier.slug
-    lookup = ct.get_config().get('lookup', 'pk')
-    return getattr(instance, lookup)
+    config = ct.get_config()
+    if config and 'lookup' in config:
+        return getattr(instance, config['lookup'])
+    elif ct.is_identified and instance.primary_identifier:
+        return instance.primary_identifier.slug
+    return instance.pk
 
 
 def get_by_identifier(queryset, ident):
