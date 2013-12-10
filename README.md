@@ -27,11 +27,11 @@ A collection of recommended design patterns ([annotate], [identify], [locate], a
 ### Batteries Included
 Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library.
 
+#### [dbio]
+Load data from external files into the database, powered by [wq.io], [files], and [vera].
+
 #### [files]
 Generic file manager.  Supports using the same `FileField` for both images and files.  Also includes a URL-driven thumbnail generator.
-
-#### [dbio]
-Load data from external files into the database, powered by [wq.io] and [vera].
 
 #### [search]
 Utilities for searching and disambiguating models using the [identify] and [annotate] patterns.
