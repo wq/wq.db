@@ -1,6 +1,6 @@
 [![wq.db](https://raw.github.com/wq/wq/master/images/256/wq.db.png)](http://wq.io/wq.db)
   
-[wq.db] is a collection of Python modules for building robust, flexible schemas and REST APIs for use in field data collection apps and (more generally) mobile-first websites built with progressive enhancement principles.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
+[wq.db] is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
 [![Build Status](https://travis-ci.org/wq/wq.db.png?branch=master)](https://travis-ci.org/wq/wq.db)
 
@@ -22,7 +22,7 @@ wq.db has two primary components: a REST API generator ([wq.db.rest]) and a coll
 Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library ([app.py]) includes an admin-style Router that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a CRS-aware GeoJSON serializer/renderer.
 
 ### [wq.db.patterns]
-A collection of recommended design patterns ([annotate], [identify], [locate], and [relate]) that provide long-term flexibility and sustainability for user-maintained data collection systems.  These patterns are implemented as installable Django apps.
+A collection of recommended design patterns ([annotate], [identify], [locate], and [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
 
 ### Batteries Included
 Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library.
@@ -34,10 +34,10 @@ Load data from external files into the database, powered by [wq.io], [files], an
 Generic file manager.  Supports using the same `FileField` for both images and files.  Also includes a URL-driven thumbnail generator.
 
 #### [search]
-Utilities for searching and disambiguating models using the [identify] and [annotate] patterns.
+Views for searching and disambiguating models using the [identify] and [annotate] patterns.
 
 #### [vera]
-Reference implementation of the ERAV model, an extention to EAV with support for maintaining multiple versions of an entity.
+Reference implementation of the [ERAV] model, an extension to EAV with support for maintaining multiple versions of an entity.
 
 [wq]: http://wq.io
 [wq.db]: http://wq.io/wq.db
@@ -61,3 +61,4 @@ Reference implementation of the ERAV model, an extention to EAV with support for
 [search]: http://wq.io/docs/search
 [files]: http://wq.io/docs/files
 [vera]: http://wq.io/vera
+[ERAV]: http://wq.io/research/provenance
