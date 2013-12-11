@@ -1,4 +1,5 @@
 import os
+import sys
 from setuptools import setup, find_packages
 
 LONG_DESCRIPTION = """
@@ -78,11 +79,13 @@ def find_wq_packages(submodule):
 
 create_wq_namespace()
 packages, package_dir = find_wq_packages('wq.db')
-create_wqdb_namespace()
+
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    create_wqdb_namespace()
 
 setup(
     name='wq.db',
-    version='0.4.0',
+    version='0.4.1-dev',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
