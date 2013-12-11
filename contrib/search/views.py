@@ -3,7 +3,7 @@ from rest_framework.generics import MultipleObjectAPIView
 from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework import status
-from wq.db.rest.views import View
+from wq.db.rest.views import SimpleView
 
 from .util import search
 from .serializers import SearchResultSerializer
@@ -11,7 +11,7 @@ from .serializers import SearchResultSerializer
 SEARCH_PARAMETER = 'q'
 
 
-class SearchView(View, MultipleObjectAPIView, ListModelMixin):
+class SearchView(SimpleView, MultipleObjectAPIView, ListModelMixin):
     auto = False
     search = None
     serializer_class = SearchResultSerializer
