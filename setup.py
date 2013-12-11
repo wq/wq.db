@@ -82,7 +82,7 @@ create_wqdb_namespace()
 
 setup(
     name='wq.db',
-    version='0.4.0-dev',
+    version='0.4.0',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
