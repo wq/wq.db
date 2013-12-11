@@ -3,12 +3,13 @@ from wq.db.rest.serializers import ModelSerializer
 from django.contrib.auth.models import User
 from django.conf import settings
 
+HAS_SOCIAL_AUTH = ('social.apps.django_app.default' in settings.INSTALLED_APPS)
+
 
 class UserSerializer(ModelSerializer):
     def to_native(self, instance):
         result = super(UserSerializer, self).to_native(instance)
-        if ('social_auth' in settings.INSTALLED_APPS
-                and 'social_auth' in result):
+        if (HAS_SOCIAL_AUTH and 'social_auth' in result):
             if len(result['social_auth']) > 0:
                 result['social_auth'] = {'accounts': result['social_auth']}
             else:
@@ -34,6 +35,6 @@ class SocialAuthSerializer(ModelSerializer):
         }
 
 app.router.register_serializer(User, UserSerializer)
-if 'social_auth' in settings.INSTALLED_APPS:
-    from social_auth.models import UserSocialAuth
+if HAS_SOCIAL_AUTH:
+    from social.apps.django_app.default.models import UserSocialAuth
     app.router.register_serializer(UserSocialAuth, SocialAuthSerializer)
