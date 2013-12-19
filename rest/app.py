@@ -327,6 +327,8 @@ class Router(DefaultRouter):
             pattern = pattern.replace('/', '', 1)
 
             mapping = self.get_method_map(viewset, route.mapping)
+            if not mapping:
+                continue
             view = viewset.as_view(mapping, **route.initkwargs)
             urls.append(url(pattern, view, name=name))
 
