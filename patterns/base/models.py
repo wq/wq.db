@@ -89,6 +89,24 @@ class NaturalKeyModelManager(models.Manager):
                             % len(natural_key))
         return dict(zip(natural_key, args))
 
+    def resolve_keys(self, keys, auto_create=False):
+        """
+        Resolve the list of given keys into objects, if possible.
+        Returns a mapping and a success indicator.
+        """
+        resolved = {}
+        success = True
+        for key in keys:
+            if auto_create:
+                resolved[key] = self.find(*key)
+            else:
+                try:
+                    resolved[key] = self.get_by_natural_key(*key)
+                except self.model.DoesNotExist:
+                    success = False
+                    resolved[key] = None
+        return resolved, success
+
 
 class NaturalKeyModel(models.Model):
     """

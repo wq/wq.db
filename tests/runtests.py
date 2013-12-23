@@ -24,6 +24,7 @@ def main():
             'wq.db.rest',
             'wq.db.rest.auth',
             'wq.db.patterns.identify',
+            'wq.db.patterns.annotate',
             'tests.testapp',
         ),
         **wqdb_settings

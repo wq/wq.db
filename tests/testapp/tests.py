@@ -1,10 +1,11 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import RootModel
+from .models import RootModel, AnnotatedModel
+from wq.db.patterns.models import AnnotationType, Annotation
 import json
 
 
-class TestCase(APITestCase):
+class UrlsTestCase(APITestCase):
     def setUp(self):
         instance = RootModel.objects.find('instance')
         instance.description = "Test"
@@ -31,3 +32,28 @@ class TestCase(APITestCase):
     def test_list_nested_identifiers(self):
         response = self.client.get('/.json')
         self.assertNotIn('identifiers', response.data['list'][0])
+
+
+class AnnotateTestCase(APITestCase):
+    def setUp(self):
+        AnnotationType.objects.create(name="Width")
+        AnnotationType.objects.create(name="Height")
+
+    def test_annotate_simple(self):
+        instance = AnnotatedModel.objects.create(name="Test")
+        instance.vals = {
+            "Width": 200,
+            "Height": 200
+        }
+        self.assertEqual(instance.annotations.count(), 2)
+        annotations = Annotation.objects.filter(
+            object_id = instance.pk
+        )
+        self.assertEqual(annotations.count(), 2)
+
+    def test_annotate_invalid_type(self):
+        instance = AnnotatedModel.objects.create(name="Test")
+        with self.assertRaises(TypeError):
+            instance.vals = {
+                "Invalid Annotation Type": "Test",
+            }
