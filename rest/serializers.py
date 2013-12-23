@@ -221,6 +221,13 @@ class ModelSerializer(RestModelSerializer):
                 )
                 fields[accessor] = cls(context=self.context)
 
+        for vf in self.opts.model._meta.virtual_fields:
+            if getattr(vf, 'serialize', False) and vf.name not in fields:
+                cls = self.router.get_serializer_for_model(
+                    vf.rel.to, self.opts.depth - 1
+                )
+                fields[vf.name] = cls(context=self.context)
+
         return fields
 
     def get_nested_field(self, model_field):
