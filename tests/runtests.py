@@ -21,10 +21,13 @@ def main():
         ROOT_URLCONF="tests.urls",
         INSTALLED_APPS=(
             'django.contrib.contenttypes',
+            'django.contrib.auth',
             'wq.db.rest',
             'wq.db.rest.auth',
             'wq.db.patterns.identify',
             'wq.db.patterns.annotate',
+            'wq.db.patterns.relate',
+            'wq.db.contrib.vera',
             'tests.testapp',
         ),
         **wqdb_settings
