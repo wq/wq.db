@@ -6,8 +6,15 @@ from wq.db.patterns.models import AnnotationType, Annotation
 from wq.db.contrib.vera.models import (
     Event, Report, ReportStatus, Site, Parameter
 )
+from wq.db.rest.models import get_ct
 import json
 import datetime
+
+
+def value_by_type(attachments):
+    return {
+        a['type_id']: a['value'] for a in attachments
+    }
 
 
 class UrlsTestCase(APITestCase):
@@ -62,6 +69,69 @@ class AnnotateTestCase(APITestCase):
             instance.vals = {
                 "Invalid Annotation Type": "Test",
             }
+
+
+class AnnotateRestTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser', is_superuser=True)
+        ct = get_ct(AnnotatedModel)
+        self.width = AnnotationType.objects.create(
+            name="Width",
+            contenttype=ct
+        )
+        self.height = AnnotationType.objects.create(
+            name="Height",
+            contenttype=ct
+        )
+        self.instance = AnnotatedModel.objects.create(name="Test 1")
+        self.instance.vals = {
+            'Width': 200,
+            'Height': 200
+        }
+        self.client.force_authenticate(user=self.user)
+
+    def test_annotate_post(self):
+        form = {
+            'name': 'Test 2'
+        }
+        form['annotation-%s-value' % self.width.pk] = 350
+        form['annotation-%s-value' % self.height.pk] = 400
+        response = self.client.post('/annotatedmodels.json', form)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['name'], "Test 2")
+        self.assertIn("annotations", response.data)
+        self.assertEqual(len(response.data["annotations"]), 2)
+        values = value_by_type(response.data['annotations'])
+        self.assertEqual(values[self.width.pk], '350')
+        self.assertEqual(values[self.height.pk], '400')
+
+    def test_annotate_put(self):
+        form = {
+            'name': 'Test 1 - Updated'
+        }
+        for aname in 'width', 'height':
+            atype = getattr(self, aname)
+            prefix = 'annotation-%s-' % atype.pk
+            form[prefix + 'id'] = self.instance.annotations.get(type=atype).pk
+            form[prefix + 'value'] = 600
+
+        response = self.client.put(
+            '/annotatedmodels/%s.json' % self.instance.pk,
+            form
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.instance = AnnotatedModel.objects.get(pk=self.instance.pk)
+        self.assertEqual(self.instance.name, "Test 1 - Updated")
+        self.assertIn("annotations", response.data)
+        self.assertEqual(len(response.data["annotations"]), 2)
+        values = value_by_type(response.data['annotations'])
+        for aname in 'width', 'height':
+            atype = getattr(self, aname)
+            self.assertEqual(values[atype.pk], '600')
+            self.assertEqual(
+                self.instance.annotations.get(type=atype).value,
+                '600'
+            )
 
 
 class VeraTestCase(APITestCase):
@@ -163,3 +233,82 @@ class VeraTestCase(APITestCase):
                 values,
                 user=self.user
             )
+
+
+class VeraRestTestCase(APITestCase):
+    def setUp(self):
+        self.site = Site.objects.find(45, -95)
+        self.user = User.objects.create(username='testuser', is_superuser=True)
+        self.client.force_authenticate(user=self.user)
+        self.valid = ReportStatus.objects.create(is_valid=True)
+
+        param1 = Parameter.objects.find('Temperature')
+        param1.is_numeric = True
+        param1.units = 'C'
+        param1.save()
+
+        Parameter.objects.find('Notes')
+
+    def test_vera_post(self):
+        form = {
+            'site__latitude': 45,
+            'site__longitude': -95.5,
+            'date': '2014-01-03',
+            'result-temperature-value': 6,
+            'result-notes-value': 'Test Observation',
+        }
+        response = self.client.post('/reports.json', form)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.data['event_label'],
+            "45.0, -95.5 on 2014-01-03"
+        )
+        self.assertIn("results", response.data)
+        self.assertEqual(len(response.data["results"]), 2)
+        values = value_by_type(response.data['results'])
+        self.assertEqual(values['temperature'], 6.0)
+        self.assertEqual(values['notes'], 'Test Observation')
+
+    def test_vera_post_merge(self):
+        # Submit first report (but don't validate it)
+        # Event should exist but have no result values
+        form1 = {
+            'site__latitude': 45,
+            'site__longitude': -95.5,
+            'date': '2014-01-04',
+            'result-temperature-value': 6,
+            'result-notes-value': 'Test Observation 2',
+        }
+        response1 = self.client.post('/reports.json', form1)
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        event_id = response1.data['event_id']
+        event = self.client.get('/events/%s.json' % event_id).data
+        self.assertEqual(len(event['results']), 0)
+
+        # Submit second report and validate it
+        # Event should contain a single result value
+        form2 = {
+            'site__latitude': 45,
+            'site__longitude': -95.5,
+            'date': '2014-01-04',
+            'result-temperature-value': 7,
+            'status': self.valid.pk,
+        }
+        response2 = self.client.post('/reports.json', form2)
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response1.data['event_id'], event_id)
+        event = self.client.get('/events/%s.json' % event_id).data
+        self.assertEqual(len(event['results']), 1)
+
+        # Validate original report
+        # Event should now have the temperature value from the second report
+        # and the notes from the first.
+        self.client.patch(
+            '/reports/%s.json' % response1.data['id'],
+            {'status': self.valid.pk}
+        )
+        event = self.client.get('/events/%s.json' % event_id).data
+        self.assertEqual(len(event['results']), 2)
+        values = value_by_type(event['results'])
+        self.assertEqual(values['temperature'], 7)
+        self.assertEqual(values['notes'], 'Test Observation 2')

@@ -154,7 +154,11 @@ def get_by_identifier(queryset, ident):
         return queryset.get_by_identifier(ident)
     else:
         ct = get_ct(queryset.model)
-        lookup = ct.get_config().get('lookup', 'pk')
+        config = ct.get_config()
+        if config and 'lookup' in config:
+            lookup = config['lookup']
+        else:
+            lookup = 'pk'
         return queryset.get(**{lookup: ident})
 
 
