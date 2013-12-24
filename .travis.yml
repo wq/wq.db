@@ -2,7 +2,7 @@ language: python
 python:
  - "2.7"
 env:
- - DJANGO="django==1.6" DRF="djangorestframework==2.3.10"
+ - DJANGO="django==1.6" DRF="https://github.com/sheppard/django-rest-framework/archive/generic-dj16.zip"
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
