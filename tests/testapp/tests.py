@@ -138,8 +138,8 @@ class VeraTestCase(APITestCase):
     def setUp(self):
         self.site = Site.objects.find(45, -95)
         self.user = User.objects.create(username='testuser')
-        self.valid = ReportStatus.objects.create(is_valid=True)
-        self.invalid = ReportStatus.objects.create(is_valid=False)
+        self.valid = ReportStatus.objects.create(is_valid=True, slug='valid')
+        self.invalid = ReportStatus.objects.create(slug='invalid')
 
         # Numeric parameters
         param1 = Parameter.objects.find('Temperature')
@@ -240,7 +240,7 @@ class VeraRestTestCase(APITestCase):
         self.site = Site.objects.find(45, -95)
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.client.force_authenticate(user=self.user)
-        self.valid = ReportStatus.objects.create(is_valid=True)
+        self.valid = ReportStatus.objects.create(is_valid=True, slug='valid')
 
         param1 = Parameter.objects.find('Temperature')
         param1.is_numeric = True
@@ -292,7 +292,7 @@ class VeraRestTestCase(APITestCase):
             'site__longitude': -95.5,
             'date': '2014-01-04',
             'result-temperature-value': 7,
-            'status': self.valid.pk,
+            'status': 'valid'
         }
         response2 = self.client.post('/reports.json', form2)
         self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
@@ -305,7 +305,7 @@ class VeraRestTestCase(APITestCase):
         # and the notes from the first.
         self.client.patch(
             '/reports/%s.json' % response1.data['id'],
-            {'status': self.valid.pk}
+            {'status': 'valid'}
         )
         event = self.client.get('/events/%s.json' % event_id).data
         self.assertEqual(len(event['results']), 2)
