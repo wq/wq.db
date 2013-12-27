@@ -82,6 +82,11 @@ class Router(DefaultRouter):
     def register_config(self, model, config):
         self._config[model] = config
 
+    def update_config(self, model, **kwargs):
+        if model not in self._config:
+            raise RuntimeError("%s must be registered first" % model)
+        self._config[model].update(kwargs)
+
     def get_serializer_for_model(self, model_class, serializer_depth=None):
         if model_class in self._serializers:
             serializer = self._serializers[model_class]
