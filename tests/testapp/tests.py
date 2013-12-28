@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from .models import RootModel, AnnotatedModel
 from wq.db.patterns.models import AnnotationType, Annotation
 from wq.db.contrib.vera.models import (
-    Event, Report, ReportStatus, Site, Parameter
+    Event, Report, ReportStatus, Site, Parameter, EventResult
 )
 from wq.db.rest.models import get_ct
 import json
@@ -233,6 +233,42 @@ class VeraTestCase(APITestCase):
                 values,
                 user=self.user
             )
+
+    def test_vera_merge_eventresult(self):
+        event_key = [45, -95, '2014-01-10']
+
+        # Two reports for the same event, EventResult should contain
+        # two rows for the event (which should correspond to event.results)
+        Report.objects.create_report(
+            event_key,
+            {
+                'Temperature': 6,
+                'Notes': 'Test Observation 3'
+            },
+            user=self.user,
+            status=self.valid,
+        )
+
+        # Subsequent valid report, should override above
+        Report.objects.create_report(
+            event_key,
+            {
+                'Temperature': 5.3,
+            },
+            user=self.user,
+            status=self.valid
+        )
+        event = Event.objects.get_by_natural_key(*event_key)
+        ers = EventResult.objects.filter(event=event)
+        self.assertEqual(ers.count(), 2)
+        self.assertEqual(
+            ers.get(result_type__name='Temperature').result_value_numeric,
+            5.3
+        )
+        self.assertEqual(
+            ers.get(result_type__name='Notes').result_value_text,
+            'Test Observation 3'
+        )
 
 
 class VeraRestTestCase(APITestCase):
