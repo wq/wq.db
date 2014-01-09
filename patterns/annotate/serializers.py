@@ -1,5 +1,5 @@
 from wq.db.patterns.base.serializers import TypedAttachmentSerializer
-from wq.db.patterns.base import swapper
+import swapper
 
 from wq.db.rest.models import get_ct
 

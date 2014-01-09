@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from django.conf import settings
-from wq.db.patterns.base import swapper
+import swapper
 from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
 from wq.io.util import guess_type

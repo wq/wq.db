@@ -1,16 +1,16 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation, swapper
+from wq.db.patterns.base import SerializableGenericRelation
 from wq.db.patterns.base.models import NaturalKeyModel
 from django.contrib import admin
 from django.core.exceptions import FieldError
 from collections import OrderedDict
+import swapper
 
-ANNOTATIONTYPE_MODEL = (
-    swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
-)
-ANNOTATION_MODEL = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
+swapper.set_app_prefix('annotate', 'WQ')
+ANNOTATIONTYPE_MODEL = swapper.get_model_name('annotate', 'AnnotationType')
+ANNOTATION_MODEL = swapper.get_model_name('annotate', 'Annotation')
 
 
 class BaseAnnotationType(NaturalKeyModel):
