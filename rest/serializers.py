@@ -158,17 +158,22 @@ class ModelSerializer(RestModelSerializer):
 
         # Special handling for related fields
         for name, field in fields.items():
-
-            if isinstance(field, DateTimeField):
-                fields[name + '_label'] = LocalDateTimeField(name)
-
-            if (not isinstance(field, ModelSerializer)
-                    and not isinstance(field, PrimaryKeyRelatedField)):
+            if name == 'label':
                 continue
 
             model_field, model, direct, m2m = (
                 self.opts.model._meta.get_field_by_name(name)
             )
+
+            if isinstance(field, DateTimeField):
+                fields[name + '_label'] = LocalDateTimeField(name)
+
+            if model_field.choices:
+                fields[name + '_label'] = Field('get_%s_display' % name)
+
+            if (not isinstance(field, ModelSerializer)
+                    and not isinstance(field, PrimaryKeyRelatedField)):
+                continue
 
             if model_field.rel.to == DjangoContentType:
                 fields['for'] = ContentTypeField(
