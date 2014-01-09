@@ -9,6 +9,8 @@ from wq.db.patterns.models import AnnotatedModel, RelatedModel
 
 from wq.io.util import guess_type
 
+swapper.set_app_prefix('files', 'WQ')
+
 
 # Custom FileField handles both images and files
 class FileField(models.ImageField):
