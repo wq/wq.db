@@ -97,7 +97,7 @@ setup(
     long_description=parse_markdown_readme(),
     install_requires=[
         'Django>=1.5',
-        'djangorestframework>=2.3.10',
+        'djangorestframework>=2.3.11',
         'south',
         'pystache',
         'python-social-auth',
