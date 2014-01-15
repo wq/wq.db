@@ -36,7 +36,8 @@ class IdentifierManager(models.Manager):
         unresolved = None
         for identifier in args:
             ids = self.filter_by_identifier(identifier)
-            if len(ids) == 1:
+            items = ids.distinct('content_type', 'object_id').count()
+            if items == 1:
                 if resolved is None:
                     resolved = {}
                 resolved[identifier] = ids[0]
