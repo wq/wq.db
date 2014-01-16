@@ -210,8 +210,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if not isinstance(response.data, dict):
             return response
 
-        if 'target' in self.kwargs:
-            response.data['target'] = self.kwargs['target']
+        if self.target:
+            response.data['target'] = self.target
         ct = get_ct(self.model)
         for pct in get_ct(self.model).get_all_parents():
             self.get_parent(pct, response)
