@@ -268,7 +268,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
         pcls = ct.model_class()
         if self.router:
-            slug = router.get_lookup_for_model(pcls)
+            slug = self.router.get_lookup_for_model(pcls)
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)
