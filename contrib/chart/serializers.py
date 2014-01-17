@@ -4,11 +4,18 @@ import swapper
 EventResult = swapper.load_model('vera', 'EventResult')
 
 
+class UnitsField(serializers.Field):
+    def to_native(self, obj):
+        if obj is None:
+            return "-"
+        return super(UnitsField, self).to_native(obj)
+
+
 class EventResultSerializer(PandasSerializer):
     date = serializers.Field(source="event_date")
     site = serializers.Field(source="event_site.primary_identifier.slug")
     type = serializers.Field(source="result_type.primary_identifier.slug")
-    units = serializers.Field(source="result_type.units")
+    units = UnitsField(source="result_type.units")
     value = serializers.Field(source="result_value_numeric")
 
     def get_index(self, dataframe):

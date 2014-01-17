@@ -8,40 +8,52 @@ EventResult = swapper.load_model('vera', 'EventResult')
 class ChartView(PandasView):
     model = EventResult
     serializer_class = EventResultSerializer
+    ignore_extra = True
 
     def get_queryset(self):
         qs = super(ChartView, self).get_queryset()
         qs = qs.select_related('event_site', 'result_type')
         return qs
 
-    def filter_queryset(self, qs):
+    @property
+    def filter_options(self):
+        if hasattr(self, '_filter_options'):
+            return self._filter_options
+
         slugs = self.kwargs['ids'].split('/')
         id_map, unresolved = Identifier.objects.resolve(*slugs)
-        extra = []
+        options = {}
         if unresolved:
+            options['extra'] = []
             for key, items in unresolved.items():
                 if len(items) > 0:
                     raise Exception(
                         "Could not resolve %s to a single item!" % key
                     )
-                extra.append(key)
+                options['extra'].append(key)
 
-        idents = {}
-        for slug, ident in id_map.items():
-            ctype = ident.content_type.model
-            if ctype not in idents:
-                idents[ctype] = []
-            idents[ctype].append(ident.object_id)
+        if id_map:
+            for slug, ident in id_map.items():
+                ctype = ident.content_type.model
+                if ctype not in options:
+                    options[ctype] = []
+                options[ctype].append(ident)
 
-        for ctype, ids in idents.items():
-            fn = getattr(self, 'filter_by_%s' % ctype, None)
+        self._filter_options = options
+        return options
+
+    def filter_queryset(self, qs):
+        for name, idents in self.filter_options.items():
+            if name == "extra":
+                continue
+            fn = getattr(self, 'filter_by_%s' % name, None)
+            ids = [ident.object_id for ident in idents]
             if fn:
                 qs = fn(qs, ids)
             else:
-                raise Exception("Don't know how to filter by %s" % ctype)
-
-        if extra:
-            qs = self.filter_by_extra(qs, self)
+                raise Exception("Don't know how to filter by %s" % name)
+        if 'extra' in self.filter_options:
+            qs = self.filter_by_extra(qs, self.filter_options['extra'])
         return qs
 
     def filter_by_site(self, qs, ids):
@@ -51,7 +63,10 @@ class ChartView(PandasView):
         return qs.filter(result_type__in=ids)
 
     def filter_by_extra(self, qs, extra):
-        return qs
+        if self.ignore_extra:
+            return qs
+        else:
+            raise Exception("Extra URL options found: %s" % extra)
 
 
 class TimeSeriesMixin(object):
