@@ -83,21 +83,85 @@ class BoxPlotMixin(object):
         'whislo': 'min',
     }
 
+    def get_grouping(self, df):
+        group = self.request.GET.get('group', None)
+        if group:
+            return group
+        elif len(df.columns) > 10:
+            return "date"
+        elif len(df.columns > 3):
+            return "index"
+        else:
+            return "dateindex"
+
     def transform_dataframe(self, df):
-        from matplotlib.cbook import boxplot_stats
         from pandas import DataFrame
-        s = []
-        for name, g in df.groupby(lambda d: d.month):
-            stats = boxplot_stats(g)[0]
-            stats = {
-                self.NAME_MAP.get(key, key): value
-                for key, value in stats.items()
+        group = self.get_grouping(df)
+        if "index" in group:
+            # Separate stats for each column in dataset
+            groups = {
+                col: df[col]
+                for col in df.columns
             }
-            stats['name'] = name
-            s.append(stats)
-        df = DataFrame(s)
-        df.set_index('name', inplace=True)
+        else:
+            # Stats for entire dataset
+            df = df.stack().stack().stack()
+            df.reset_index(inplace=True)
+            df.set_index('date', inplace=True)
+            groups = {
+                ('value', 'all', 'all', 'all'): df.value
+            }
+
+        # Compute stats for each column, potentially grouped by year
+        all_stats = []
+        for g, series in groups.items():
+            v, units, param, site = g
+            if "date" in group:
+                dstats = self.compute_boxplots(series, "year")
+                for s in dstats:
+                    s['site'] = site
+                    s['type'] = param
+                    s['units'] = units
+            else:
+                stats = self.compute_boxplot(series)
+                stats['site'] = site
+                stats['type'] = param
+                stats['units'] = units
+                dstats = [stats]
+            all_stats += dstats
+
+        df = DataFrame(all_stats)
+        if "date" in group:
+            index = ['year', 'site', 'type', 'units']
+        else:
+            index = ['site', 'type', 'units']
+        df.sort(index, inplace=True)
+        df.set_index(index, inplace=True)
         return df
+
+    def compute_boxplots(self, series, groupby):
+        def groups(d):
+            return getattr(d, groupby)
+
+        dstats = []
+        for name, g in series.groupby(groups).groups.items():
+            stats = self.compute_boxplot(series[g])
+            stats[by] = name
+            dstats.append(stats)
+        return dstats
+
+    def compute_boxplot(self, series):
+        from matplotlib.cbook import boxplot_stats
+        series = series[series.notnull()]
+        if len(series.values) == 0:
+            return {}
+        stats = boxplot_stats(series)[0]
+        stats = {
+            self.NAME_MAP.get(key, key): value
+            for key, value in stats.items()
+        }
+        stats['fliers'] = "|".join(map(str, stats['fliers']))
+        return stats
 
 
 class TimeSeriesView(ChartView, TimeSeriesMixin):
