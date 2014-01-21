@@ -28,7 +28,9 @@ def main():
             'wq.db.patterns.annotate',
             'wq.db.patterns.relate',
             'wq.db.contrib.vera',
-            'tests.testapp',
+            'tests.rest_app',
+            'tests.patterns_app',
+            'tests.rest_app',
         ),
         **wqdb_settings
     )
@@ -37,8 +39,9 @@ def main():
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
     result = test_runner.run_tests((
-        'wq.db.rest',
-        'tests.testapp',
+        'tests.rest_app',
+        'tests.patterns_app',
+        'tests.vera_app',
     ))
     sys.exit(result)
 
