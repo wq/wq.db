@@ -154,6 +154,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         """
         self.action = 'edit'
         init = request.GET.dict()
+        for arg in self.ignore_kwargs:
+            init.pop(arg, None)
         obj = self.model(**init)
         serializer = self.get_serializer(obj)
         data = serializer.data
