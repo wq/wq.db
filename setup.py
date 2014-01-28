@@ -116,5 +116,12 @@ setup(
         'Topic :: Database :: Database Engines/Servers',
     ],
     test_suite='tests.runtests.main',
-    tests_require=['psycopg2', 'celery', 'wq.io>=0.4.1', 'redis', 'Pillow'],
+    tests_require=[
+        'psycopg2',
+        'celery',
+        'wq.io>=0.4.1',
+        'redis',
+        'Pillow',
+        'python-dateutil',
+    ],
 )
