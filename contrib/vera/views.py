@@ -1,13 +1,13 @@
 from wq.db.rest import app
-from wq.db.patterns.base import swapper
+import swapper
+from .serializers import EventSerializer, ReportSerializer, ResultSerializer
 
-from .models import Result
 Event = swapper.load_model('vera', 'Event')
 Report = swapper.load_model('vera', 'Report')
+ReportStatus = swapper.load_model('vera', 'ReportStatus')
+Result = swapper.load_model('vera', 'Result')
 
-from .serializers import ResultSerializer, EventSerializer, ReportSerializer
-
-if not Result._meta.abstract:
-    app.router.register_model(Result, serializer=ResultSerializer)
 app.router.register_model(Event, serializer=EventSerializer)
 app.router.register_model(Report, serializer=ReportSerializer)
+app.router.register_model(ReportStatus, lookup='slug')
+app.router.register_model(Result, serializer=ResultSerializer)

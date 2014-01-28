@@ -1,5 +1,5 @@
 from wq.db.rest import app
-from wq.db.patterns.base import swapper
+import swapper
 from .serializers import AnnotationSerializer
 
 Annotation = swapper.load_model('annotate', 'Annotation')

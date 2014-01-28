@@ -3,7 +3,7 @@ from xlrd import colname
 from collections import namedtuple
 from wq.io import load_file as load_file_io
 from wq.db.patterns.models import Identifier, Relationship, RelationshipType
-from wq.db.patterns.base import swapper
+import swapper
 from wq.db.contrib.files.models import File
 from wq.db.rest.caching import jc_backend
 from .models import MetaColumn, UnknownItem, SkippedRecord, Range
@@ -17,8 +17,8 @@ Site = swapper.load_model('vera', 'Site')
 Event = swapper.load_model('vera', 'Event')
 Report = swapper.load_model('vera', 'Report')
 ReportStatus = swapper.load_model('vera', 'ReportStatus')
-Parameter = swapper.load_model('annotate', 'AnnotationType')
-Result = swapper.load_model('annotate', 'Annotation')
+Parameter = swapper.load_model('vera', 'Parameter')
+Result = swapper.load_model('vera', 'Result')
 
 EVENT_KEY = [val for val, cls in Event.get_natural_key_info()]
 EventKey = namedtuple('EventKey', EVENT_KEY)
@@ -36,15 +36,9 @@ DATE_FIELDS = {
 }
 
 if hasattr(settings, 'WQ_DEFAULT_REPORT_STATUS'):
-    DEFAULT_STATUS = ReportStatus.objects.get(
-        pk=settings.WQ_DEFAULT_REPORT_STATUS
-    )
+    DEFAULT_STATUS = settings.WQ_DEFAULT_REPORT_STATUS
 else:
     DEFAULT_STATUS = None
-
-if not CONTENT_TYPES[Parameter].is_identified:
-    raise Exception("AnnotationType should be swapped for an IdentifiedModel!"
-                    + "\n(HINT: set WQ_ANNOTATIONTYPE_MODEL='vera.Parameter')")
 
 PRIORITY = {
     'parameter': 1,
@@ -296,7 +290,7 @@ def import_data(file, user):
         'event_key': {},
         'report_meta': {
             'user': user,
-            'status': DEFAULT_STATUS,
+            'status_id': DEFAULT_STATUS,
         },
         'param_vals': {}
     }

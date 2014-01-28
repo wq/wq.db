@@ -139,6 +139,7 @@ class ModelSerializer(RestModelSerializer):
         if not self.router:
             return fields
 
+        nested = self.context.get('nested', False)
         many = self.many or self.source == 'object_list'
         if ('request' in self.context and
                 self.context['request'].method != 'GET'):
@@ -157,17 +158,22 @@ class ModelSerializer(RestModelSerializer):
 
         # Special handling for related fields
         for name, field in fields.items():
-
-            if isinstance(field, DateTimeField):
-                fields[name + '_label'] = LocalDateTimeField(name)
-
-            if (not isinstance(field, ModelSerializer)
-                    and not isinstance(field, PrimaryKeyRelatedField)):
+            if name == 'label':
                 continue
 
             model_field, model, direct, m2m = (
                 self.opts.model._meta.get_field_by_name(name)
             )
+
+            if isinstance(field, DateTimeField):
+                fields[name + '_label'] = LocalDateTimeField(name)
+
+            if model_field.choices:
+                fields[name + '_label'] = Field('get_%s_display' % name)
+
+            if (not isinstance(field, ModelSerializer)
+                    and not isinstance(field, PrimaryKeyRelatedField)):
+                continue
 
             if model_field.rel.to == DjangoContentType:
                 fields['for'] = ContentTypeField(
@@ -186,7 +192,7 @@ class ModelSerializer(RestModelSerializer):
                 geo = False
 
             if (self.opts.depth < 1 and not geo and not (saving and m2m)
-                    or (saving and not m2m)):
+                    or (saving and not m2m) or nested):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
                 # (Except when saving m2m items, then we need the nested field)
@@ -209,7 +215,7 @@ class ModelSerializer(RestModelSerializer):
                     add_labels(name, field, field.opts.model.objects)
 
         # Add child objects (serialize with registered serializers)
-        if not self.opts.depth:
+        if (not self.opts.depth and not saving) or nested:
             return fields
 
         ct = get_ct(self.opts.model)
@@ -219,14 +225,18 @@ class ModelSerializer(RestModelSerializer):
                 cls = self.router.get_serializer_for_model(
                     cct.model_class(), self.opts.depth - 1
                 )
-                fields[accessor] = cls(context=self.context)
+                context = self.context.copy()
+                context['nested'] = True
+                fields[accessor] = cls(context=context, many=True)
 
         for vf in self.opts.model._meta.virtual_fields:
             if getattr(vf, 'serialize', False) and vf.name not in fields:
                 cls = self.router.get_serializer_for_model(
                     vf.rel.to, self.opts.depth - 1
                 )
-                fields[vf.name] = cls(context=self.context)
+                context = self.context.copy()
+                context['nested'] = True
+                fields[vf.name] = cls(context=context, many=True)
 
         return fields
 

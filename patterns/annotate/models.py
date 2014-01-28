@@ -1,42 +1,25 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation, swapper
+from wq.db.patterns.base import SerializableGenericRelation
+from wq.db.patterns.base.models import NaturalKeyModel
 from django.contrib import admin
 from django.core.exceptions import FieldError
 from collections import OrderedDict
+import swapper
 
-ANNOTATIONTYPE_MODEL = (
-    swapper.is_swapped('annotate', 'AnnotationType') or 'AnnotationType'
-)
-ANNOTATION_MODEL = swapper.is_swapped('annotate', 'Annotation') or 'Annotation'
-
-
-class AnnotationTypeManager(models.Manager):
-    def get_by_natural_key(self, name):
-        return self.get(name=name)
-
-    def resolve_names(self, *names):
-        resolved = {}
-        success = True
-        for name in names:
-            try:
-                resolved[name] = self.get_by_natural_key(name)
-            except self.model.DoesNotExist:
-                success = False
-                resolved[name] = None
-        return resolved, success
+swapper.set_app_prefix('annotate', 'WQ')
+ANNOTATIONTYPE_MODEL = swapper.get_model_name('annotate', 'AnnotationType')
+ANNOTATION_MODEL = swapper.get_model_name('annotate', 'Annotation')
 
 
-class BaseAnnotationType(models.Model):
+class BaseAnnotationType(NaturalKeyModel):
     name = models.CharField(max_length=255)
     contenttype = models.ForeignKey(ContentType, null=True, blank=True)
 
     # Assign a value to annotated_model to automatically set contenttype
     # (Useful for subclasses with a single target model)
     annotated_model = None
-
-    objects = AnnotationTypeManager()
 
     def __unicode__(self):
         for f in self._meta.get_all_related_objects():
@@ -63,10 +46,11 @@ class BaseAnnotationType(models.Model):
 
     class Meta:
         abstract = True
+        unique_together = [['name']]
 
 
 class AnnotationType(BaseAnnotationType):
-    class Meta:
+    class Meta(BaseAnnotationType.Meta):
         db_table = 'wq_annotationtype'
         swappable = swapper.swappable_setting('annotate', 'AnnotationType')
 
@@ -165,7 +149,8 @@ class AnnotatedModel(models.Model):
     @vals.setter
     def vals(self, vals):
         AnnotationType = swapper.load_model('annotate', 'AnnotationType')
-        types, success = AnnotationType.objects.resolve_names(*(vals.keys()))
+        keys = [(key,) for key in vals.keys()]
+        types, success = AnnotationType.objects.resolve_keys(keys)
         if not success:
             missing = [name for name, atype in types.items() if atype is None]
             raise TypeError(
@@ -175,7 +160,7 @@ class AnnotatedModel(models.Model):
 
         for name, atype in types.items():
             annot, is_new = self.annotations.get_or_create(type=atype)
-            annot.value = vals[name]
+            annot.value = vals[name[0]]
             annot.save()
 
     class Meta:

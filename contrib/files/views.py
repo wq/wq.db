@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from wq.db.rest.views import SimpleView
 from wq.db.rest.renderers import binary_renderer
 from wq.db.rest import app
-from wq.db.patterns.base import swapper
+import swapper
 from .serializers import FileSerializer
 from .util import generate_image
 

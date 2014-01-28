@@ -1,6 +1,6 @@
 from wq.db.rest.models import MultiQuerySet
 from wq.db.patterns.models import Identifier
-from wq.db.patterns.base import swapper
+import swapper
 
 if swapper.is_swapped('annotate', 'Annotation'):
     Annotation = None

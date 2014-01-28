@@ -2,7 +2,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import admin
 
-from wq.db.patterns.base import swapper
+import swapper
 from .models import AnnotatedModel
 from .forms import AnnotationForm
 

@@ -154,6 +154,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         """
         self.action = 'edit'
         init = request.GET.dict()
+        for arg in self.ignore_kwargs:
+            init.pop(arg, None)
         obj = self.model(**init)
         serializer = self.get_serializer(obj)
         data = serializer.data
@@ -210,8 +212,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if not isinstance(response.data, dict):
             return response
 
-        if 'target' in self.kwargs:
-            response.data['target'] = self.kwargs['target']
+        if self.target:
+            response.data['target'] = self.target
         ct = get_ct(self.model)
         for pct in get_ct(self.model).get_all_parents():
             self.get_parent(pct, response)
@@ -268,7 +270,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
         pcls = ct.model_class()
         if self.router:
-            slug = router.get_lookup_for_model(pcls)
+            slug = self.router.get_lookup_for_model(pcls)
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)

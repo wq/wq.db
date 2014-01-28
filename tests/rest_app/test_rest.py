@@ -1,14 +1,20 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import RootModel
 import json
+from .models import RootModel
 
 
-class TestCase(APITestCase):
+class UrlsTestCase(APITestCase):
     def setUp(self):
         instance = RootModel.objects.find('instance')
         instance.description = "Test"
         instance.save()
+
+    # Test existence and content of config.json
+    def test_config_json(self):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content)
+        self.assertIn("pages", result)
 
     # Test url="" use case
     def test_list_at_root(self):
