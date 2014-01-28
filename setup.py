@@ -116,5 +116,5 @@ setup(
         'Topic :: Database :: Database Engines/Servers',
     ],
     test_suite='tests.runtests.main',
-    tests_require=['psycopg2'],
+    tests_require=['psycopg2', 'celery', 'wq.io', 'redis'],
 )
