@@ -73,7 +73,7 @@ def main():
         'tests.swap_app',
     ))
     result = test_runner.run_suite(suite)
-    count = test_runner.suite_result(suite, result)
+    count += test_runner.suite_result(suite, result)
     test_runner.teardown_databases(old_config)
     test_runner.teardown_test_environment()
 
