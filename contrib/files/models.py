@@ -73,9 +73,14 @@ class BaseFile(AnnotatedModel, RelatedModel):
 
     @property
     def mimetype(self):
+        if self.type is not None:
+            return self.type.mimetype
+
         if self.file.name not in (None, ""):
             self.file.open()
-            return guess_type(self.file.name, self.file.read(1024))
+            mimetype = guess_type(self.file.name, self.file.read(1024))
+            self.file.close()
+            return mimetype
         else:
             return None
 
