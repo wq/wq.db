@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 import json
-from .models import RootModel, OneToOneModel
+from .models import RootModel, OneToOneModel, ForeignKeyModel, ExtraModel
 
 
 class UrlsTestCase(APITestCase):
@@ -9,9 +9,10 @@ class UrlsTestCase(APITestCase):
         instance = RootModel.objects.find('instance')
         instance.description = "Test"
         instance.save()
-        OneToOneModel.objects.create(
-            root=instance,
-        )
+        for cls in OneToOneModel, ForeignKeyModel, ExtraModel:
+            cls.objects.create(
+                root=instance,
+            )
 
     # Test existence and content of config.json
     def test_config_json(self):
@@ -29,6 +30,26 @@ class UrlsTestCase(APITestCase):
         response = self.client.get('/instance.json')
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data['description'] == "Test")
+
+    # Test nested models with foreign keys
+    def test_detail_nested_foreignkeys(self):
+        response = self.client.get('/instance.json')
+
+        # Include OneToOne fields, and ForeignKeys with related_name=queryname
+        self.assertIn("onetoonemodel", response.data)
+        self.assertEqual(
+            response.data["onetoonemodel"]["label"],
+            "onetoonemodel for instance"
+        )
+        self.assertIn("extramodels", response.data)
+        self.assertEqual(
+            response.data["extramodels"][0]["label"],
+            "extramodel for instance"
+        )
+
+        # ForeignKeys without related_name=queryname should not be included
+        self.assertNotIn("foreignkeymodel_set", response.data)
+        self.assertNotIn("foreignkeymodels", response.data)
 
     # Ensure nested serializers are created for SerializableGenericRelations
     # (e.g. identifiers), but only for detail views
