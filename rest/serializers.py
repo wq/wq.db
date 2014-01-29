@@ -227,7 +227,8 @@ class ModelSerializer(RestModelSerializer):
                 )
                 context = self.context.copy()
                 context['nested'] = True
-                fields[accessor] = cls(context=context, many=True)
+                many = not rel.field.unique  # Check for OneToOneField
+                fields[accessor] = cls(context=context, many=many)
 
         for vf in self.opts.model._meta.virtual_fields:
             if getattr(vf, 'serialize', False) and vf.name not in fields:
