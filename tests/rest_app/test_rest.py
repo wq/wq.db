@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 import json
-from .models import RootModel
+from .models import RootModel, OneToOneModel
 
 
 class UrlsTestCase(APITestCase):
@@ -9,6 +9,9 @@ class UrlsTestCase(APITestCase):
         instance = RootModel.objects.find('instance')
         instance.description = "Test"
         instance.save()
+        OneToOneModel.objects.create(
+            root=instance,
+        )
 
     # Test existence and content of config.json
     def test_config_json(self):
