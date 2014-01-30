@@ -86,8 +86,6 @@ def reset_vera():
     """
     from django.db.models.loading import AppCache
     from wq.db.contrib.vera import models as vera
-    from django.db.models.signals import post_save
-    post_save.disconnect(dispatch_uid="eventresult_receiver")
     cache = AppCache()
     cache._get_models_cache.clear()
     del cache.app_models['vera']
