@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from .models import ContentType, get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
+from copy import copy
 
 
 class Router(DefaultRouter):
@@ -127,10 +128,17 @@ class Router(DefaultRouter):
     def paginate(self, model, page_num, request=None):
         obj_serializer = self.get_serializer_for_model(model)
         paginate_by = self.get_paginate_by_for_model(model)
-        paginator = Paginator(
-            self.get_queryset_for_model(model, request),
-            paginate_by
-        )
+        viewset = self.get_viewset_for_model(model)
+        qs = self.get_queryset_for_model(model)
+        req = copy(request)
+        req.GET = {}
+        qs = viewset(
+            action="list",
+            request=req,
+            kwargs={}
+        ).filter_queryset(qs)
+
+        paginator = Paginator(qs, paginate_by)
         page = paginator.page(page_num)
 
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
