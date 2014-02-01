@@ -68,7 +68,7 @@ def find_wq_packages(submodule):
     packages = ['wq', submodule]
     package_dir = {submodule: '.'}
     for package in find_packages():
-        if package == 'wq':
+        if package.split('.')[0] in ('wq', 'tests'):
             continue
         full_name = submodule + "." + package
         packages.append(full_name)
