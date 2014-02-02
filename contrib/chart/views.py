@@ -89,7 +89,7 @@ class BoxPlotMixin(object):
             return group
         elif len(df.columns) > 10:
             return "date"
-        elif len(df.columns > 3):
+        elif len(df.columns) > 3:
             return "index"
         else:
             return "dateindex"
@@ -137,6 +137,9 @@ class BoxPlotMixin(object):
             index = ['site', 'type', 'units']
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
+        df = df.unstack().unstack()
+        if "date" in group:
+            df = df.unstack()
         return df
 
     def compute_boxplots(self, series, groupby):
@@ -146,16 +149,20 @@ class BoxPlotMixin(object):
         dstats = []
         for name, g in series.groupby(groups).groups.items():
             stats = self.compute_boxplot(series[g])
-            stats[by] = name
+            stats[groupby] = name
             dstats.append(stats)
         return dstats
 
     def compute_boxplot(self, series):
+        """
+        Compute boxplot for given pandas Series.
+        NOTE: Requires matplotlib 1.4!
+        """
         from matplotlib.cbook import boxplot_stats
         series = series[series.notnull()]
         if len(series.values) == 0:
             return {}
-        stats = boxplot_stats(series)[0]
+        stats = boxplot_stats(list(series.values))[0]
         stats = {
             self.NAME_MAP.get(key, key): value
             for key, value in stats.items()
