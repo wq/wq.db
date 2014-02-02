@@ -83,20 +83,20 @@ class BoxPlotMixin(object):
         'whislo': 'min',
     }
 
-    def get_grouping(self, df):
+    def get_grouping(self, sets):
         group = self.request.GET.get('group', None)
         if group:
             return group
-        elif len(df.columns) > 10:
-            return "date"
-        elif len(df.columns) > 3:
+        elif sets > 20:
+            return "year"
+        elif sets > 10:
             return "index"
         else:
-            return "dateindex"
+            return "year-index"
 
     def transform_dataframe(self, df):
         from pandas import DataFrame
-        group = self.get_grouping(df)
+        group = self.get_grouping(len(df.columns))
         if "index" in group:
             # Separate stats for each column in dataset
             groups = {
@@ -116,8 +116,9 @@ class BoxPlotMixin(object):
         all_stats = []
         for g, series in groups.items():
             v, units, param, site = g
-            if "date" in group:
-                dstats = self.compute_boxplots(series, "year")
+            if "year" in group or "month" in group:
+                groupby = "year" if "year" in group else "month"
+                dstats = self.compute_boxplots(series, groupby)
                 for s in dstats:
                     s['site'] = site
                     s['type'] = param
@@ -131,14 +132,16 @@ class BoxPlotMixin(object):
             all_stats += dstats
 
         df = DataFrame(all_stats)
-        if "date" in group:
+        if "year" in group:
             index = ['year', 'site', 'type', 'units']
+        elif "month" in group:
+            index = ['month', 'site', 'type', 'units']
         else:
             index = ['site', 'type', 'units']
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
         df = df.unstack().unstack()
-        if "date" in group:
+        if "year" in group or "month" in group:
             df = df.unstack()
         return df
 
