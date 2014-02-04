@@ -67,4 +67,4 @@ Reference implementation of the [ERAV] model, an extension to EAV with support f
 [search]: http://wq.io/docs/search
 [files]: http://wq.io/docs/files
 [vera]: http://wq.io/vera
-[ERAV]: http://wq.io/research/provenance
+[ERAV]: http://wq.io/docs/erav
