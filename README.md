@@ -27,8 +27,11 @@ A collection of recommended design patterns ([annotate], [identify], [locate], a
 ### Batteries Included
 Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library.
 
+#### [chart]
+Generates time series and box plot data for rendering by [wq/chart.js].  Powered by [Django REST Pandas] and [vera].
+
 #### [dbio]
-Load data from external files into the database, powered by [wq.io], [files], and [vera].
+Load data from external files into the database. Powered by [wq.io], [files], and [vera].
 
 #### [files]
 Generic file manager.  Supports using the same `FileField` for both images and files.  Also includes a URL-driven thumbnail generator.
@@ -56,6 +59,9 @@ Reference implementation of the [ERAV] model, an extension to EAV with support f
 [locate]: http://wq.io/docs/locate
 [relate]: http://wq.io/docs/relate
 [contrib]: http://wq.io/docs/?section=contrib
+[chart]: http://wq.io/docs/chart
+[wq/chart.js]: http://wq.io/docs/chart-js
+[Django REST Pandas]: https://github.com/wq/django-rest-pandas
 [dbio]: http://wq.io/docs/dbio
 [wq.io]: http://wq.io/wq.io
 [search]: http://wq.io/docs/search
