@@ -33,20 +33,24 @@ def binary_renderer(mimetype, extension=None):
 class GeoJSONRenderer(JSONRenderer):
     media_type = 'application/json'
     format = 'geojson'
-    disable_pagination = True
 
     def render(self, data, *args, **kwargs):
         if isinstance(data, list):
+            features, simple = self.render_features(data)
             data = {
                 'type': 'FeatureCollection',
-                'features': [
-                    self.render_feature(feature) for feature in data
-                ]
+                'features': features
             }
-        else:
-            data = self.render_feature(data)
+        elif "list" in data and isinstance(data['list'], list):
+            features, simple = self.render_features(data['list'])
+            data['type'] = 'FeatureCollection'
+            data['features'] = features
+            del data['list']
 
-        if hasattr(settings, 'SRID') and settings.SRID != 3857:
+        else:
+            data, simple = self.render_feature(data)
+
+        if not simple and hasattr(settings, 'SRID') and settings.SRID != 3857:
             data['crs'] = {
                 'type': 'name',
                 'properties': {
@@ -60,6 +64,7 @@ class GeoJSONRenderer(JSONRenderer):
             'type': 'Feature',
             'properties': obj
         }
+        simple = False
         if 'id' in obj:
             feature['id'] = obj['id']
             del obj['id']
@@ -71,6 +76,7 @@ class GeoJSONRenderer(JSONRenderer):
             }
             del obj['latitude']
             del obj['longitude']
+            simple = True
 
         elif 'geometry' in obj:
             feature['geometry'] = obj['geometry']
@@ -80,4 +86,17 @@ class GeoJSONRenderer(JSONRenderer):
             feature['geometry'] = obj['locations']
             del obj['locations']
 
-        return feature
+        return feature, simple
+
+    def render_features(self, objs):
+        features = []
+        has_simple = False
+        for obj in objs:
+            feature, simple = self.render_feature(obj)
+            if simple:
+                has_simple = True
+                if feature['geometry']['coordinates'][0] is not None:
+                    features.append(feature)
+            else:
+                features.append(feature)
+        return features, has_simple
