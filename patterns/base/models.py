@@ -171,17 +171,17 @@ def extract_nested_key(key, cls, prefix=''):
         prefix += '__'
     for nname in nested_key:
         val = key.pop(prefix + nname, None)
-        if not val and nname.endswith('__primary_identifiers__slug'):
+        if val is None and nname.endswith('__primary_identifiers__slug'):
             nname = nname.replace('__primary_identifiers__slug', '')
             val = key.pop(prefix + nname, None)
-        if not val and nname in local_fields:
+        if val is None and nname in local_fields:
             if type(local_fields[nname]).__name__ == 'DateTimeField':
                 date = key.pop(nname + '_date', None)
                 time = key.pop(nname + '_time', None)
                 if date and time:
                     val = '%s %s' % (date, time)
 
-        if val is not None and val != '':
+        if val is not None:
             has_val = True
         values.append(val)
     if has_val:
