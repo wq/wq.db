@@ -16,7 +16,7 @@ class EventResultSerializer(PandasSerializer):
     site = serializers.Field(source="event_site.primary_identifier.slug")
     type = serializers.Field(source="result_type.primary_identifier.slug")
     units = UnitsField(source="result_type.units")
-    value = serializers.Field(source="result_value_numeric")
+    value = serializers.Field(source="result_value")
 
     def get_index(self, dataframe):
         return ['date', 'site', 'type', 'units']
