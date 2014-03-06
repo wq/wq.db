@@ -118,6 +118,8 @@ class BoxPlotMixin(object):
         # Compute stats for each column, potentially grouped by year
         all_stats = []
         for g, series in groups.items():
+            if g[0] != 'value':
+                continue
             v, units, param, site = g
             if "year" in group or "month" in group:
                 groupby = "year" if "year" in group else "month"
@@ -176,6 +178,7 @@ class BoxPlotMixin(object):
             self.NAME_MAP.get(key, key): value
             for key, value in stats.items()
         }
+        stats['count'] = len(series.values)
         stats['fliers'] = "|".join(map(str, stats['fliers']))
         return stats
 
