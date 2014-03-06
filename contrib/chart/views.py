@@ -143,6 +143,7 @@ class BoxPlotMixin(object):
             index = ['site', 'parameter', 'units']
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
+        df.columns.name = ""
         df = df.unstack().unstack()
         if "year" in group or "month" in group:
             df = df.unstack()

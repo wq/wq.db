@@ -57,11 +57,14 @@ class EventResultSerializer(PandasSerializer):
         Unstack the dataframe so units, parameter, and site are columns.
         """
         dataframe = super(EventResultSerializer, self).get_dataframe(data)
-        return (
-            dataframe.unstack().unstack().unstack()
+        dataframe.columns.name = ""
+        dataframe = (
+            dataframe
+            .unstack().unstack().unstack()
             .dropna(axis=0, how='all')
             .dropna(axis=1, how='all')
         )
+        return dataframe
 
     class Meta:
         model = EventResult
