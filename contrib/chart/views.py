@@ -107,7 +107,8 @@ class BoxPlotMixin(object):
             # Stats for entire dataset
             df = df.stack().stack().stack()
             df.reset_index(inplace=True)
-            df.set_index('date', inplace=True)
+            index = self.get_serializer().get_index(df)
+            df.set_index(index[0], inplace=True)
             groups = {
                 ('value', 'all', 'all', 'all'): df.value
             }
@@ -121,23 +122,23 @@ class BoxPlotMixin(object):
                 dstats = self.compute_boxplots(series, groupby)
                 for s in dstats:
                     s['site'] = site
-                    s['type'] = param
+                    s['parameter'] = param
                     s['units'] = units
             else:
                 stats = self.compute_boxplot(series)
                 stats['site'] = site
-                stats['type'] = param
+                stats['parameter'] = param
                 stats['units'] = units
                 dstats = [stats]
             all_stats += dstats
 
         df = DataFrame(all_stats)
         if "year" in group:
-            index = ['year', 'site', 'type', 'units']
+            index = ['year', 'site', 'parameter', 'units']
         elif "month" in group:
-            index = ['month', 'site', 'type', 'units']
+            index = ['month', 'site', 'parameter', 'units']
         else:
-            index = ['site', 'type', 'units']
+            index = ['site', 'parameter', 'units']
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
         df = df.unstack().unstack()
@@ -147,6 +148,8 @@ class BoxPlotMixin(object):
 
     def compute_boxplots(self, series, groupby):
         def groups(d):
+            if isinstance(d, tuple):
+                d = d[0]
             return getattr(d, groupby)
 
         dstats = []
