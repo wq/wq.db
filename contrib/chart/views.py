@@ -21,7 +21,9 @@ class ChartView(PandasView):
             return self._filter_options
 
         slugs = self.kwargs['ids'].split('/')
-        id_map, unresolved = Identifier.objects.resolve(*slugs)
+        id_map, unresolved = Identifier.objects.resolve(
+            slugs, exclude_apps=['dbio']
+        )
         options = {}
         if unresolved:
             options['extra'] = []
