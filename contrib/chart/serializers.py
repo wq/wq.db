@@ -9,26 +9,11 @@ Event = swapper.load_model('vera', 'Event')
 EVENT_INDEX = Event._meta.unique_together[0]
 
 
-class EmptyField(serializers.Field):
-    """
-    Convert None to - to avoid breaking Pandas indexes.
-    """
-    def to_native(self, obj):
-        if obj is None:
-            return "-"
-        return super(EmptyField, self).to_native(obj)
-
-
-class EmptyDateTimeField(LocalDateTimeField):
-    def to_native(self, obj):
-        if obj is None:
-            return ""
-        return super(EmptyDateTimeField, self).to_native(obj)
-
-
 class EventResultSerializer(PandasSerializer):
+    index_none_value = "-"
+
     parameter = serializers.Field(source="result_type.primary_identifier.slug")
-    units = EmptyField(source="result_type.units")
+    units = serializers.Field(source="result_type.units")
     value = serializers.Field(source="result_value")
 
     def get_default_fields(self):
@@ -48,9 +33,9 @@ class EventResultSerializer(PandasSerializer):
                 "primary_identifiers.", "primary_identifier."
             )
             if isinstance(field, DateTimeField):
-                fields[key] = EmptyDateTimeField("event_" + lookup)
+                fields[key] = LocalDateTimeField("event_" + lookup)
             else:
-                fields[key] = EmptyField("event_" + lookup)
+                fields[key] = serializers.Field("event_" + lookup)
         return fields
 
     def get_index(self, dataframe):
