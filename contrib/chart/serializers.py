@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from rest_pandas import PandasSerializer
+from wq.db.rest.serializers import LocalDateTimeField
+from django.db.models.fields import DateTimeField
+
 import swapper
 EventResult = swapper.load_model('vera', 'EventResult')
 Event = swapper.load_model('vera', 'Event')
@@ -14,6 +17,13 @@ class EmptyField(serializers.Field):
         if obj is None:
             return "-"
         return super(EmptyField, self).to_native(obj)
+
+
+class EmptyDateTimeField(LocalDateTimeField):
+    def to_native(self, obj):
+        if obj is None:
+            return ""
+        return super(EmptyDateTimeField, self).to_native(obj)
 
 
 class EventResultSerializer(PandasSerializer):
@@ -32,11 +42,15 @@ class EventResultSerializer(PandasSerializer):
         fields = {}
         lookups = Event.get_natural_key_fields()
         for key, lookup in zip(EVENT_INDEX, lookups):
+            field = Event._meta.get_field_by_name(key)[0]
             lookup = lookup.replace('__', '.')
             lookup = lookup.replace(
                 "primary_identifiers.", "primary_identifier."
             )
-            fields[key] = EmptyField("event_" + lookup)
+            if isinstance(field, DateTimeField):
+                fields[key] = EmptyDateTimeField("event_" + lookup)
+            else:
+                fields[key] = EmptyField("event_" + lookup)
         return fields
 
     def get_index(self, dataframe):
