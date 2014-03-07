@@ -72,11 +72,54 @@ class ChartView(PandasView):
 
 
 class TimeSeriesMixin(object):
+    """
+    For use with chart.timeSeries() in wq/chart.js
+    """
+
     def transform_dataframe(self, df):
+        """
+        The dataframe is already in a timeseries format.
+        """
+        return df
+
+
+class ScatterMixin(object):
+    """
+    For use with chart.scatter() in wq/chart.js
+    """
+
+    def transform_dataframe(self, df):
+        """
+        Transform timeseries dataframe into a format suitable for plotting two
+        values against each other.
+        """
+
+        # Only use primary 'value' column, ignoring any other result fields
+        # that may have been added to a serializer subclass.
+        for key in df.columns.levels[0]:
+            if key != 'value':
+                df = df.drop(key, axis=1)
+
+        # Remove all indexes/columns except for parameter (which will become
+        # the new 'value' field) and site (to allow distinguishing between
+        # scatterplot data for each site).
+        for name in df.columns.names:
+            if name not in ("parameter", "site"):
+                df.columns = df.columns.droplevel(name)
+
+        # Rename columns ('value'/parameter column should be nameless)
+        df.columns.names = ["", "site"]
+
+        # Only include dates that have data for all parameters
+        df = df.dropna(axis=0, how='any')
         return df
 
 
 class BoxPlotMixin(object):
+    """
+    For use with chart.boxplot() in wq/chart.js
+    """
+
     NAME_MAP = {
         'q1': 'p25',
         'q3': 'p75',
@@ -85,18 +128,10 @@ class BoxPlotMixin(object):
         'whislo': 'min',
     }
 
-    def get_grouping(self, sets):
-        group = self.request.GET.get('group', None)
-        if group:
-            return group
-        elif sets > 20:
-            return "year"
-        elif sets > 10:
-            return "index"
-        else:
-            return "year-index"
-
     def transform_dataframe(self, df):
+        """
+        Use matplotlib to compute boxplot statistics on timeseries data.
+        """
         from pandas import DataFrame
         group = self.get_grouping(len(df.columns))
         if "index" in group:
@@ -151,6 +186,17 @@ class BoxPlotMixin(object):
             df = df.unstack()
         return df
 
+    def get_grouping(self, sets):
+        group = self.request.GET.get('group', None)
+        if group:
+            return group
+        elif sets > 20:
+            return "year"
+        elif sets > 10:
+            return "index"
+        else:
+            return "year-index"
+
     def compute_boxplots(self, series, groupby):
         def groups(d):
             if isinstance(d, tuple):
@@ -184,6 +230,10 @@ class BoxPlotMixin(object):
 
 
 class TimeSeriesView(ChartView, TimeSeriesMixin):
+    pass
+
+
+class ScatterView(ChartView, ScatterMixin):
     pass
 
 
