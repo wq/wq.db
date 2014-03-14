@@ -31,11 +31,13 @@ class IdentifierManager(models.Manager):
             models.Q(slug=identifier) | models.Q(name=identifier)
         ).order_by('-is_primary')
 
-    def resolve(self, *args):
+    def resolve(self, identifiers, exclude_apps=[]):
         resolved = None
         unresolved = None
-        for identifier in args:
+        for identifier in identifiers:
             ids = self.filter_by_identifier(identifier)
+            if exclude_apps:
+                ids = ids.exclude(content_type__app_label__in=exclude_apps)
             items = ids.distinct('content_type', 'object_id').count()
             if items == 1:
                 if resolved is None:
