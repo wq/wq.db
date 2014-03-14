@@ -227,6 +227,36 @@ def parse_column(file, name, head, body, body_type):
     )
 
 
+def process_date_part(new_val, old_val, part):
+    if part == 'date':
+        date, time = new_val, old_val
+    else:
+        date, time = old_val, new_val
+    if not isinstance(date, datetime.date):
+        raise Exception("Expected date but got %s!" % date)
+    if not isinstance(time, datetime.time):
+        if (isinstance(time, float)
+                and time >= 100 and time <= 2400):
+            time = str(time)
+        elif isinstance(time, basestring) and ":" in time:
+            time = time.replace(":", "")
+
+        if time.isdigit() and len(time) in (3, 4):
+            if len(time) == 3:
+                time = datetime.time(
+                    int(time[0]),
+                    int(time[1:])
+                )
+            else:
+                time = datetime.time(
+                    int(time[0:2]),
+                    int(time[2:])
+                )
+        else:
+            raise Exception("Expected time but got %s!" % time)
+    return datetime.datetime.combine(date, time)
+
+
 @task
 def update_columns(file, user, post):
     matched = read_columns(file)
@@ -323,46 +353,27 @@ def import_data(file, user):
                 fld = Event._meta.get_field_by_name(
                     name
                 )[0].get_internal_type()
-                if (fld in DATE_FIELDS and isinstance(val, basestring)):
+                if (fld in DATE_FIELDS and isinstance(val, basestring)
+                        and part != 'time'):
                     from dateutil.parser import parse
                     val = parse(val)
                     if fld == 'DateField':
                         val = val.date()
 
                 # Handle date & time being separate columns
-                if obj['event_key'].get(name) is not None:
-                    other_val = obj['event_key'][name]
+                if obj['event_key'].get(name, None) is not None:
                     if not part:
                         raise Exception(
-                            'Expected multi-column date and time for %s' % name
+                            'Multiple columns found for %s' % name
                         )
                     if part not in ('date', 'time'):
                         raise Exception(
-                            'Unexpected field name: %s.%s!' % (name, part)
+                            'Unexpected multi-column field name: %s.%s!' % (
+                                name, part
+                            )
                         )
-                    if part == 'date':
-                        date, time = val, other_val
-                    else:
-                        date, time = other_val, val
-                    if not isinstance(date, datetime.date):
-                        raise Exception("Expected date but got %s!" % date)
-                    if not isinstance(time, datetime.time):
-                        if (isinstance(time, float)
-                                and time >= 100 and time <= 2400):
-                            time = str(time)
-                            if len(time) == 3:
-                                time = datetime.time(
-                                    int(time[0]),
-                                    int(time[1:2])
-                                )
-                            else:
-                                time = datetime.time(
-                                    int(time[0:1]),
-                                    int(time[2:3])
-                                )
-                        else:
-                            raise Exception("Expected time but got %s!" % time)
-                    val = datetime.datetime.combine(date, time)
+                    other_val = obj['event_key'][name]
+                    val = process_date_part(val, other_val, part)
 
                 obj['event_key'][name] = val
             elif item.type == 'report':
@@ -381,8 +392,11 @@ def import_data(file, user):
             if 'colnum' in col:
                 save_value(col, row[col['colnum']], record)
 
-        if len(record['event_key'].keys()) < len(EVENT_KEY):
-            raise Exception('Incomplete Record')
+        missing = set(EVENT_KEY) - set(record['event_key'].keys())
+        if missing:
+            raise Exception(
+                'Incomplete Record - missing %s' % ", ".join(missing)
+            )
 
         return Report.objects.create_report(
             EventKey(**record['event_key']),

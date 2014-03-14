@@ -21,7 +21,9 @@ class ChartView(PandasView):
             return self._filter_options
 
         slugs = self.kwargs['ids'].split('/')
-        id_map, unresolved = Identifier.objects.resolve(*slugs)
+        id_map, unresolved = Identifier.objects.resolve(
+            slugs, exclude_apps=['dbio']
+        )
         options = {}
         if unresolved:
             options['extra'] = []
@@ -70,11 +72,54 @@ class ChartView(PandasView):
 
 
 class TimeSeriesMixin(object):
+    """
+    For use with chart.timeSeries() in wq/chart.js
+    """
+
     def transform_dataframe(self, df):
+        """
+        The dataframe is already in a timeseries format.
+        """
+        return df
+
+
+class ScatterMixin(object):
+    """
+    For use with chart.scatter() in wq/chart.js
+    """
+
+    def transform_dataframe(self, df):
+        """
+        Transform timeseries dataframe into a format suitable for plotting two
+        values against each other.
+        """
+
+        # Only use primary 'value' column, ignoring any other result fields
+        # that may have been added to a serializer subclass.
+        for key in df.columns.levels[0]:
+            if key != 'value':
+                df = df.drop(key, axis=1)
+
+        # Remove all indexes/columns except for parameter (which will become
+        # the new 'value' field) and site (to allow distinguishing between
+        # scatterplot data for each site).
+        for name in df.columns.names:
+            if name not in ("parameter", "site"):
+                df.columns = df.columns.droplevel(name)
+
+        # Rename columns ('value'/parameter column should be nameless)
+        df.columns.names = ["", "site"]
+
+        # Only include dates that have data for all parameters
+        df = df.dropna(axis=0, how='any')
         return df
 
 
 class BoxPlotMixin(object):
+    """
+    For use with chart.boxplot() in wq/chart.js
+    """
+
     NAME_MAP = {
         'q1': 'p25',
         'q3': 'p75',
@@ -83,20 +128,12 @@ class BoxPlotMixin(object):
         'whislo': 'min',
     }
 
-    def get_grouping(self, df):
-        group = self.request.GET.get('group', None)
-        if group:
-            return group
-        elif len(df.columns) > 10:
-            return "date"
-        elif len(df.columns > 3):
-            return "index"
-        else:
-            return "dateindex"
-
     def transform_dataframe(self, df):
+        """
+        Use matplotlib to compute boxplot statistics on timeseries data.
+        """
         from pandas import DataFrame
-        group = self.get_grouping(df)
+        group = self.get_grouping(len(df.columns))
         if "index" in group:
             # Separate stats for each column in dataset
             groups = {
@@ -107,7 +144,8 @@ class BoxPlotMixin(object):
             # Stats for entire dataset
             df = df.stack().stack().stack()
             df.reset_index(inplace=True)
-            df.set_index('date', inplace=True)
+            index = self.get_serializer().get_index(df)
+            df.set_index(index[0], inplace=True)
             groups = {
                 ('value', 'all', 'all', 'all'): df.value
             }
@@ -115,56 +153,87 @@ class BoxPlotMixin(object):
         # Compute stats for each column, potentially grouped by year
         all_stats = []
         for g, series in groups.items():
+            if g[0] != 'value':
+                continue
             v, units, param, site = g
-            if "date" in group:
-                dstats = self.compute_boxplots(series, "year")
+            if "year" in group or "month" in group:
+                groupby = "year" if "year" in group else "month"
+                dstats = self.compute_boxplots(series, groupby)
                 for s in dstats:
                     s['site'] = site
-                    s['type'] = param
+                    s['parameter'] = param
                     s['units'] = units
             else:
                 stats = self.compute_boxplot(series)
                 stats['site'] = site
-                stats['type'] = param
+                stats['parameter'] = param
                 stats['units'] = units
                 dstats = [stats]
             all_stats += dstats
 
         df = DataFrame(all_stats)
-        if "date" in group:
-            index = ['year', 'site', 'type', 'units']
+        if "year" in group:
+            index = ['year', 'site', 'parameter', 'units']
+        elif "month" in group:
+            index = ['month', 'site', 'parameter', 'units']
         else:
-            index = ['site', 'type', 'units']
+            index = ['site', 'parameter', 'units']
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
+        df.columns.name = ""
+        df = df.unstack().unstack()
+        if "year" in group or "month" in group:
+            df = df.unstack()
         return df
+
+    def get_grouping(self, sets):
+        group = self.request.GET.get('group', None)
+        if group:
+            return group
+        elif sets > 20:
+            return "year"
+        elif sets > 10:
+            return "index"
+        else:
+            return "year-index"
 
     def compute_boxplots(self, series, groupby):
         def groups(d):
+            if isinstance(d, tuple):
+                d = d[0]
             return getattr(d, groupby)
 
         dstats = []
         for name, g in series.groupby(groups).groups.items():
             stats = self.compute_boxplot(series[g])
-            stats[by] = name
+            stats[groupby] = name
             dstats.append(stats)
         return dstats
 
     def compute_boxplot(self, series):
+        """
+        Compute boxplot for given pandas Series.
+        NOTE: Requires matplotlib 1.4!
+        """
         from matplotlib.cbook import boxplot_stats
         series = series[series.notnull()]
         if len(series.values) == 0:
             return {}
-        stats = boxplot_stats(series)[0]
+        stats = boxplot_stats(list(series.values))[0]
         stats = {
             self.NAME_MAP.get(key, key): value
             for key, value in stats.items()
         }
+        stats['count'] = len(series.values)
         stats['fliers'] = "|".join(map(str, stats['fliers']))
         return stats
 
 
 class TimeSeriesView(ChartView, TimeSeriesMixin):
+    pass
+
+
+class ScatterView(ChartView, ScatterMixin):
     pass
 
 

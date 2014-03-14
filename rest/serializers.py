@@ -141,10 +141,12 @@ class ModelSerializer(RestModelSerializer):
 
         nested = self.context.get('nested', False)
         many = self.many or self.source == 'object_list'
-        if ('request' in self.context and
-                self.context['request'].method != 'GET'):
-            saving = True
+        if 'request' in self.context:
+            renderer = self.context['request'].accepted_renderer
+            geo = renderer.format == 'geojson'
+            saving = self.context['request'].method != 'GET'
         else:
+            geo = False
             saving = self.context.get('saving', False)
 
         def add_labels(name, field, qs):
@@ -185,13 +187,7 @@ class ModelSerializer(RestModelSerializer):
                 del fields[name]
                 continue
 
-            if 'request' in self.context:
-                renderer = self.context['request'].accepted_renderer
-                geo = renderer.format == 'geojson'
-            else:
-                geo = False
-
-            if (self.opts.depth < 1 and not geo and not (saving and m2m)
+            if (self.opts.depth < 1 and not (saving and m2m)
                     or (saving and not m2m) or nested):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
@@ -215,7 +211,21 @@ class ModelSerializer(RestModelSerializer):
                     add_labels(name, field, field.opts.model.objects)
 
         # Add child objects (serialize with registered serializers)
-        if (not self.opts.depth and not saving) or nested:
+        if (not self.opts.depth and not saving and not geo) or nested:
+            return fields
+
+        for vf in self.opts.model._meta.virtual_fields:
+            if not self.opts.depth and geo and vf.name != "locations":
+                continue
+            if getattr(vf, 'serialize', False) and vf.name not in fields:
+                cls = self.router.get_serializer_for_model(
+                    vf.rel.to, self.opts.depth - 1
+                )
+                context = self.context.copy()
+                context['nested'] = True
+                fields[vf.name] = cls(context=context, many=True)
+
+        if geo and not self.opts.depth:
             return fields
 
         ct = get_ct(self.opts.model)
@@ -229,15 +239,6 @@ class ModelSerializer(RestModelSerializer):
                 context['nested'] = True
                 many = not rel.field.unique  # Check for OneToOneField
                 fields[accessor] = cls(context=context, many=many)
-
-        for vf in self.opts.model._meta.virtual_fields:
-            if getattr(vf, 'serialize', False) and vf.name not in fields:
-                cls = self.router.get_serializer_for_model(
-                    vf.rel.to, self.opts.depth - 1
-                )
-                context = self.context.copy()
-                context['nested'] = True
-                fields[vf.name] = cls(context=context, many=True)
 
         return fields
 

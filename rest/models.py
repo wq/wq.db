@@ -89,7 +89,7 @@ class ContentType(DjangoContentType):
         for rtype in RelationshipType.objects.filter(to_type=self):
             ctype = rtype.from_type
             # This is a DjangoContentType, swap for our custom version
-            ctype = ContentType.objects.get(pk=ctype.pk)
+            ctype = ContentType.objects.get_for_id(ctype.pk)
             parents.add(ctype)
         return parents
 
@@ -110,7 +110,7 @@ class ContentType(DjangoContentType):
         for rtype in RelationshipType.objects.filter(from_type=self):
             ctype = rtype.to_type
             # This is a DjangoContentType, swap for our custom version
-            ctype = ContentType.objects.get(pk=ctype.pk)
+            ctype = ContentType.objects.get_for_id(ctype.pk)
             children.add(ctype)
         return children
 
@@ -132,10 +132,7 @@ def get_ct(model, for_concrete_model=False):
         # get_for_model sometimes returns a DjangoContentType - caching issue?
         if not isinstance(ctype, ContentType):
             ctype = ContentType.objects.get(pk=ctype.pk)
-            DjangoContentTypeManager._cache[
-                (ctype.app_label, ctype.model)
-            ] = ctype
-            DjangoContentTypeManager._cache[ctype.pk] = ctype
+            ContentType.objects._add_to_cache(ContentType.objects.db, ctype)
     return ctype
 
 

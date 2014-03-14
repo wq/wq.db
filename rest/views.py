@@ -100,9 +100,6 @@ class GenericAPIView(RestGenericAPIView):
         return super(GenericAPIView, self).get_serializer_class()
 
     def get_paginate_by(self):
-        renderer = self.request.accepted_renderer
-        if getattr(renderer, 'disable_pagination', False):
-            return None
         if self.router is not None and self.model is not None:
             return self.router.get_paginate_by_for_model(self.model)
         return super(GenericAPIView, self).get_paginate_by()
@@ -300,4 +297,6 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         response.data['parent_id'] = objid
         response.data['parent_url'] = '%s%s' % (urlbase, objid)
         response.data['parent_is_' + ct.identifier] = True
+        if self.router:
+            response.data['parent'] = self.router.serialize(parent)
         return parent

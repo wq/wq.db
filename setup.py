@@ -68,7 +68,7 @@ def find_wq_packages(submodule):
     packages = ['wq', submodule]
     package_dir = {submodule: '.'}
     for package in find_packages():
-        if package == 'wq':
+        if package.split('.')[0] in ('wq', 'tests'):
             continue
         full_name = submodule + "." + package
         packages.append(full_name)
@@ -85,7 +85,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='0.5.0-dev',
+    version='0.5.1-dev',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
