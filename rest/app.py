@@ -412,3 +412,7 @@ def autodiscover():
         app = import_module(app_name)
         if module_has_submodule(app, 'views'):
             import_module(app_name + '.views')
+    for app_name in settings.INSTALLED_APPS:
+        app = import_module(app_name)
+        if module_has_submodule(app, 'rest'):
+            import_module(app_name + '.rest')
