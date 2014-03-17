@@ -185,7 +185,7 @@ class Router(DefaultRouter):
 
         return ViewSet
 
-    def get_config(self, user=None):
+    def get_config(self, user=None, with_models=False):
         if user is None:
             user = AnonymousUser()
         pages = {}
@@ -196,7 +196,9 @@ class Router(DefaultRouter):
             ct = get_ct(model)
             if not has_perm(user, ct, 'view'):
                 continue
-            info = self._config[model]
+            info = self._config[model].copy()
+            if with_models:
+                info['model'] = model
             info['list'] = True
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
@@ -272,7 +274,7 @@ class Router(DefaultRouter):
                 conf_by_url = {
                     conf['url']: (page, conf)
                     for page, conf
-                    in self.get_config(request.user)['pages'].items()
+                    in self.get_config(request.user, True)['pages'].items()
                 }
                 urls = request.GET.get('lists', '').split(',')
                 result = {}
@@ -280,9 +282,7 @@ class Router(DefaultRouter):
                     if url not in conf_by_url:
                         continue
                     page, conf = conf_by_url[url]
-                    ct = ContentType.objects.get(model=page)
-                    cls = ct.model_class()
-                    result[url] = self.paginate(cls, 1, request)
+                    result[url] = self.paginate(conf['model'], 1, request)
                 return Response(result)
         return MultipleListView
 
