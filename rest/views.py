@@ -100,8 +100,9 @@ class GenericAPIView(RestGenericAPIView):
         return super(GenericAPIView, self).get_serializer_class()
 
     def get_paginate_by(self):
-        if self.router is not None and self.model is not None:
-            return self.router.get_paginate_by_for_model(self.model)
+        if self.paginate_by_param not in self.request.GET:
+            if self.router is not None and self.model is not None:
+                return self.router.get_paginate_by_for_model(self.model)
         return super(GenericAPIView, self).get_paginate_by()
 
 
