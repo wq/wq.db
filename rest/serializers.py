@@ -147,7 +147,8 @@ class ModelSerializer(RestModelSerializer):
             saving = self.context['request'].method != 'GET'
         else:
             geo = False
-            saving = self.context.get('saving', False)
+            saving = False
+        saving = self.context.get('saving', saving)
 
         def add_labels(name, field, qs):
             # Add _id and _label for context
@@ -219,7 +220,7 @@ class ModelSerializer(RestModelSerializer):
                 continue
             if getattr(vf, 'serialize', False) and vf.name not in fields:
                 cls = self.router.get_serializer_for_model(
-                    vf.rel.to, self.opts.depth - 1
+                    vf.rel.to, max(self.opts.depth - 1, 0)
                 )
                 context = self.context.copy()
                 context['nested'] = True
@@ -233,7 +234,7 @@ class ModelSerializer(RestModelSerializer):
             accessor = rel.get_accessor_name()
             if accessor == rel.field.related_query_name():
                 cls = self.router.get_serializer_for_model(
-                    cct.model_class(), self.opts.depth - 1
+                    cct.model_class(), max(self.opts.depth - 1, 0)
                 )
                 context = self.context.copy()
                 context['nested'] = True
