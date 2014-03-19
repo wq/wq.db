@@ -262,6 +262,19 @@ class Router(DefaultRouter):
         config = self.get_config(user)
         return config['pages'].get(name, None)
 
+    def get_model_config(self, model, user=None):
+        # First, check models registered with API
+        config = self.get_config(user, True)
+        for page, conf in config['pages'].items():
+            if 'model' in conf and conf['model'] == model:
+                return conf
+
+        # Then check config cache directly (in case model was configured but
+        # not fully registered as part of API)
+        if model in self._config:
+            return self._config[model]
+        return None
+
     def get_config_view(self):
         class ConfigView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
