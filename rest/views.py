@@ -184,11 +184,14 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         ct = get_ct(self.model)
         for pct in ct.get_parents():
             choices = self.get_lookup_choices(pct, context)
-            for choice in choices:
-                if choice['id'] == context.get(pct.model + '_id', ''):
-                    choice['selected'] = True
+            self.set_selected(choices, context.get(pct.model + '_id', ''))
             context[pct.urlbase] = choices
             context[pct.model + '_list'] = choices
+
+    def set_selected(self, choices, value):
+        for choice in choices:
+            if choice['id'] == value:
+                choice['selected'] = True
 
     def get_lookup_choices(self, ct, context):
         from wq.db.rest import app
