@@ -16,7 +16,13 @@ class GenericAPIView(RestGenericAPIView):
 
     @property
     def template_name(self):
-        return type(self).__name__.replace('View', '').lower() + '.html'
+        """
+        Infer template name from view/viewset name
+        """
+        name = type(self).__name__
+        name = name.replace('ViewSet', '')
+        name = name.replace('View', '')
+        return name.lower() + '.html'
 
     @property
     def depth(self):
