@@ -116,7 +116,8 @@ class ContentType(DjangoContentType):
 
     def get_config(self, user=None):
         from .app import router  # avoid circular import
-        return router.get_page_config(self.identifier, user)
+        cls = self.model_class()
+        return router.get_model_config(cls, user)
 
     class Meta:
         proxy = True

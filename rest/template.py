@@ -17,6 +17,11 @@ class Renderer(PystacheRenderer):
             return self.get_template_source('partials/' + name + '.html')
         return load_partial
 
+    def str_coerce(self, val):
+        if val is None:
+            return ""
+        return str(val)
+
 renderer = Renderer()
 
 

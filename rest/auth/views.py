@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.middleware import csrf
 from rest_framework.response import Response
@@ -53,8 +52,3 @@ class LogoutView(AuthView):
 
 class UserViewSet(ModelViewSet):
     lookup_field = 'username'
-
-app.router.add_page('login', {'url': 'login'}, LoginView)
-app.router.add_page('logout', {'url': 'logout'}, LogoutView)
-
-app.router.register_viewset(User, UserViewSet)

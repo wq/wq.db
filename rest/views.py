@@ -16,7 +16,13 @@ class GenericAPIView(RestGenericAPIView):
 
     @property
     def template_name(self):
-        return type(self).__name__.replace('View', '').lower() + '.html'
+        """
+        Infer template name from view/viewset name
+        """
+        name = type(self).__name__
+        name = name.replace('ViewSet', '')
+        name = name.replace('View', '')
+        return name.lower() + '.html'
 
     @property
     def depth(self):
@@ -100,8 +106,9 @@ class GenericAPIView(RestGenericAPIView):
         return super(GenericAPIView, self).get_serializer_class()
 
     def get_paginate_by(self):
-        if self.router is not None and self.model is not None:
-            return self.router.get_paginate_by_for_model(self.model)
+        if self.paginate_by_param not in self.request.GET:
+            if self.router is not None and self.model is not None:
+                return self.router.get_paginate_by_for_model(self.model)
         return super(GenericAPIView, self).get_paginate_by()
 
 
@@ -178,10 +185,30 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
 
     def add_lookups(self, context):
-        # FIXME: mimic _addLookups in wq.app/app.js
-        context.update({
-            'edit': True
-        })
+        # Mimic _addLookups in wq.app/app.js
+        context['edit'] = True
+        ct = get_ct(self.model)
+        for pct in ct.get_parents():
+            choices = self.get_lookup_choices(pct, context)
+            self.set_selected(choices, context.get(pct.model + '_id', ''))
+            context[pct.urlbase] = choices
+            context[pct.model + '_list'] = choices
+
+    def set_selected(self, choices, value):
+        for choice in choices:
+            if choice['id'] == value:
+                choice['selected'] = True
+
+    def get_lookup_choices(self, ct, context):
+        from wq.db.rest import app
+        parent_name = ct.model
+        parent_model = ct.model_class()
+        fn = getattr(self, 'get_%s_choices' % parent_name, None)
+        if fn:
+            qs = fn(context)
+        else:
+            qs = app.router.get_queryset_for_model(parent_model)
+        return app.router.serialize(qs, many=True)
 
     def get_object(self, queryset=None):
         try:

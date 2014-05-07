@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from .models import ContentType, get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
+from copy import copy
 
 
 class Router(DefaultRouter):
@@ -127,10 +128,17 @@ class Router(DefaultRouter):
     def paginate(self, model, page_num, request=None):
         obj_serializer = self.get_serializer_for_model(model)
         paginate_by = self.get_paginate_by_for_model(model)
-        paginator = Paginator(
-            self.get_queryset_for_model(model, request),
-            paginate_by
-        )
+        viewset = self.get_viewset_for_model(model)
+        qs = self.get_queryset_for_model(model)
+        req = copy(request)
+        req.GET = {}
+        qs = viewset(
+            action="list",
+            request=req,
+            kwargs={}
+        ).filter_queryset(qs)
+
+        paginator = Paginator(qs, paginate_by)
         page = paginator.page(page_num)
 
         class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
@@ -177,7 +185,7 @@ class Router(DefaultRouter):
 
         return ViewSet
 
-    def get_config(self, user=None):
+    def get_config(self, user=None, with_models=False):
         if user is None:
             user = AnonymousUser()
         pages = {}
@@ -188,7 +196,9 @@ class Router(DefaultRouter):
             ct = get_ct(model)
             if not has_perm(user, ct, 'view'):
                 continue
-            info = self._config[model]
+            info = self._config[model].copy()
+            if with_models:
+                info['model'] = model
             info['list'] = True
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
@@ -252,6 +262,19 @@ class Router(DefaultRouter):
         config = self.get_config(user)
         return config['pages'].get(name, None)
 
+    def get_model_config(self, model, user=None):
+        # First, check models registered with API
+        config = self.get_config(user, True)
+        for page, conf in config['pages'].items():
+            if 'model' in conf and conf['model'] == model:
+                return conf
+
+        # Then check config cache directly (in case model was configured but
+        # not fully registered as part of API)
+        if model in self._config:
+            return self._config[model]
+        return None
+
     def get_config_view(self):
         class ConfigView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
@@ -264,7 +287,7 @@ class Router(DefaultRouter):
                 conf_by_url = {
                     conf['url']: (page, conf)
                     for page, conf
-                    in self.get_config(request.user)['pages'].items()
+                    in self.get_config(request.user, True)['pages'].items()
                 }
                 urls = request.GET.get('lists', '').split(',')
                 result = {}
@@ -272,9 +295,7 @@ class Router(DefaultRouter):
                     if url not in conf_by_url:
                         continue
                     page, conf = conf_by_url[url]
-                    ct = ContentType.objects.get(model=page)
-                    cls = ct.model_class()
-                    result[url] = self.paginate(cls, 1, request)
+                    result[url] = self.paginate(conf['model'], 1, request)
                 return Response(result)
         return MultipleListView
 
@@ -404,3 +425,7 @@ def autodiscover():
         app = import_module(app_name)
         if module_has_submodule(app, 'views'):
             import_module(app_name + '.views')
+    for app_name in settings.INSTALLED_APPS:
+        app = import_module(app_name)
+        if module_has_submodule(app, 'rest'):
+            import_module(app_name + '.rest')

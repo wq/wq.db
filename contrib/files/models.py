@@ -115,6 +115,7 @@ class File(BaseFile):
 
     class Meta:
         db_table = 'wq_file'
+        ordering = ("name",)
         swappable = swapper.swappable_setting('files', 'File')
 
 # Tell south not to worry about the "custom" field type
