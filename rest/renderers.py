@@ -31,7 +31,7 @@ def binary_renderer(mimetype, extension=None):
 
 
 class GeoJSONRenderer(JSONRenderer):
-    media_type = 'application/json'
+    media_type = 'application/vnd.geo+json'
     format = 'geojson'
 
     def render(self, data, *args, **kwargs):
