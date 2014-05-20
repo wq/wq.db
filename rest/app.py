@@ -119,7 +119,7 @@ class Router(DefaultRouter):
         return serializer(obj, many=many, context={'router': self}).data
 
     def get_paginate_by_for_model(self, model_class):
-        config = self._config[model_class]
+        config = self.get_model_config(model_class) or {}
         paginate_by = config.get('per_page', None)
         if paginate_by:
             return paginate_by
@@ -150,7 +150,6 @@ class Router(DefaultRouter):
         ).data
 
     def get_queryset_for_model(self, model, request=None):
-        config = self._config[model]
         if model in self._querysets:
             qs = self._querysets[model]
         else:
@@ -160,10 +159,10 @@ class Router(DefaultRouter):
         return qs
 
     def get_lookup_for_model(self, model_class):
-        config = self._config[model_class]
         if get_ct(model_class).is_identified:
             return 'primary_identifiers__slug'
         else:
+            config = self.get_model_config(model_class) or {}
             return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
