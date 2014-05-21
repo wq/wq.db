@@ -204,11 +204,18 @@ class Router(DefaultRouter):
                     info['can_' + perm] = True
 
             if 'parents' not in info:
-                info['parents'] = []
-                for pct in ct.get_parents():
+                parents = {}
+                as_dict = False
+                for pct, fields in ct.get_foreign_keys().items():
                     if pct.model_class() in self._models:
                         if has_perm(user, pct, 'view'):
-                            info['parents'].append(pct.identifier)
+                            if len(fields) > 1 or fields[0] != pct.identifier:
+                                as_dict = True
+                            parents[pct.identifier] = fields
+                if as_dict:
+                    info['parents'] = parents
+                else:
+                    info['parents'] = parents.keys()
 
             if 'children' not in info:
                 info['children'] = []

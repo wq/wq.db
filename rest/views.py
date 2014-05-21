@@ -188,26 +188,28 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         # Mimic _addLookups in wq.app/app.js
         context['edit'] = True
         ct = get_ct(self.model)
-        for pct in ct.get_parents():
-            choices = self.get_lookup_choices(pct, context)
-            self.set_selected(choices, context.get(pct.model + '_id', ''))
-            context[pct.urlbase] = choices
-            context[pct.model + '_list'] = choices
+        for pct, fields in ct.get_foreign_keys().items():
+            for field in fields:
+                choices = self.get_lookup_choices(pct, context, field)
+                self.set_selected(choices, context.get(field + '_id', ''))
+                if field == pct.model:
+                    context[pct.urlbase] = choices
+                context[field + '_list'] = choices
 
     def set_selected(self, choices, value):
         for choice in choices:
             if choice['id'] == value:
                 choice['selected'] = True
 
-    def get_lookup_choices(self, ct, context):
+    def get_lookup_choices(self, ct, context, field_name=None):
         from wq.db.rest import app
-        parent_name = ct.model
         parent_model = ct.model_class()
-        fn = getattr(self, 'get_%s_choices' % parent_name, None)
+        if not field_name:
+            field_name = ct.model
+        qs = app.router.get_queryset_for_model(parent_model)
+        fn = getattr(self, 'get_%s_choices' % field_name, None)
         if fn:
-            qs = fn(context)
-        else:
-            qs = app.router.get_queryset_for_model(parent_model)
+            qs = fn(qs, context)
         return app.router.serialize(qs, many=True)
 
     def get_object(self, queryset=None):

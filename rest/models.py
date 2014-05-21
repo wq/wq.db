@@ -71,15 +71,20 @@ class ContentType(DjangoContentType):
         return False
 
     # Get foreign keys for this content type
-    def get_parents(self):
+    def get_foreign_keys(self):
         cls = self.model_class()
         if cls is None:
             return []
-        parents = set()
+        parents = {}
         for f in cls._meta.fields:
             if f.rel is not None and type(f.rel).__name__ == 'ManyToOneRel':
-                parents.add(get_ct(f.rel.to))
+                parent = get_ct(f.rel.to)
+                parents.setdefault(parent, [])
+                parents[parent].append(f.name)
         return parents
+
+    def get_parents(self):
+        return set(self.get_foreign_keys().keys())
 
     # Get foreign keys and RelationshipType parents for this content type
     def get_all_parents(self):
