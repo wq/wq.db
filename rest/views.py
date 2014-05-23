@@ -189,6 +189,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         context['edit'] = True
         ct = get_ct(self.model)
         for pct, fields in ct.get_foreign_keys().items():
+            if not pct.is_registered():
+                continue
             for field in fields:
                 choices = self.get_lookup_choices(pct, context, field)
                 self.set_selected(choices, context.get(field + '_id', ''))

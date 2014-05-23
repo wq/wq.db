@@ -124,6 +124,11 @@ class ContentType(DjangoContentType):
         cls = self.model_class()
         return router.get_model_config(cls, user)
 
+    def is_registered(self):
+        from .app import router  # avoid circular import
+        cls = self.model_class()
+        return router.model_is_registered(cls)
+
     class Meta:
         proxy = True
 

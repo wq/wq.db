@@ -207,7 +207,7 @@ class Router(DefaultRouter):
                 parents = {}
                 as_dict = False
                 for pct, fields in ct.get_foreign_keys().items():
-                    if pct.model_class() in self._models:
+                    if pct.is_registered():
                         if has_perm(user, pct, 'view'):
                             if len(fields) > 1 or fields[0] != pct.identifier:
                                 as_dict = True
@@ -220,7 +220,7 @@ class Router(DefaultRouter):
             if 'children' not in info:
                 info['children'] = []
                 for cct in ct.get_children():
-                    if cct.model_class() in self._models:
+                    if cct.is_registered():
                         if has_perm(user, cct, 'view'):
                             info['children'].append(cct.identifier)
 
@@ -280,6 +280,9 @@ class Router(DefaultRouter):
         if model in self._config:
             return self._config[model]
         return None
+
+    def model_is_registered(self, model):
+        return model in self._models
 
     def get_config_view(self):
         class ConfigView(SimpleViewSet):
@@ -376,7 +379,7 @@ class Router(DefaultRouter):
 
         ct = get_ct(model)
         for pct in ct.get_all_parents():
-            if pct.model_class() not in self._models:
+            if not pct.is_registered():
                 continue
             if pct.urlbase == '':
                 purlbase = ''
@@ -395,7 +398,7 @@ class Router(DefaultRouter):
             ))
 
         for cct in ct.get_all_children():
-            if cct.model_class() not in self._models:
+            if not cct.is_registered():
                 continue
             cbase = cct.urlbase
             routes.append(Route(
