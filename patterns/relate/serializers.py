@@ -10,6 +10,7 @@ from .models import (
 
 class RelationshipSerializer(TypedAttachmentSerializer):
     attachment_fields = ['id', 'item_id']
+    required_fields = ['item_id']
     type_model = RelationshipType
     object_field = 'left'
     item_id_field = 'to_object_id'
@@ -37,6 +38,8 @@ class RelationshipSerializer(TypedAttachmentSerializer):
         attachment = super(RelationshipSerializer, self).create_dict(
             atype, data, fields, index
         )
+        if attachment is None:
+            return None
         if 'item_id' in attachment and 'type' in attachment:
             type = self.type_model.objects.get(pk=attachment['type'])
             cls = type.right.model_class()
