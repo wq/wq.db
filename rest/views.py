@@ -6,12 +6,9 @@ from rest_framework import status, viewsets
 from .models import get_ct, get_object_id, get_by_identifier
 from django.conf import settings
 
-from .caching import jc_backend, MIDDLEWARE_SECONDS
-
 
 class GenericAPIView(RestGenericAPIView):
     router = None
-    cached = False
     ignore_kwargs = []
 
     @property
@@ -27,70 +24,6 @@ class GenericAPIView(RestGenericAPIView):
     @property
     def depth(self):
         return 0
-
-    @property
-    def cached_models(self):
-        if not getattr(self, 'model', None):
-            return []
-        ct = get_ct(self.model)
-        ctypes = [ct]
-        ctypes += [pct for pct in ct.get_all_parents()]
-        ctypes += [cct for cct in ct.get_all_children()]
-        return [ctype.model_class() for ctype in ctypes]
-
-    def can_cache(self, request):
-        if jc_backend and self.cached and request.method.lower() == 'get':
-            return True
-        return False
-
-    def get_cache_key(self, request):
-        def resolve_table(model):
-            return model._meta.db_table
-        tables = map(resolve_table, self.cached_models)
-        genkey = jc_backend.keyhandler.get_generation(*tables)
-
-        pathkey = jc_backend.keyhandler.keygen.gen_key(
-            request.path,
-            request.META.get('QUERY_STRING', "")
-        )
-        return "%s_wq_view_%s.%s" % (
-            jc_backend.keyhandler.prefix, genkey, pathkey
-        )
-
-    def get_cached(self, request):
-        if not self.can_cache(request):
-            return None
-        data = jc_backend.cache_backend.get(self.get_cache_key(request))
-        if isinstance(data, dict):
-            data['from_cache'] = True
-        return data
-
-    def set_cached(self, request, data):
-        jc_backend.cache_backend.set(
-            self.get_cache_key(request),
-            data,
-            MIDDLEWARE_SECONDS
-        )
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_cached(request):
-            request = self.initialize_request(request, *args, **kwargs)
-            self.request = request
-            self.args = args
-            self.kwargs = kwargs
-            self.headers = self.default_response_headers
-            self.initial(request, *args, **kwargs)
-            response = Response(self.get_cached(request))
-            self.response = self.finalize_response(
-                request, response, *args, **kwargs
-            )
-        else:
-            response = super(GenericAPIView, self).dispatch(
-                request, *args, **kwargs
-            )
-            if self.can_cache(request):
-                self.set_cached(request, response.data)
-        return response
 
     def get_template_names(self):
         return [self.template_name]
@@ -123,7 +56,6 @@ class SimpleViewSet(viewsets.ViewSet, GenericAPIView):
 
 
 class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
-    cached = True
     target = None
 
     @property
