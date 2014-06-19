@@ -1,5 +1,6 @@
 import sys
 import os
+import django
 from django.conf import settings
 from wq.db.rest import settings as wqdb_settings
 
@@ -40,6 +41,10 @@ def main():
         ),
         **wqdb_settings
     )
+
+    # Django >= 1.7
+    if hasattr(django, 'setup'):
+        django.setup()
 
     # Tests for default model implementations
     from django.test.utils import get_runner
