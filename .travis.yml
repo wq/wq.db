@@ -2,13 +2,14 @@ language: python
 python:
  - "2.7"
 env:
- - DJANGO="django==1.6" DRF="djangorestframework==2.3.12"
+ - DJANGO="django==1.6" DRF="djangorestframework==2.3.12" WQIO=git+https://github.com/wq/wq.io
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
  - pip install $DJANGO
  - pip install $DRF
+ - pip install $WQIO
 script:
  - python setup.py test
 services:
