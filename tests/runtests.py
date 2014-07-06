@@ -37,7 +37,7 @@ def main():
             'wq.db.contrib.dbio',
             'tests.rest_app',
             'tests.patterns_app',
-            'tests.rest_app',
+            'tests.vera_app',
         ),
         **wqdb_settings
     )
