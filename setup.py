@@ -119,7 +119,7 @@ setup(
     tests_require=[
         'psycopg2',
         'celery',
-        'wq.io>=0.4.1',
+        'wq.io>=0.5.1',
         'redis',
         'Pillow',
         'python-dateutil',
