@@ -27,7 +27,9 @@ class GeometryField(WritableField):
 
     def from_native(self, value):
         import json
-        geom = GEOSGeometry(json.dumps(value))
+        if isinstance(value, dict):
+            value = json.dumps(value)
+        geom = GEOSGeometry(value)
         srid = getattr(settings, 'SRID', 4326)
 
         if 'crs' in value and value['crs'].get('type', None) == 'name':

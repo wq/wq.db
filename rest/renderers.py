@@ -1,5 +1,6 @@
 from rest_framework.renderers import BaseRenderer, JSONPRenderer, JSONRenderer
 from django.conf import settings
+from wq.db.rest.settings import SRID as DEFAULT_SRID
 
 
 class JSONRenderer(JSONRenderer):
@@ -50,7 +51,7 @@ class GeoJSONRenderer(JSONRenderer):
         else:
             data, simple = self.render_feature(data)
 
-        if not simple and hasattr(settings, 'SRID') and settings.SRID != 3857:
+        if not simple and getattr(settings, 'SRID', None) != DEFAULT_SRID:
             data['crs'] = {
                 'type': 'name',
                 'properties': {

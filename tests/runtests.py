@@ -31,6 +31,7 @@ def main():
             'wq.db.patterns.identify',
             'wq.db.patterns.annotate',
             'wq.db.patterns.relate',
+            'wq.db.patterns.locate',
             'wq.db.contrib.vera',
             'wq.db.contrib.files',
             'wq.db.contrib.dbio',

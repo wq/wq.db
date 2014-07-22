@@ -1,3 +1,5 @@
 from wq.db.rest import app
-from .models import AnnotatedModel
+from .models import AnnotatedModel, LocatedModel, GeometryModel
 app.router.register_model(AnnotatedModel)
+app.router.register_model(LocatedModel)
+app.router.register_model(GeometryModel)
