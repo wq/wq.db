@@ -21,7 +21,7 @@ class BaseAnnotationType(NaturalKeyModel):
     # (Useful for subclasses with a single target model)
     annotated_model = None
 
-    def __unicode__(self):
+    def __str__(self):
         for f in self._meta.get_all_related_objects():
             # Check for any linked subclasses as they may have a more
             # meaningful representation
@@ -31,7 +31,7 @@ class BaseAnnotationType(NaturalKeyModel):
                 except f.field.model.DoesNotExist:
                     continue
                 else:
-                    return unicode(child)
+                    return str(child)
         # Fall back to name
         return self.name
 
@@ -110,7 +110,7 @@ class BaseAnnotation(models.Model):
 
     objects = AnnotationManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return (
             '%(object)s -> %(annot)s: %(value)s'
             % {

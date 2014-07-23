@@ -35,5 +35,5 @@ class AnnotatedModelAdmin(admin.ModelAdmin):
 
 
 class AnnotationTypeAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'contenttype')
+    list_display = ('__str__', 'contenttype')
     list_filter = ('contenttype',)

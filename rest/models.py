@@ -29,7 +29,7 @@ class ContentType(DjangoContentType):
         config = self.get_config()
         if config:
             return config['url']
-        urlbase = unicode(cls._meta.verbose_name_plural)
+        urlbase = str(cls._meta.verbose_name_plural)
         return urlbase.replace(' ', '')
 
     @property
@@ -134,7 +134,7 @@ class ContentType(DjangoContentType):
 
 
 def get_ct(model, for_concrete_model=False):
-    if isinstance(model, basestring):
+    if isinstance(model, str):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
         ctype = ContentType.objects.get_for_model(

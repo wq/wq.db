@@ -45,7 +45,7 @@ class Router(DefaultRouter):
 
     def register_model(self, model, viewset=None, serializer=None,
                        queryset=None, filter=None, **kwargs):
-        if isinstance(model, basestring) and '.' in model:
+        if isinstance(model, str) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
         self._models.add(model)
@@ -63,7 +63,7 @@ class Router(DefaultRouter):
         if 'name' not in kwargs:
             kwargs['name'] = ct.identifier
         if 'url' not in kwargs:
-            url = unicode(model._meta.verbose_name_plural)
+            url = str(model._meta.verbose_name_plural)
             kwargs['url'] = url.replace(' ', '')
 
         self.register_config(model, kwargs)
@@ -215,7 +215,7 @@ class Router(DefaultRouter):
                 if as_dict:
                     info['parents'] = parents
                 else:
-                    info['parents'] = parents.keys()
+                    info['parents'] = list(parents.keys())
 
             if 'children' not in info:
                 info['children'] = []
@@ -236,7 +236,7 @@ class Router(DefaultRouter):
                     info.setdefault('choices', {})
                     info['choices'][field.name] = [{
                         'value': val,
-                        'label': unicode(label)
+                        'label': str(label)
                     } for val, label in field.choices]
 
             for name in ('annotationtype', 'annotation'):

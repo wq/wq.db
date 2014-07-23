@@ -7,10 +7,10 @@ from .models import get_ct
 class FilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         kwargs = {}
-        for key, val in view.kwargs.items() + request.GET.items():
+        for key, val in list(view.kwargs.items()) + list(request.GET.items()):
             if key in RESERVED_PARAMETERS or key in view.ignore_kwargs:
                 continue
-            kwargs[key] = val if isinstance(val, unicode) else val[0]
+            kwargs[key] = val if isinstance(val, str) else val[0]
         model = getattr(view, 'model', None) or queryset.model
         ctype = get_ct(model)
 

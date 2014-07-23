@@ -27,7 +27,7 @@ class RelationshipSerializer(TypedAttachmentSerializer):
         oid = get_object_id(rel.right)
         ct = get_ct(rel.right)
         data.update({
-            'item_label': unicode(rel.right),
+            'item_label': str(rel.right),
             'item_url': '%s/%s' % (ct.urlbase, oid),
             'item_page': ct.identifier,
             'item_id': oid

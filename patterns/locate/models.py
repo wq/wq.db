@@ -19,7 +19,7 @@ class Location(models.Model):
 
     objects = models.GeoManager()
 
-    def __unicode__(self):
+    def __str__(self):
         if self.name is not None and len(self.name) > 0:
             return '%s - %s' % (self.name, self.content_object)
         else:

@@ -52,9 +52,9 @@ class LabelRelatedField(RelatedField):
                 return None
         val = getattr(obj, self.source or field_name)
         if self.many:
-            return [unicode(item) for item in val.all()]
+            return [str(item) for item in val.all()]
         else:
-            return unicode(val)
+            return str(val)
 
 
 class IDField(Field):
@@ -136,7 +136,7 @@ class ModelSerializer(RestModelSerializer):
         )
         fields['id'] = IDField()
         if 'label' not in self.opts.exclude:
-            fields['label'] = Field(source='__unicode__')
+            fields['label'] = Field(source='__str__')
 
         if not self.router:
             return fields

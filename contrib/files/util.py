@@ -1,5 +1,5 @@
 from PIL import Image, ImageOps
-import StringIO
+import io
 import os
 from wq.io.util import guess_type
 import subprocess
@@ -55,7 +55,7 @@ def generate_image(image, size):
     except OSError:
         pass
     img.save(tdir + image, 'JPEG')
-    data = StringIO.StringIO()
+    data = io.StringIO()
     img.save(data, 'JPEG')
     data.seek(0)
     return data

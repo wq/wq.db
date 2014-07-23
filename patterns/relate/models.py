@@ -132,10 +132,10 @@ class Relationship(models.Model):
         self.right = rightct.get_object_for_this_type(pk=self.right_object_id)
         super(Relationship, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         if (self.from_content_type_id and self.type_id
                 and self.to_content_type_id):
-            return u'%s %s %s' % (self.left, self.reltype, self.right)
+            return '%s %s %s' % (self.left, self.reltype, self.right)
         else:
             return 'Undefined'
 
@@ -193,7 +193,7 @@ class RelationshipType(models.Model):
     def right(self):
         return self.to_type
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -217,7 +217,7 @@ class InverseRelationshipType(RelationshipType):
     def right(self):
         return self.from_type
 
-    def __unicode__(self):
+    def __str__(self):
         return self.inverse_name
 
     class Meta:

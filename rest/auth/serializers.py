@@ -23,7 +23,7 @@ class UserSerializer(ModelSerializer):
 class SocialAuthSerializer(ModelSerializer):
     def to_native(self, instance):
         return {
-            'provider_id': unicode(instance.provider),
+            'provider_id': str(instance.provider),
             'provider_label': instance.provider.title(),
             'id': instance.pk,
             'label': instance.uid,
