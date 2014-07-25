@@ -14,12 +14,13 @@ SEARCH_PARAMETER = 'q'
 class SearchView(SimpleView, MultipleObjectAPIView, ListModelMixin):
     auto = False
     search = None
+    content_type = None
     serializer_class = SearchResultSerializer
 
     def get_queryset(self):
         if not self.search:
             return []
-        return search(self.search, self.auto)
+        return search(self.search, self.auto, self.content_type)
 
     def filter_queryset(self, queryset):
         return queryset
@@ -27,6 +28,7 @@ class SearchView(SimpleView, MultipleObjectAPIView, ListModelMixin):
     def get(self, request, *args, **kwargs):
         self.search = request.GET.get(SEARCH_PARAMETER, None)
         self.auto = request.GET.get('auto', self.auto)
+        self.content_type = request.GET.get('type', self.content_type)
         response = self.list(request, args, kwargs)
 
         if response.data['count'] == 1 and self.auto:
