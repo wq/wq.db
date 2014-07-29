@@ -8,24 +8,35 @@ else:
     Annotation = swapper.load_model('annotate', 'Annotation')
 
 
-def search(query, auto=True, content_type=None):
+def search(query, auto=True, content_type=None, authority_id=None):
     if content_type:
         ctfilter = {'content_type__model': content_type}
     else:
         ctfilter = {}
 
+    idfilter = ctfilter.copy()
+    if authority_id:
+        idfilter['authority_id'] = authority_id
+
+    distinct_on = ('content_type__id', 'object_id')
     # First check for exact identifier matches
     id_matches = Identifier.objects.filter_by_identifier(query)
-    id_matches = id_matches.filter(**ctfilter)
+    id_matches = id_matches.filter(**idfilter)
     # If "auto" mode and only one distinct object, return first identifier
-    if id_matches.distinct('content_type', 'object_id').count() == 1 and auto:
+    if id_matches.distinct(*distinct_on).count() == 1 and auto:
         return id_matches[0:1]
 
     # Otherwise, include any identifiers containing the case-insensitive string
     id_matches = id_matches | Identifier.objects.filter(
-        name__icontains=query
-    ).filter(**ctfilter)
-    id_matches = id_matches.distinct('content_type', 'object_id')
+        name__icontains=query,
+        **idfilter
+    ) | Identifier.objects.filter(
+        slug__icontains=query,
+        **idfilter
+    )
+
+    # Avoid duplicates due to multiple similar ids on the same object
+    id_matches = id_matches.order_by(*distinct_on).distinct(*distinct_on)
 
     # Then, include any annotations containing the string (case insensitive)
     results = [id_matches]

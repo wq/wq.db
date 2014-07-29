@@ -10,12 +10,15 @@ class SearchResultSerializer(Serializer):
         else:
             ctype = get_ct(obj)
 
+        obj_id = get_object_id(obj)
+
         url = ctype.urlbase
         if url:
             url += '/'
-        url += unicode(get_object_id(obj))
+        url += obj_id
 
         return {
+            'id': obj_id,
             'url': url,
             'type': unicode(ctype),
             'label': unicode(obj)
