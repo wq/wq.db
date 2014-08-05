@@ -129,7 +129,7 @@ class Router(DefaultRouter):
         obj_serializer = self.get_serializer_for_model(model)
         paginate_by = self.get_paginate_by_for_model(model)
         viewset = self.get_viewset_for_model(model)
-        qs = self.get_queryset_for_model(model)
+        qs = self.get_queryset_for_model(model, request)
         req = copy(request)
         req.GET = {}
         qs = viewset(
