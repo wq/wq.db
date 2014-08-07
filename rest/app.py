@@ -25,6 +25,8 @@ class Router(DefaultRouter):
     _viewsets = {}
     _extra_pages = {}
     _config = {}
+    _page_names = {}
+    _page_models = {}
 
     include_root_view = False
     include_config_view = True
@@ -67,6 +69,8 @@ class Router(DefaultRouter):
             kwargs['url'] = url.replace(' ', '')
 
         self.register_config(model, kwargs)
+        self._page_names[model] = kwargs['name']
+        self._page_models[kwargs['name']] = model
 
     def register_viewset(self, model, viewset):
         self._viewsets[model] = viewset
@@ -82,11 +86,13 @@ class Router(DefaultRouter):
 
     def register_config(self, model, config):
         self._config[model] = config
+        self._base_config = None
 
     def update_config(self, model, **kwargs):
         if model not in self._config:
             raise RuntimeError("%s must be registered first" % model)
         self._config[model].update(kwargs)
+        self._base_config = None
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
         if model_class in self._serializers:
@@ -184,9 +190,14 @@ class Router(DefaultRouter):
 
         return ViewSet
 
-    def get_config(self, user=None, with_models=False):
-        if user is None:
-            user = AnonymousUser()
+    _base_config = None
+
+    @property
+    def base_config(self):
+        if self._base_config:
+            return self._base_config
+
+        user = AnonymousUser()
         pages = {}
         for page in self._extra_pages:
             conf, view = self.get_page(page)
@@ -196,8 +207,6 @@ class Router(DefaultRouter):
             if not has_perm(user, ct, 'view'):
                 continue
             info = self._config[model].copy()
-            if with_models:
-                info['model'] = model
             info['list'] = True
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
@@ -243,9 +252,31 @@ class Router(DefaultRouter):
                 if ct.identifier != name and getattr(ct, 'is_' + name):
                     pages[name] = {'alias': ct.identifier}
 
-            pages[ct.identifier] = info
+            pages[info['name']] = info
 
-        return {'pages': pages}
+        self._base_config = {'pages': pages}
+        return self._base_config
+
+    def get_config(self, user=None, with_models=False):
+        if user is None or not user.is_authenticated():
+            return self.base_config
+
+        # Add user-specific permissions to configuration
+        config = {
+            key: val.copy()
+            for key, val in self.base_config.items()
+        }
+        for page, info in config['pages'].items():
+            if not info.get('list', False):
+                continue
+            ct = get_ct(self._page_models[page])
+            info = info.copy()
+            for perm in ('add', 'change', 'delete'):
+                if has_perm(user, ct, perm):
+                    info['can_' + perm] = True
+            config['pages'][page] = info
+
+        return config
 
     def add_page(self, name, config, view=None):
         if view is None:
@@ -270,10 +301,9 @@ class Router(DefaultRouter):
 
     def get_model_config(self, model, user=None):
         # First, check models registered with API
-        config = self.get_config(user, True)
-        for page, conf in config['pages'].items():
-            if 'model' in conf and conf['model'] == model:
-                return conf
+        if model in self._page_names:
+            config = self.get_config(user)
+            return config['pages'][self._page_names[model]]
 
         # Then check config cache directly (in case model was configured but
         # not fully registered as part of API)
@@ -296,7 +326,7 @@ class Router(DefaultRouter):
                 conf_by_url = {
                     conf['url']: (page, conf)
                     for page, conf
-                    in self.get_config(request.user, True)['pages'].items()
+                    in self.get_config(request.user)['pages'].items()
                 }
                 urls = request.GET.get('lists', '').split(',')
                 result = {}
@@ -304,7 +334,8 @@ class Router(DefaultRouter):
                     if url not in conf_by_url:
                         continue
                     page, conf = conf_by_url[url]
-                    result[url] = self.paginate(conf['model'], 1, request)
+                    model = self._page_models[page]
+                    result[url] = self.paginate(model, 1, request)
                 return Response(result)
         return MultipleListView
 
