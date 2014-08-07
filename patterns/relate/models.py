@@ -125,7 +125,28 @@ class Relationship(models.Model):
 
     @property
     def reltype(self):
-        return self.type
+        return RelationshipType.objects.get_type(self.type_id)
+
+    _from_cache = {}
+    _to_cache = {}
+
+    def get_right_dict(self, cache):
+        if self.right_object_id not in cache:
+            from wq.db.rest.models import get_object_id, get_ct
+            obj = self.right
+            oid = get_object_id(obj)
+            ct = get_ct(obj)
+            cache[self.right_object_id] = {
+                'item_id': get_object_id(obj),
+                'item_label': unicode(obj),
+                'item_url': '%s/%s' % (ct.urlbase, oid),
+                'item_page': ct.identifier
+            }
+        return cache[self.right_object_id]
+
+    @property
+    def right_dict(self):
+        return self.get_right_dict(type(self)._to_cache)
 
     def save(self, *args, **kwargs):
         rightct = self.reltype.right
@@ -169,11 +190,27 @@ class InverseRelationship(Relationship):
         return self.from_object_id
 
     @property
+    def right_dict(self):
+        return self.get_right_dict(type(self)._from_cache)
+
+    @property
     def reltype(self):
-        return InverseRelationshipType.objects.get(pk=self.type.pk)
+        return InverseRelationshipType.objects.get_type(self.type_id)
 
     class Meta:
         proxy = True
+
+
+class RelationshipTypeManager(models.Manager):
+    _type_cache = {}
+    _cache_prefix = 'rel'
+
+    def get_type(self, pk):
+        key = self._cache_prefix + str(pk)
+        cache = type(self)._type_cache
+        if key not in cache:
+            cache[key] = self.get(pk=pk)
+        return cache[key]
 
 
 class RelationshipType(models.Model):
@@ -184,6 +221,8 @@ class RelationshipType(models.Model):
     to_type = models.ForeignKey(ContentType, related_name='+')
 
     computed = models.BooleanField(default=False)
+
+    objects = RelationshipTypeManager()
 
     @property
     def left(self):
@@ -200,7 +239,9 @@ class RelationshipType(models.Model):
         db_table = 'wq_relationshiptype'
 
 
-class InverseRelationshipTypeManager(models.Manager):
+class InverseRelationshipTypeManager(RelationshipTypeManager):
+    _cache_prefix = 'inv'
+
     def get_query_set(self):
         qs = super(InverseRelationshipTypeManager, self).get_query_set()
         return qs.filter(inverse_name__isnull=False)
