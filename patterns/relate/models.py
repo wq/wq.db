@@ -107,6 +107,9 @@ class Relationship(models.Model):
 
     objects = RelationshipManager()
 
+    _dict_cache = {}
+    _cache_prefix = 'rel'
+
     @property
     def left(self):
         return self.from_content_object
@@ -124,29 +127,29 @@ class Relationship(models.Model):
         return self.to_object_id
 
     @property
+    def right_content_type_id(self):
+        return self.to_content_type_id
+
+    @property
     def reltype(self):
         return RelationshipType.objects.get_type(self.type_id)
 
-    _from_cache = {}
-    _to_cache = {}
-
-    def get_right_dict(self, cache):
-        if self.right_object_id not in cache:
+    @property
+    def right_dict(self):
+        key = self._cache_prefix + str(self.pk)
+        cache = type(self)._dict_cache
+        if key not in cache:
             from wq.db.rest.models import get_object_id, get_ct
             obj = self.right
             oid = get_object_id(obj)
             ct = get_ct(obj)
-            cache[self.right_object_id] = {
+            cache[key] = {
                 'item_id': get_object_id(obj),
                 'item_label': unicode(obj),
                 'item_url': '%s/%s' % (ct.urlbase, oid),
                 'item_page': ct.identifier
             }
-        return cache[self.right_object_id]
-
-    @property
-    def right_dict(self):
-        return self.get_right_dict(type(self)._to_cache)
+        return cache[key]
 
     def save(self, *args, **kwargs):
         rightct = self.reltype.right
@@ -172,6 +175,7 @@ class InverseRelationshipManager(models.Manager):
 
 class InverseRelationship(Relationship):
     objects = InverseRelationshipManager()
+    _cache_prefix = 'inv'
 
     @property
     def left(self):
@@ -190,8 +194,8 @@ class InverseRelationship(Relationship):
         return self.from_object_id
 
     @property
-    def right_dict(self):
-        return self.get_right_dict(type(self)._from_cache)
+    def right_content_type_id(self):
+        return self.from_content_type_id
 
     @property
     def reltype(self):
