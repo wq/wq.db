@@ -8,13 +8,20 @@ from django.conf import settings
 
 def generate_image(image, size):
     size = int(size)
-    path = '%s/%s' % (settings.MEDIA_ROOT, image)
+    path = os.path.join(settings.MEDIA_ROOT, image)
+    name = os.path.basename(image)
     mime = guess_type(path)
-    image = os.path.basename(image)
     if mime.startswith('image/'):
         img = Image.open(path)
     elif mime.startswith('video/'):
-        thumbpath = '%s/thumb/%s.jpg' % (settings.MEDIA_ROOT, image)
+        thumbdir = os.path.join(
+            settings.MEDIA_ROOT, 'thumb', os.path.dirname(image)
+        )
+        try:
+            os.makedirs(thumbdir)
+        except OSError:
+            pass
+        thumbpath = os.path.join(thumbdir, name) + ".jpg"
         if not os.path.exists(thumbpath):
             subprocess.call(['avconv', '-i', path, '-vframes', '1', thumbpath])
         img = Image.open(thumbpath)
@@ -49,12 +56,12 @@ def generate_image(image, size):
             height = int(height * ratio)
             img = img.resize((size, height), Image.ANTIALIAS)
 
-    tdir = '%s/%s/' % (settings.MEDIA_ROOT, size)
+    tdir = os.path.join(settings.MEDIA_ROOT, str(size), os.path.dirname(image))
     try:
         os.makedirs(tdir)
     except OSError:
         pass
-    img.save(tdir + image, 'JPEG')
+    img.save(os.path.join(tdir, name), 'JPEG')
     data = StringIO.StringIO()
     img.save(data, 'JPEG')
     data.seek(0)
