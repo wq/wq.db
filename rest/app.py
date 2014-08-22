@@ -257,7 +257,7 @@ class Router(DefaultRouter):
         self._base_config = {'pages': pages}
         return self._base_config
 
-    def get_config(self, user=None, with_models=False):
+    def get_config(self, user=None):
         if user is None or not user.is_authenticated():
             return self.base_config
 
@@ -323,21 +323,25 @@ class Router(DefaultRouter):
     def get_multi_view(self):
         class MultipleListView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
-                conf_by_url = {
-                    conf['url']: (page, conf)
-                    for page, conf
-                    in self.get_config(request.user)['pages'].items()
-                }
                 urls = request.GET.get('lists', '').split(',')
-                result = {}
-                for url in urls:
-                    if url not in conf_by_url:
-                        continue
-                    page, conf = conf_by_url[url]
-                    model = self._page_models[page]
-                    result[url] = self.paginate(model, 1, request)
-                return Response(result)
+                return self.get_multi(request, urls)
         return MultipleListView
+
+    def get_multi(self, request, urls):
+        conf = self.get_config(request.user)
+        conf_by_url = {
+            conf['url']: (page, conf)
+            for page, conf
+            in self.get_config(request.user)['pages'].items()
+        }
+        result = {}
+        for url in urls:
+            if url not in conf_by_url:
+                continue
+            page, conf = conf_by_url[url]
+            model = self._page_models[page]
+            result[url] = self.paginate(model, 1, request)
+        return Response(result)
 
     def get_urls(self):
         # Register viewsets with DefaultRouter just before returning urls
