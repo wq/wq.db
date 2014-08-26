@@ -291,6 +291,7 @@ class Router(DefaultRouter):
         if 'url' not in config:
             config['url'] = name
         self._extra_pages[name] = config, view
+        self._base_config = None
 
     def get_page(self, page):
         return self._extra_pages[page]
