@@ -3,6 +3,7 @@ python:
  - "2.7"
 env:
  - DJANGO="django==1.6" DRF="djangorestframework==2.3.12"
+ - DJANGO="django==1.6" DRF="djangorestframework==2.4.2"
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
