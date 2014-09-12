@@ -185,9 +185,7 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
 class IdentifiedModel(NaturalKeyModel):
     identifiers = SerializableGenericRelation(Identifier)
-    primary_identifiers = generic.GenericRelation(
-        PrimaryIdentifier, related_name='%(app_label)s_%(class)s_primary'
-    )
+    primary_identifiers = generic.GenericRelation(PrimaryIdentifier)
     objects = IdentifiedModelManager()
 
     @classmethod

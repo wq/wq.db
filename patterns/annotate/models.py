@@ -135,7 +135,6 @@ class AnnotationSet(SerializableGenericRelation):
     def __init__(self, *args, **kwargs):
         if len(args) == 0:
             kwargs['to'] = ANNOTATION_MODEL
-        kwargs['related_name'] = None
         super(AnnotationSet, self).__init__(*args, **kwargs)
 
 

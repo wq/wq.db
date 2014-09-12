@@ -78,9 +78,7 @@ class BaseFile(AnnotatedModel, IoModel):
             return self.type.mimetype
 
         if self.file.name not in (None, ""):
-            self.file.open()
             mimetype = guess_type(self.file.name, self.file.read(1024))
-            self.file.close()
             return mimetype
         else:
             return None

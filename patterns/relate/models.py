@@ -33,13 +33,11 @@ class RelatedModel(models.Model):
         'Relationship',
         content_type_field='from_content_type',
         object_id_field='from_object_id',
-        related_name='%(class)s_set'
     )
     inverserelationships = SerializableGenericRelation(
         'InverseRelationship',
         content_type_field='to_content_type',
         object_id_field='to_object_id',
-        related_name='%(class)s_inverse_set'
     )
     objects = RelatedModelManager()
 
