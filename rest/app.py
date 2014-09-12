@@ -1,6 +1,7 @@
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 from django.utils.encoding import force_text
+from django.utils.six import string_types
 from django.conf.urls import patterns, include, url
 from django.core.paginator import Paginator
 
@@ -46,7 +47,7 @@ class Router(DefaultRouter):
 
     def register_model(self, model, viewset=None, serializer=None,
                        queryset=None, filter=None, **kwargs):
-        if isinstance(model, str) and '.' in model:
+        if isinstance(model, string_types) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
         self._models.add(model)

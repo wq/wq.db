@@ -8,6 +8,7 @@ from wq.db.patterns.models import (
 from wq.db.patterns.models import RelationshipType
 from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
 from django.utils.encoding import force_text
+from django.utils.six import string_types
 
 
 class ContentTypeManager(DjangoContentTypeManager):
@@ -135,7 +136,7 @@ class ContentType(DjangoContentType):
 
 
 def get_ct(model, for_concrete_model=False):
-    if isinstance(model, str):
+    if isinstance(model, string_types):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
         ctype = ContentType.objects.get_for_model(
