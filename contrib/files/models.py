@@ -146,5 +146,8 @@ class File(BaseFile):
         swappable = swapper.swappable_setting('files', 'File')
 
 # Tell south not to worry about the "custom" field type
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^wq.db.contrib.files.models.FileField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^wq.db.contrib.files.models.FileField"])
+except ImportError:
+    pass

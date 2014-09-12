@@ -166,5 +166,8 @@ class AnnotatedModel(models.Model):
         abstract = True
 
 # Tell south not to worry about the "custom" field type
-from south.modelsinspector import add_ignored_fields
-add_ignored_fields(["^wq.db.patterns.annotate.models.AnnotationSet"])
+try:
+    from south.modelsinspector import add_ignored_fields
+    add_ignored_fields(["^wq.db.patterns.annotate.models.AnnotationSet"])
+except ImportError:
+    pass
