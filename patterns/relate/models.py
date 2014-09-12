@@ -166,8 +166,8 @@ class Relationship(models.Model):
 
 
 class InverseRelationshipManager(models.Manager):
-    def get_query_set(self):
-        qs = super(InverseRelationshipManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(InverseRelationshipManager, self).get_queryset()
         return qs.filter(type__inverse_name__isnull=False)
 
 
@@ -244,8 +244,8 @@ class RelationshipType(models.Model):
 class InverseRelationshipTypeManager(RelationshipTypeManager):
     _cache_prefix = 'inv'
 
-    def get_query_set(self):
-        qs = super(InverseRelationshipTypeManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(InverseRelationshipTypeManager, self).get_queryset()
         return qs.filter(inverse_name__isnull=False)
 
 

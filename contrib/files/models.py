@@ -48,7 +48,7 @@ class FileType(models.Model):
 
 
 class FileManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         qs = super(FileManager, self).get_query_set()
         if self.model.type_name is not None:
             return qs.filter(type__name=self.model.type_name)

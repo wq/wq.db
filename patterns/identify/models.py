@@ -116,8 +116,8 @@ class Identifier(models.Model):
 class PrimaryIdentifierManager(IdentifierManager):
     use_for_related_fields = True
 
-    def get_query_set(self):
-        qs = super(PrimaryIdentifierManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(PrimaryIdentifierManager, self).get_queryset()
         return qs.filter(is_primary=True)
 
 
@@ -168,8 +168,8 @@ class IdentifiedModelManager(NaturalKeyModelManager):
         object.identifiers.create(name=identifier, is_primary=True)
         return object
 
-    def get_query_set(self):
-        qs = super(IdentifiedModelManager, self).get_query_set()
+    def get_queryset(self):
+        qs = super(IdentifiedModelManager, self).get_queryset()
         meta = self.model._meta
         if meta.ordering:
             return qs
