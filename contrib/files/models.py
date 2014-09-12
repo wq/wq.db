@@ -40,7 +40,7 @@ class FileType(models.Model):
     name = models.CharField(max_length=255)
     mimetype = models.CharField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s)' % (self.name, self.mimetype)
 
     class Meta:
@@ -129,7 +129,7 @@ class BaseFile(AnnotatedModel, IoModel):
             self.name = self.file.name
         super(BaseFile, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.name is not None:
             return self.name
         else:

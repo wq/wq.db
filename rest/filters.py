@@ -2,15 +2,16 @@ from rest_framework.filters import BaseFilterBackend
 RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
 from .models import get_ct
+from django.utils.six import string_types
 
 
 class FilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         kwargs = {}
-        for key, val in view.kwargs.items() + request.GET.items():
+        for key, val in list(view.kwargs.items()) + list(request.GET.items()):
             if key in RESERVED_PARAMETERS or key in view.ignore_kwargs:
                 continue
-            kwargs[key] = val if isinstance(val, unicode) else val[0]
+            kwargs[key] = val if isinstance(val, string_types) else val[0]
         model = getattr(view, 'model', None) or queryset.model
         ctype = get_ct(model)
 

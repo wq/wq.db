@@ -9,7 +9,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         if db.backend_name != 'postgres':
-            print "Warning: Non-postgres database detected; convenience view will not be created."
+            print("Warning: Non-postgres database detected; convenience view will not be created.")
             return
         db.execute('''
 CREATE OR REPLACE VIEW wq_identifier_joined AS

@@ -5,8 +5,9 @@ from wq.db.patterns.models import Identifier, Relationship, RelationshipType
 import swapper
 from .models import MetaColumn, UnknownItem, SkippedRecord, Range
 from django.conf import settings
+from django.utils.six import string_types
 import datetime
-from .signals import import_complete
+from .signals import import_complete, new_metadata
 
 from wq.db.rest.models import get_ct, get_object_id
 
@@ -63,6 +64,7 @@ def auto_import(instance, user):
     # Preload IO to catch any load errors early
     status = {
         'message': "Loading Data...",
+        'stage': 'meta',
         'current': 1,
         'total': 4,
     }
@@ -108,7 +110,7 @@ def get_choices(instance):
         ct = CONTENT_TYPES[cls]
         result = [{
             'url': '%s/%s' % (ct.urlbase, get_object_id(row)),
-            'label': unicode(row)
+            'label': str(row)
         } for row in rows]
         result.insert(0, {
             'url': '%s/new' % ct.urlbase,
@@ -168,12 +170,13 @@ def get_meta_columns(instance):
 def load_columns(instance):
     rels = instance.relationships.filter(type__name='Contains Column')
     table = instance.load_io()
+    cols = list(table.field_map.keys())
 
     matched = []
     for rel in rels:
         item = rel.right
         info = {
-            'match': unicode(item),
+            'match': str(item),
             'rel_id': rel.pk,
         }
         if isinstance(item, UnknownItem):
@@ -188,7 +191,7 @@ def load_columns(instance):
 
         if rel.range_set.filter(type='list').exists():
             col = rel.range_set.get(type='list').start_column
-            info['name'] = table.field_map.keys()[col].replace('\n', ' - ')
+            info['name'] = cols[col].replace('\n', ' - ')
             info['column'] = colname(col)
             info['colnum'] = col
 
@@ -208,10 +211,10 @@ def get_range_value(table, rng):
     if rng.start_row == rng.end_row and rng.start_column == rng.end_column:
         return table.extra_data.get(rng.start_row, {}).get(rng.start_column)
 
-    val = u""
+    val = ""
     for r in range(rng.start_row, rng.end_row + 1):
         for c in range(rng.start_column, rng.end_column + 1):
-            val += unicode(table.extra_data.get(r, {}).get(c, ""))
+            val += str(table.extra_data.get(r, {}).get(c, ""))
     return val
 
 
@@ -312,9 +315,10 @@ def update_columns(instance, user, post):
             obj = cls.objects.find(col['value'])
             obj.contenttype = CONTENT_TYPES[Parameter]
             obj.save()
+            ident = obj.primary_identifier
         else:
             obj = cls.objects.get_by_identifier(vid)
-            obj.identifiers.create(
+            ident = obj.identifiers.create(
                 name=col['value']
             )
 
@@ -328,6 +332,13 @@ def update_columns(instance, user, post):
         rel.type = reltype
         rel.right = obj
         rel.save()
+
+        new_metadata.send(
+            sender=update_columns,
+            instance=instance,
+            object=obj,
+            identifier=ident,
+        )
 
     return read_columns(instance)
 
@@ -373,16 +384,17 @@ def read_row_identifiers(instance, user):
                 } for k, v in meta.items() if k != 'id']
             }
             if obj is not None:
-                info['match'] = unicode(obj)
+                info['match'] = str(obj)
                 # FIXME: Confirm that metadata hasn't changed
             else:
                 info['ident_id'] = unknown_ids
                 unknown_ids += 1
                 info['unknown'] = True
+                choices = instance.get_id_choices(cls, meta)
                 info['choices'] = [{
                     'id': get_object_id(obj),
-                    'label': unicode(obj),
-                } for obj in cls.objects.all()]
+                    'label': str(obj),
+                } for obj in choices]
                 info['choices'].insert(0, {
                     'id': 'new',
                     'label': "New %s" % idinfo['type_label'],
@@ -391,6 +403,37 @@ def read_row_identifiers(instance, user):
             idinfo['ids'].append(info)
         idinfo['ids'].sort(key=lambda info: info['value'])
         idgroups.append(idinfo)
+
+    if not unknown_ids:
+        # Create relationships after all IDs are resolved.
+
+        # FIXME: parse_columns() always creates relationships, using
+        # UnknownItem to stand in for unknown column identifiers.
+        # Use UnknownItem here as well?
+
+        from_type = get_ct(instance)
+
+        for idinfo in idgroups:
+            cls = META_CLASSES[idinfo['type_id']]
+            to_type = get_ct(cls)
+            reltype, is_new = RelationshipType.objects.get_or_create(
+                from_type=from_type,
+                to_type=to_type,
+                name='Contains Identifier',
+                inverse_name='Identifier In'
+            )
+            for info in idinfo['ids']:
+                obj = cls.objects.get_by_natural_key(info['value'])
+                rel, isnew = instance.relationships.get_or_create(
+                    type=reltype,
+                    to_content_type=to_type,
+                    to_object_id=obj.pk,
+                    from_content_type=from_type,
+                    from_object_id=instance.pk,
+                )
+
+                # FIXME: create equivalent of Range objects here?
+
     return {
         'unknown_count': unknown_ids,
         'types': idgroups,
@@ -412,6 +455,7 @@ def update_row_identifiers(instance, user, post):
             if ident_id == 'new':
                 # Create new object (with primary identifier)
                 obj = cls.objects.find(ident_value)
+                ident = obj.primary_identifier
 
                 # Set additional metadata fields on new object
                 for col in coltypes[ident_type]:
@@ -427,7 +471,6 @@ def update_row_identifiers(instance, user, post):
 
                     # If present, also apply "name" attribute to identifier
                     if col['field_name'] == "name":
-                        ident = obj.primary_identifier
                         ident.name = val
                         ident.slug = ident_value
                         ident.save()
@@ -438,9 +481,16 @@ def update_row_identifiers(instance, user, post):
                 name = post.get('ident_%s_name' % i, None)
                 if not name:
                     name = ident_value
-                obj.identifiers.create(name=name, slug=ident_value)
+                ident = obj.identifiers.create(name=name, slug=ident_value)
 
                 # FIXME: Update existing metadata?
+
+            new_metadata.send(
+                sender=update_row_identifiers,
+                instance=instance,
+                object=obj,
+                identifier=ident,
+            )
 
     return read_row_identifiers(instance, user)
 
@@ -509,6 +559,8 @@ def do_import(instance, user):
     for i, row in enumerate(table):
         # Update state (for status() on view)
         current_task.update_state(state='PROGRESS', meta={
+            'message': "Importing Data...",
+            'stage': 'data',
             'current': i + 1,
             'total': rows,
             'skipped': skipped
@@ -674,7 +726,7 @@ def save_metadata_value(col, val, obj):
         )[0].get_internal_type()
 
     # Automatically parse date values as such
-    if (meta_datatype in DATE_FIELDS and isinstance(val, basestring)
+    if (meta_datatype in DATE_FIELDS and isinstance(val, string_types)
             and part != 'time'):
         from dateutil.parser import parse
         val = parse(val)
@@ -721,7 +773,7 @@ def process_date_part(new_val, old_val, part):
                 and time >= 100 and time <= 2400):
             # "Numeric" time (hour * 100 + minutes)
             time = str(time)
-        elif isinstance(time, basestring) and ":" in time:
+        elif isinstance(time, string_types) and ":" in time:
             # Take out semicolon for isdigit() code below
             time = time.replace(":", "")
 

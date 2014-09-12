@@ -1,5 +1,6 @@
 from wq.db.rest.serializers import ModelSerializer
 from wq.db.rest.models import get_ct, get_object_id
+from django.utils.six import string_types
 import json
 from .models import Location
 
@@ -60,7 +61,7 @@ class LocationSerializer(ModelSerializer):
 
     def field_from_native(self, data, files, field_name, into):
         vals = data.get(field_name, None)
-        if isinstance(vals, basestring) and vals.strip() != '':
+        if isinstance(vals, string_types) and vals.strip() != '':
             vals = json.loads(vals)
         if (isinstance(vals, dict) and
                 vals.get('type', None) == "FeatureCollection"):

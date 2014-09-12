@@ -14,7 +14,7 @@ class FilesTestCase(APITestCase):
 
     def test_upload(self):
         filename = os.path.join(os.path.dirname(__file__), "testimage.png")
-        with open(filename) as f:
+        with open(filename, 'rb') as f:
             response = self.client.post('/files.json', {"file": f})
             self.assertTrue(
                 status.is_success(response.status_code),

@@ -106,7 +106,7 @@ class Identifier(models.Model):
         if self.is_primary:
             IdentifierManager.update_cache(self)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -200,11 +200,11 @@ class IdentifiedModel(NaturalKeyModel):
 
     def fallback_identifier(self):
         if hasattr(self, 'name'):
-            return unicode(self.name)
+            return str(self.name)
         else:
             return ContentType.objects.get_for_model(self).name
 
-    def __unicode__(self):
+    def __str__(self):
         if self.primary_identifier:
             return self.primary_identifier.name
         else:
@@ -229,5 +229,5 @@ class Authority(models.Model):
         verbose_name_plural = 'authorities'
         db_table = 'wq_identifiertype'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name

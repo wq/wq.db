@@ -7,6 +7,8 @@ from wq.db.patterns.models import (
 )
 from wq.db.patterns.models import RelationshipType
 from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
+from django.utils.encoding import force_text
+from django.utils.six import string_types
 
 
 class ContentTypeManager(DjangoContentTypeManager):
@@ -29,7 +31,7 @@ class ContentType(DjangoContentType):
         config = self.get_config()
         if config:
             return config['url']
-        urlbase = unicode(cls._meta.verbose_name_plural)
+        urlbase = force_text(cls._meta.verbose_name_plural)
         return urlbase.replace(' ', '')
 
     @property
@@ -134,7 +136,7 @@ class ContentType(DjangoContentType):
 
 
 def get_ct(model, for_concrete_model=False):
-    if isinstance(model, basestring):
+    if isinstance(model, string_types):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
         ctype = ContentType.objects.get_for_model(

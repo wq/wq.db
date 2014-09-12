@@ -239,7 +239,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             urlbase = ct.urlbase + '/'
         objid = get_object_id(parent)
-        response.data['parent_label'] = unicode(parent)
+        response.data['parent_label'] = str(parent)
         response.data['parent_id'] = objid
         response.data['parent_url'] = '%s%s' % (urlbase, objid)
         response.data['parent_is_' + ct.identifier] = True

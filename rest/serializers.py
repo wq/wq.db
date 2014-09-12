@@ -27,7 +27,9 @@ class GeometryField(WritableField):
 
     def from_native(self, value):
         import json
-        geom = GEOSGeometry(json.dumps(value))
+        if isinstance(value, dict):
+            value = json.dumps(value)
+        geom = GEOSGeometry(value)
         srid = getattr(settings, 'SRID', 4326)
 
         if 'crs' in value and value['crs'].get('type', None) == 'name':
@@ -50,9 +52,9 @@ class LabelRelatedField(RelatedField):
                 return None
         val = getattr(obj, self.source or field_name)
         if self.many:
-            return [unicode(item) for item in val.all()]
+            return [str(item) for item in val.all()]
         else:
-            return unicode(val)
+            return str(val)
 
 
 class IDField(Field):
@@ -134,7 +136,7 @@ class ModelSerializer(RestModelSerializer):
         )
         fields['id'] = IDField()
         if 'label' not in self.opts.exclude:
-            fields['label'] = Field(source='__unicode__')
+            fields['label'] = Field(source='__str__')
 
         if not self.router:
             return fields
@@ -160,7 +162,7 @@ class ModelSerializer(RestModelSerializer):
             fields[name + '_label'] = LabelRelatedField(queryset=qs)
 
         # Special handling for related fields
-        for name, field in fields.items():
+        for name, field in list(fields.items()):
             if name == 'label':
                 continue
 
@@ -188,7 +190,8 @@ class ModelSerializer(RestModelSerializer):
                 del fields[name]
                 continue
 
-            if (self.opts.depth < 1 and not (saving and m2m)
+            if ((self.opts.depth is None or self.opts.depth < 1)
+                    and not (saving and m2m)
                     or (saving and not m2m) or nested):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).

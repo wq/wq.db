@@ -107,6 +107,9 @@ class Relationship(models.Model):
 
     objects = RelationshipManager()
 
+    _dict_cache = {}
+    _cache_prefix = 'rel'
+
     @property
     def left(self):
         return self.from_content_object
@@ -124,18 +127,39 @@ class Relationship(models.Model):
         return self.to_object_id
 
     @property
+    def right_content_type_id(self):
+        return self.to_content_type_id
+
+    @property
     def reltype(self):
-        return self.type
+        return RelationshipType.objects.get_type(self.type_id)
+
+    @property
+    def right_dict(self):
+        key = self._cache_prefix + str(self.pk)
+        cache = type(self)._dict_cache
+        if key not in cache:
+            from wq.db.rest.models import get_object_id, get_ct
+            obj = self.right
+            oid = get_object_id(obj)
+            ct = get_ct(obj)
+            cache[key] = {
+                'item_id': get_object_id(obj),
+                'item_label': str(obj),
+                'item_url': '%s/%s' % (ct.urlbase, oid),
+                'item_page': ct.identifier
+            }
+        return cache[key]
 
     def save(self, *args, **kwargs):
         rightct = self.reltype.right
         self.right = rightct.get_object_for_this_type(pk=self.right_object_id)
         super(Relationship, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         if (self.from_content_type_id and self.type_id
                 and self.to_content_type_id):
-            return u'%s %s %s' % (self.left, self.reltype, self.right)
+            return '%s %s %s' % (self.left, self.reltype, self.right)
         else:
             return 'Undefined'
 
@@ -151,6 +175,7 @@ class InverseRelationshipManager(models.Manager):
 
 class InverseRelationship(Relationship):
     objects = InverseRelationshipManager()
+    _cache_prefix = 'inv'
 
     @property
     def left(self):
@@ -169,11 +194,27 @@ class InverseRelationship(Relationship):
         return self.from_object_id
 
     @property
+    def right_content_type_id(self):
+        return self.from_content_type_id
+
+    @property
     def reltype(self):
-        return InverseRelationshipType.objects.get(pk=self.type.pk)
+        return InverseRelationshipType.objects.get_type(self.type_id)
 
     class Meta:
         proxy = True
+
+
+class RelationshipTypeManager(models.Manager):
+    _type_cache = {}
+    _cache_prefix = 'rel'
+
+    def get_type(self, pk):
+        key = self._cache_prefix + str(pk)
+        cache = type(self)._type_cache
+        if key not in cache:
+            cache[key] = self.get(pk=pk)
+        return cache[key]
 
 
 class RelationshipType(models.Model):
@@ -185,6 +226,8 @@ class RelationshipType(models.Model):
 
     computed = models.BooleanField(default=False)
 
+    objects = RelationshipTypeManager()
+
     @property
     def left(self):
         return self.from_type
@@ -193,14 +236,16 @@ class RelationshipType(models.Model):
     def right(self):
         return self.to_type
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     class Meta:
         db_table = 'wq_relationshiptype'
 
 
-class InverseRelationshipTypeManager(models.Manager):
+class InverseRelationshipTypeManager(RelationshipTypeManager):
+    _cache_prefix = 'inv'
+
     def get_query_set(self):
         qs = super(InverseRelationshipTypeManager, self).get_query_set()
         return qs.filter(inverse_name__isnull=False)
@@ -217,7 +262,7 @@ class InverseRelationshipType(RelationshipType):
     def right(self):
         return self.from_type
 
-    def __unicode__(self):
+    def __str__(self):
         return self.inverse_name
 
     class Meta:

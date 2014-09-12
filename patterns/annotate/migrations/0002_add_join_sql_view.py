@@ -16,7 +16,7 @@ class Migration(DataMigration):
             return
 
         if db.backend_name != 'postgres':
-            print "Warning: Non-postgres database detected; convenience view will not be created."
+            print("Warning: Non-postgres database detected; convenience view will not be created.")
             return
 
         db.execute('''
