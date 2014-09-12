@@ -115,7 +115,7 @@ setup(
         'Topic :: Scientific/Engineering :: GIS',
         'Topic :: Database :: Database Engines/Servers',
     ],
-    test_suite='tests.runtests.main',
+    test_suite='tests',
     tests_require=[
         'psycopg2',
         'celery',

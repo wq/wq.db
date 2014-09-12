@@ -162,7 +162,7 @@ class ModelSerializer(RestModelSerializer):
             fields[name + '_label'] = LabelRelatedField(queryset=qs)
 
         # Special handling for related fields
-        for name, field in fields.items():
+        for name, field in list(fields.items()):
             if name == 'label':
                 continue
 
@@ -190,7 +190,8 @@ class ModelSerializer(RestModelSerializer):
                 del fields[name]
                 continue
 
-            if (self.opts.depth < 1 and not (saving and m2m)
+            if ((self.opts.depth is None or self.opts.depth < 1)
+                    and not (saving and m2m)
                     or (saving and not m2m) or nested):
                 # In list views, remove [fieldname] as an attribute in favor of
                 # [fieldname]_id and [fieldname]_label (below).
