@@ -6,10 +6,10 @@ env:
   global:
    - DRF="djangorestframework==2.4.2"
   matrix:
-   - DJANGO="1.6.5" DJANGO_SETTINGS_MODULE="tests.settings"
-   - DJANGO="1.6.5" DJANGO_SETTINGS_MODULE="tests.swap_settings"
-   - DJANGO="1.7" DJANGO_SETTINGS_MODULE="tests.settings"
-   - DJANGO="1.7" DJANGO_SETTINGS_MODULE="tests.swap_settings"
+   - DJANGO="django==1.6.5" DJANGO_SETTINGS_MODULE="tests.settings"
+   - DJANGO="django==1.6.5" DJANGO_SETTINGS_MODULE="tests.swap_settings"
+   - DJANGO="django==1.7"   DJANGO_SETTINGS_MODULE="tests.settings"
+   - DJANGO="django==1.7"   DJANGO_SETTINGS_MODULE="tests.swap_settings"
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
