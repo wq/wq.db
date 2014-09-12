@@ -85,7 +85,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='0.6.2-dev',
+    version='0.7.0-dev',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
@@ -96,7 +96,7 @@ setup(
     description=LONG_DESCRIPTION.strip(),
     long_description=parse_markdown_readme(),
     install_requires=[
-        'Django>=1.5',
+        'Django>=1.5,<=1.6.5',
         'djangorestframework>=2.3.12',
         'south',
         'pystache',

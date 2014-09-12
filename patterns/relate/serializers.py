@@ -19,19 +19,13 @@ class RelationshipSerializer(TypedAttachmentSerializer):
     def get_default_fields(self):
         fields = super(RelationshipSerializer, self).get_default_fields()
         del fields[self.parent_id_field]
+        fields['type_label'].source = 'reltype'
         return fields
 
     def to_native(self, rel):
         data = super(RelationshipSerializer, self).to_native(rel)
         del data[self.item_id_field]
-        oid = get_object_id(rel.right)
-        ct = get_ct(rel.right)
-        data.update({
-            'item_label': str(rel.right),
-            'item_url': '%s/%s' % (ct.urlbase, oid),
-            'item_page': ct.identifier,
-            'item_id': oid
-        })
+        data.update(rel.right_dict)
         return data
 
     def create_dict(self, atype, data, fields, index):
@@ -58,7 +52,6 @@ class InverseRelationshipSerializer(RelationshipSerializer):
         fields = super(
             InverseRelationshipSerializer, self
         ).get_default_fields()
-        fields['type_label'].source = 'reltype'
         return fields
 
 

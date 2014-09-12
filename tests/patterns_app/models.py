@@ -10,6 +10,14 @@ class AnnotatedModel(models.AnnotatedModel):
         return self.name
 
 
+class IdentifiedModel(models.IdentifiedModel):
+    name = models.CharField(max_length=255)
+
+
+class IdentifiedAnnotatedModel(models.IdentifiedModel, models.AnnotatedModel):
+    name = models.CharField(max_length=255)
+
+
 class LocatedModel(models.LocatedModel):
     name = models.CharField(max_length=255)
 
