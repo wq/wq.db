@@ -28,7 +28,7 @@ class RelationshipInline(generic.GenericTabularInline):
     extra = 0
     readonly_fields = ('to_content_object',)
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return Relationship.objects.filter(computed=False)
 
 
@@ -40,7 +40,7 @@ class InverseRelationshipInline(generic.GenericTabularInline):
     extra = 0
     readonly_fields = ('from_content_object',)
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         return InverseRelationship.objects.filter(computed=False)
 
 
