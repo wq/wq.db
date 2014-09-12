@@ -1,5 +1,6 @@
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
+from django.utils.encoding import force_text
 from django.conf.urls import patterns, include, url
 from django.core.paginator import Paginator
 
@@ -63,7 +64,7 @@ class Router(DefaultRouter):
         if 'name' not in kwargs:
             kwargs['name'] = ct.identifier
         if 'url' not in kwargs:
-            url = str(model._meta.verbose_name_plural)
+            url = force_text(model._meta.verbose_name_plural)
             kwargs['url'] = url.replace(' ', '')
 
         self.register_config(model, kwargs)
