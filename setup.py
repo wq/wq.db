@@ -100,7 +100,7 @@ setup(
         'djangorestframework>=2.4',
         'pystache',
         'python-social-auth',
-        'swapper',
+        'swapper>=0.2',
     ],
     classifiers=[
         'Framework :: Django',
