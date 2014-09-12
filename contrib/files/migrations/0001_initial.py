@@ -5,6 +5,8 @@ from django.db import models, migrations
 from django.conf import settings
 import wq.db.contrib.files.models
 
+import swapper
+
 
 class Migration(migrations.Migration):
 
@@ -24,7 +26,7 @@ class Migration(migrations.Migration):
                 ('height', models.IntegerField(blank=True, null=True)),
             ],
             options={
-                'swappable': 'WQ_FILE_MODEL',
+                'swappable': swapper.swappable_setting('files', 'File'),
                 'db_table': 'wq_file',
                 'ordering': ('name',),
             },
