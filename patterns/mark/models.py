@@ -46,6 +46,7 @@ class MarkdownType(BaseMarkdownType):
 
     class Meta:
         swappable = swapper.swappable_setting('mark', 'MarkdownType')
+        db_table = "wq_markdowntype"
 
 
 class Markdown(models.Model):
@@ -65,6 +66,9 @@ class Markdown(models.Model):
         from markdown import markdown
         extensions = getattr(settings, 'MARKDOWN_EXTENSIONS', [])
         return markdown(self.markdown, extensions)
+
+    class Meta:
+        db_table = "wq_markdown"
 
 
 class MarkedModel(models.Model):
