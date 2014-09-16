@@ -18,6 +18,10 @@ class IdentifiedAnnotatedModel(models.IdentifiedModel, models.AnnotatedModel):
     name = models.CharField(max_length=255)
 
 
+class MarkedModel(models.MarkedModel):
+    name = models.CharField(max_length=255)
+
+
 class LocatedModel(models.LocatedModel):
     name = models.CharField(max_length=255)
 

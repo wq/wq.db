@@ -75,9 +75,16 @@ class MarkedModel(models.Model):
     markdown = SerializableGenericRelation(Markdown)
 
     def get_markdown(self, type):
-        markdowns = self.markdowns.filter(type=type)
+        markdowns = self.markdown.filter(type=type)
         if len(markdowns) == 0:
-            markdowns = self.markdowns.order_by("type")
+            markdowns = self.markdown.order_by("type")
         if len(markdowns) > 0:
             return markdowns[0]
         return None
+
+    def get_html(self, type):
+        markdown = self.get_markdown(type)
+        return markdown.html
+
+    class Meta:
+        abstract = True
