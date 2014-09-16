@@ -44,7 +44,7 @@ class MarkTestCase(APITestCase):
     def test_mark_rest_en(self):
         self.rest("en", "<p><strong>Test</strong></p>")
 
-    def test_mark_rest_en(self):
+    def test_mark_rest_ko(self):
         self.rest("ko", "<p><strong>테스트</strong></p>")
 
     def rest(self, lang, html):
