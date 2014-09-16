@@ -101,6 +101,7 @@ setup(
         'pystache',
         'python-social-auth',
         'swapper>=0.2',
+        'Markdown',
     ],
     classifiers=[
         'Framework :: Django',
