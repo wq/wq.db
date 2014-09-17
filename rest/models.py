@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import (
     ContentTypeManager as DjangoContentTypeManager
 )
 from wq.db.patterns.models import (
-    AnnotatedModel, IdentifiedModel, LocatedModel, RelatedModel
+    AnnotatedModel, IdentifiedModel, LocatedModel, MarkedModel, RelatedModel
 )
 from wq.db.patterns.models import RelationshipType
 from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
@@ -58,6 +58,11 @@ class ContentType(DjangoContentType):
     def is_located(self):
         cls = self.model_class()
         return issubclass(cls, LocatedModel)
+
+    @property
+    def is_marked(self):
+        cls = self.model_class()
+        return issubclass(cls, MarkedModel)
 
     @property
     def is_related(self):

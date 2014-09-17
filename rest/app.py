@@ -18,6 +18,8 @@ from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from copy import copy
 
+PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
+
 
 class Router(DefaultRouter):
     _models = set()
@@ -235,7 +237,7 @@ class Router(DefaultRouter):
                         if has_perm(user, cct, 'view'):
                             info['children'].append(cct.identifier)
 
-            for name in ('annotated', 'identified', 'located', 'related'):
+            for name in PREDICATES:
                 if getattr(ct, 'is_' + name):
                     info[name] = True
 

@@ -29,7 +29,9 @@ class BaseMarkdownType(models.Model):
 
     @classmethod
     def get_default(cls):
-        return cls.objects.order_by('pk')[0]
+        markdowns = cls.objects.order_by('pk')
+        if len(markdowns) > 0:
+            return markdowns[0]
 
     def __str__(self):
         return self.name
