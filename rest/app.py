@@ -2,7 +2,7 @@ from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
 from django.utils.encoding import force_text
 from django.utils.six import string_types
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 from django.core.paginator import Paginator
 
 from django.contrib.auth.models import AnonymousUser
@@ -13,7 +13,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 
-from .models import ContentType, get_ct
+from .models import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from copy import copy
@@ -346,12 +346,12 @@ class Router(DefaultRouter):
             in self.get_config(request.user)['pages'].items()
         }
         result = {}
-        for url in urls:
-            if url not in conf_by_url:
+        for listurl in urls:
+            if listurl not in conf_by_url:
                 continue
-            page, conf = conf_by_url[url]
+            page, conf = conf_by_url[listurl]
             model = self._page_models[page]
-            result[url] = self.paginate(model, 1, request)
+            result[listurl] = self.paginate(model, 1, request)
         return Response(result)
 
     def get_urls(self):

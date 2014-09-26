@@ -27,7 +27,7 @@ renderer = Renderer()
 
 class Template(object):
     def __init__(self, source):
-        #save raw source for actual rendering by Pystache
+        # save raw source for actual rendering by Pystache
         self.source = source
 
     def render(self, context):

@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import link
 from rest_framework import status, viewsets
 from .models import get_ct, get_object_id, get_by_identifier
-from django.conf import settings
 
 
 class GenericAPIView(RestGenericAPIView):
@@ -162,7 +161,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                     self.model._meta.verbose_name,
                     slug
                 ))
-            #TODO: automatically redirect to primary identifier?
+            # TODO: automatically redirect to primary identifier?
         return obj
 
     def list(self, request, *args, **kwargs):
@@ -175,7 +174,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if self.target:
             response.data['target'] = self.target
         ct = get_ct(self.model)
-        for pct in get_ct(self.model).get_all_parents():
+        for pct in ct.get_all_parents():
             self.get_parent(pct, response)
         return response
 

@@ -1,6 +1,5 @@
 from rest_framework.permissions import BasePermission
 from .models import get_ct, ContentType
-from django.conf import settings
 
 # _FORBIDDEN_RESPONSE = "Sorry %s, you do not have permission to %s this %s."
 

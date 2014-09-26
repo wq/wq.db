@@ -62,7 +62,7 @@ class IDField(Field):
         return get_object_id(obj)
 
 
-#TODO: investigate use of SlugRelatedField and/or PrimaryKeyRelatedField
+# TODO: investigate use of SlugRelatedField and/or PrimaryKeyRelatedField
 class IDRelatedField(RelatedField):
     read_only = False
 
