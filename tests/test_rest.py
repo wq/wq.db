@@ -37,7 +37,7 @@ class UrlsTestCase(APITestCase):
     def test_detail_nested_foreignkeys(self):
         response = self.client.get('/instance.json')
 
-        # Include OneToOne fields, and ForeignKeys with related_name=queryname
+        # Include OneToOne fields, and ForeignKeys with related_name=url
         self.assertIn("onetoonemodel", response.data)
         self.assertEqual(
             response.data["onetoonemodel"]["label"],
@@ -49,7 +49,8 @@ class UrlsTestCase(APITestCase):
             "extramodel for instance"
         )
 
-        # ForeignKeys without related_name=queryname should not be included
+        # ForeignKeys without related_name=url should not be included
+        self.assertNotIn("extramodel_set", response.data)
         self.assertNotIn("foreignkeymodel_set", response.data)
         self.assertNotIn("foreignkeymodels", response.data)
 

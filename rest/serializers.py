@@ -232,10 +232,14 @@ class ModelSerializer(RestModelSerializer):
         if geo and not self.opts.depth:
             return fields
 
+        # For detail views, include any models with foreign keys pointing to
+        # this model - but only if their related_name is the same as the
+        # urlbase of the model or they are OneToOne relationships
+        # FIXME: deprecate this in favor of requiring explicit configuration
         ct = get_ct(self.opts.model)
         for cct, rel in ct.get_children(include_rels=True):
             accessor = rel.get_accessor_name()
-            if accessor == rel.field.related_query_name():
+            if accessor == cct.urlbase or rel.field.unique:
                 cls = self.router.get_serializer_for_model(
                     cct.model_class(), max(self.opts.depth - 1, 0)
                 )

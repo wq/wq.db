@@ -21,6 +21,12 @@ class ForeignKeyModel(models.Model):
 
 class ExtraModel(models.Model):
     root = models.ForeignKey(RootModel, related_name="extramodels")
+    alt_root = models.ForeignKey(
+        RootModel,
+        related_name="extramodel_set",
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return "extramodel for %s" % self.root
