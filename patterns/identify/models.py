@@ -80,7 +80,7 @@ class IdentifierManager(models.Manager):
 
 class Identifier(models.Model):
     name = models.CharField(max_length=255, db_index=True)
-    slug = models.SlugField()
+    slug = models.SlugField(blank=True)
     authority = models.ForeignKey('Authority', blank=True, null=True)
     is_primary = models.BooleanField(default=False)
 

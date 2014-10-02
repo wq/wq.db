@@ -24,6 +24,3 @@ class IdentifierSerializer(TypedAttachmentSerializer):
         if 'is_primary' not in obj:
             obj['is_primary'] = (index == 0)
         return obj
-
-    class Meta(TypedAttachmentSerializer.Meta):
-        read_only_fields = ('slug',)

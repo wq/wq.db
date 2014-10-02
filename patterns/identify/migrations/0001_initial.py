@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True, auto_created=True, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, db_index=True)),
-                ('slug', models.SlugField()),
+                ('slug', models.SlugField(blank=True)),
                 ('is_primary', models.BooleanField(default=False)),
                 ('object_id', models.PositiveIntegerField()),
                 ('authority', models.ForeignKey(null=True, to='identify.Authority', blank=True)),
