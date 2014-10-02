@@ -30,3 +30,7 @@ class ExtraModel(models.Model):
 
     def __str__(self):
         return "extramodel for %s" % self.root
+
+
+class UserManagedModel(models.Model):
+    user = models.ForeignKey("auth.User")

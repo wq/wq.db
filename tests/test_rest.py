@@ -2,8 +2,9 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 import json
 from tests.rest_app.models import (
-    RootModel, OneToOneModel, ForeignKeyModel, ExtraModel
+    RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel
 )
+from django.contrib.auth.models import User
 
 
 class UrlsTestCase(APITestCase):
@@ -15,6 +16,8 @@ class UrlsTestCase(APITestCase):
             cls.objects.create(
                 root=instance,
             )
+        user = User.objects.create(username="testuser")
+        UserManagedModel.objects.create(id=1, user=user)
 
     # Test existence and content of config.json
     def test_config_json(self):
@@ -64,3 +67,9 @@ class UrlsTestCase(APITestCase):
     def test_list_nested_identifiers(self):
         response = self.client.get('/.json')
         self.assertNotIn('identifiers', response.data['list'][0])
+
+    def test_detail_user_serializer(self):
+        response = self.client.get('/usermanagedmodels/1.json')
+        self.assertIn('user', response.data)
+        self.assertIn('label', response.data['user'])
+        self.assertNotIn('password', response.data['user'])

@@ -1,4 +1,3 @@
-from wq.db.rest import app
 from wq.db.rest.serializers import ModelSerializer
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -33,8 +32,3 @@ class SocialAuthSerializer(ModelSerializer):
                 association_id=instance.pk
             )
         }
-
-app.router.register_serializer(User, UserSerializer)
-if HAS_SOCIAL_AUTH:
-    from social.apps.django_app.default.models import UserSocialAuth
-    app.router.register_serializer(UserSocialAuth, SocialAuthSerializer)
