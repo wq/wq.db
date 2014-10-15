@@ -10,5 +10,8 @@ app.router.register_viewset(User, UserViewSet)
 app.router.register_serializer(User, UserSerializer)
 
 if HAS_SOCIAL_AUTH:
+    # Configure UserSocialAuth as nested serializer for User
+    # (without actually registering it)
     from social.apps.django_app.default.models import UserSocialAuth
     app.router.register_serializer(UserSocialAuth, SocialAuthSerializer)
+    app.router.register_config(UserSocialAuth, {'url': 'social_auth'})
