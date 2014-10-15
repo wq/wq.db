@@ -31,6 +31,7 @@ class Router(DefaultRouter):
     _config = {}
     _page_names = {}
     _page_models = {}
+    _extra_config = {}
 
     include_root_view = False
     include_config_view = True
@@ -96,6 +97,10 @@ class Router(DefaultRouter):
         if model not in self._config:
             raise RuntimeError("%s must be registered first" % model)
         self._config[model].update(kwargs)
+        self._base_config = None
+
+    def set_extra_config(self, **extra):
+        self._extra_config.update(extra)
         self._base_config = None
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
@@ -259,6 +264,7 @@ class Router(DefaultRouter):
             pages[info['name']] = info
 
         self._base_config = {'pages': pages}
+        self._base_config.update(self._extra_config)
         return self._base_config
 
     def get_config(self, user=None):

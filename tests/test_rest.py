@@ -25,6 +25,9 @@ class UrlsTestCase(APITestCase):
         result = json.loads(response.content.decode('utf-8'))
         self.assertIn("pages", result)
 
+        # Extra config
+        self.assertIn("debug", result)
+
     # Test url="" use case
     def test_list_at_root(self):
         response = self.client.get("/.json")
