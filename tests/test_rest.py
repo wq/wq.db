@@ -76,3 +76,17 @@ class UrlsTestCase(APITestCase):
         self.assertIn('user', response.data)
         self.assertIn('label', response.data['user'])
         self.assertNotIn('password', response.data['user'])
+
+
+class AuthUrlsTestCase(APITestCase):
+    def setUp(self):
+        user = User.objects.create(username="testuser")
+        self.client.force_authenticate(user=user)
+
+    def test_user_config_json(self):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content.decode('utf-8'))
+        self.assertIn("pages", result)
+
+        # Extra config
+        self.assertIn("debug", result)

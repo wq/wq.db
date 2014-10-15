@@ -273,7 +273,7 @@ class Router(DefaultRouter):
 
         # Add user-specific permissions to configuration
         config = {
-            key: val.copy()
+            key: val.copy() if hasattr(val, 'copy') else val
             for key, val in self.base_config.items()
         }
         for page, info in config['pages'].items():
