@@ -6,7 +6,7 @@ from django.contrib.contenttypes import generic
 from django.conf import settings
 import swapper
 from wq.db.patterns.models import AnnotatedModel
-from wq.db.contrib.dbio.models import IoModel
+from dbio.models import IoModel
 
 from wq.io.util import guess_type
 

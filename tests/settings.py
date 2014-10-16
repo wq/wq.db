@@ -15,9 +15,7 @@ INSTALLED_APPS = (
     'wq.db.patterns.relate',
     'wq.db.patterns.mark',
     'wq.db.patterns.locate',
-    'wq.db.contrib.vera',
     'wq.db.contrib.files',
-    'wq.db.contrib.dbio',
     'tests.rest_app',
     'tests.patterns_app',
 )
@@ -37,12 +35,5 @@ LANGUAGES = (
     ('en', 'English'),
     ('ko', 'Korean'),
 )
-
-WQ_DEFAULT_REPORT_STATUS = 100
-
-CELERY_ALWAYS_EAGER = True
-CELERY_RESULT_BACKEND = 'redis://localhost/0'
-
-SWAP = False
 
 from wq.db.rest.settings import *

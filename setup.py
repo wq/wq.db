@@ -121,10 +121,6 @@ setup(
     test_suite='tests',
     tests_require=[
         'psycopg2',
-        'celery',
         'wq.io>=0.5.1',
-        'redis',
-        'Pillow',
-        'python-dateutil',
     ],
 )
