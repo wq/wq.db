@@ -43,3 +43,12 @@ class Parent(models.Model):
 class Child(models.Model):
     name = models.CharField(max_length=10)
     parent = models.ForeignKey(Parent)
+
+
+class ItemType(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class Item(models.Model):
+    name = models.CharField(max_length=10)
+    type = models.ForeignKey(ItemType)

@@ -3,7 +3,7 @@ from rest_framework import status
 import json
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, Child,
+    Parent, Child, ItemType, Item,
 )
 from django.contrib.auth.models import User
 
@@ -22,6 +22,9 @@ class UrlsTestCase(APITestCase):
         parent = Parent.objects.create(name="Test", pk=1)
         parent.child_set.create(name="Test 1")
         parent.child_set.create(name="Test 2")
+        itype = ItemType.objects.create(name="Test", pk=1)
+        itype.item_set.create(name="Test 1")
+        itype.item_set.create(name="Test 2")
 
     # Test existence and content of config.json
     def test_config_json(self):
@@ -66,6 +69,10 @@ class UrlsTestCase(APITestCase):
 
     def test_filter_by_parent(self):
         response = self.client.get('/parents/1/childs.json')
+        self.assertIn("list", response.data)
+        self.assertEqual(len(response.data['list']), 2)
+
+        response = self.client.get('/itemtypes/1/items.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
 

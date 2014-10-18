@@ -15,7 +15,7 @@ class FilterBackend(BaseFilterBackend):
         model = getattr(view, 'model', None) or queryset.model
         ctype = get_ct(model)
 
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             if key in ('target',):
                 del kwargs[key]
                 continue
