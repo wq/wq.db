@@ -1,19 +1,12 @@
 from rest_pandas import PandasView
 from wq.db.patterns.models import Identifier
-from .serializers import EventResultSerializer
-import swapper
-EventResult = swapper.load_model('vera', 'EventResult')
+from .serializers import ChartSerializer
 
 
 class ChartView(PandasView):
-    model = EventResult
-    serializer_class = EventResultSerializer
+    serializer_class = ChartSerializer
     ignore_extra = True
-
-    def get_queryset(self):
-        qs = super(ChartView, self).get_queryset()
-        qs = qs.select_related('event_site', 'result_type')
-        return qs
+    exclude_apps = []
 
     @property
     def filter_options(self):
@@ -22,7 +15,7 @@ class ChartView(PandasView):
 
         slugs = self.kwargs['ids'].split('/')
         id_map, unresolved = Identifier.objects.resolve(
-            slugs, exclude_apps=['dbio']
+            slugs, exclude_apps=self.exclude_apps
         )
         options = {}
         if unresolved:
@@ -58,12 +51,6 @@ class ChartView(PandasView):
             qs = self.filter_by_extra(qs, self.filter_options['extra'])
         return qs
 
-    def filter_by_site(self, qs, ids):
-        return qs.filter(event_site__in=ids)
-
-    def filter_by_parameter(self, qs, ids):
-        return qs.filter(result_type__in=ids)
-
     def filter_by_extra(self, qs, extra):
         if self.ignore_extra:
             return qs
@@ -94,21 +81,26 @@ class ScatterMixin(object):
         values against each other.
         """
 
+        serializer = self.get_serializer()
+        value_column = serializer.value_field
+        series_column = serializer.key_fields[0]
+        parameter_column = serializer.parameter_fields[0]
+
         # Only use primary 'value' column, ignoring any other result fields
         # that may have been added to a serializer subclass.
         for key in df.columns.levels[0]:
-            if key != 'value':
+            if key != value_column:
                 df = df.drop(key, axis=1)
 
         # Remove all indexes/columns except for parameter (which will become
-        # the new 'value' field) and site (to allow distinguishing between
-        # scatterplot data for each site).
+        # the new 'value' field) and series (to allow distinguishing between
+        # scatterplot data for each series).
         for name in df.columns.names:
-            if name not in ("parameter", "site"):
+            if name not in (series_column, parameter_column):
                 df.columns = df.columns.droplevel(name)
 
         # Rename columns ('value'/parameter column should be nameless)
-        df.columns.names = ["", "site"]
+        df.columns.names = ["", series_column]
 
         # Only include dates that have data for all parameters
         df = df.dropna(axis=0, how='any')
@@ -134,6 +126,12 @@ class BoxPlotMixin(object):
         """
         from pandas import DataFrame
         group = self.get_grouping(len(df.columns))
+        serializer = self.get_serializer()
+        value_col = serializer.value_field
+        series_col = serializer.key_fields[0]
+        param_cols = serializer.parameter_fields
+        ncols = 1 + len(param_cols)
+
         if "index" in group:
             # Separate stats for each column in dataset
             groups = {
@@ -144,40 +142,40 @@ class BoxPlotMixin(object):
             # Stats for entire dataset
             df = df.stack().stack().stack()
             df.reset_index(inplace=True)
-            index = self.get_serializer().get_index(df)
+            index = serializer.get_index(df)
             df.set_index(index[0], inplace=True)
             groups = {
-                ('value', 'all', 'all', 'all'): df.value
+                (value_col,) + ('all',) * ncols: df.value
             }
 
         # Compute stats for each column, potentially grouped by year
         all_stats = []
         for g, series in groups.items():
-            if g[0] != 'value':
+            if g[0] != serializer.value_field:
                 continue
-            v, units, param, site = g
+            series_info = g[-1]
+            param_info = g[1:-1]
             if "year" in group or "month" in group:
                 groupby = "year" if "year" in group else "month"
                 dstats = self.compute_boxplots(series, groupby)
                 for s in dstats:
-                    s['site'] = site
-                    s['parameter'] = param
-                    s['units'] = units
+                    s[series_col] = series_info
+                    for pname, pval in zip(param_cols, param_info):
+                        s[pname] = pval
             else:
                 stats = self.compute_boxplot(series)
-                stats['site'] = site
-                stats['parameter'] = param
-                stats['units'] = units
+                stats[series_col] = series_info
+                for pname, pval in zip(param_cols, param_info):
+                    stats[pname] = pval
                 dstats = [stats]
             all_stats += dstats
 
         df = DataFrame(all_stats)
+        index = [series_col] + param_cols
         if "year" in group:
-            index = ['year', 'site', 'parameter', 'units']
+            index = ['year'] + index
         elif "month" in group:
-            index = ['month', 'site', 'parameter', 'units']
-        else:
-            index = ['site', 'parameter', 'units']
+            index = ['month'] + index
         df.sort(index, inplace=True)
         df.set_index(index, inplace=True)
         df.columns.name = ""
@@ -213,7 +211,6 @@ class BoxPlotMixin(object):
     def compute_boxplot(self, series):
         """
         Compute boxplot for given pandas Series.
-        NOTE: Requires matplotlib 1.4!
         """
         from matplotlib.cbook import boxplot_stats
         series = series[series.notnull()]
