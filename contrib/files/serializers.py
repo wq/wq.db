@@ -12,8 +12,9 @@ class FileSerializer(serializers.ModelSerializer):
 
     def from_native(self, data, files):
         obj = super(FileSerializer, self).from_native(data, files)
-        if 'request' in self.context and obj and obj.user is None:
-            user = self.context['request'].user
-            if user.is_authenticated():
-                obj.user = user
+        if obj and hasattr(obj, 'user') and obj.user is None:
+            if 'request' in self.context:
+                user = self.context['request'].user
+                if user.is_authenticated():
+                    obj.user = user
         return obj

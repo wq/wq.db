@@ -6,7 +6,6 @@ from django.contrib.contenttypes import generic
 from django.conf import settings
 import swapper
 from wq.db.patterns.models import AnnotatedModel
-from dbio.models import IoModel
 
 from wq.io.util import guess_type
 
@@ -56,7 +55,7 @@ class FileManager(models.Manager):
             return qs
 
 
-class BaseFile(AnnotatedModel, IoModel):
+class BaseFile(AnnotatedModel):
     name = models.CharField(max_length=255, null=True, blank=True)
     type = models.ForeignKey(FileType, null=True, blank=True)
     file = FileField(upload_to='.', width_field='width', height_field='height')
@@ -86,34 +85,6 @@ class BaseFile(AnnotatedModel, IoModel):
     @property
     def is_image(self):
         return self.mimetype is not None and self.mimetype.startswith('image/')
-
-    def load_io(self, **options):
-        from wq.io import load_file
-        filename = "%s/%s" % (settings.MEDIA_ROOT, self.file.name)
-        if not options:
-            options = self.load_file_options()
-        return load_file(filename, options=options)
-
-    def load_file_options(self):
-        headers = self.relationships.filter(
-            type__name='Contains Column',
-            range__type='list'
-        )
-        if headers.exists():
-            header_row = headers[0].range_set.get(type='head').start_row
-            start_row = headers[0].range_set.get(type='list').start_row
-            return {
-                'header_row': header_row,
-                'start_row': start_row
-            }
-
-        templates = self.inverserelationships.filter(
-            type__inverse_name='Template'
-        )
-        if templates.exists():
-            template = templates[0].right
-            return template.load_file_options()
-        return {}
 
     def save(self, *args, **kwargs):
         if self.type is None:
