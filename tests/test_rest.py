@@ -2,7 +2,8 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 import json
 from tests.rest_app.models import (
-    RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel
+    RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
+    Parent, Child,
 )
 from django.contrib.auth.models import User
 
@@ -18,6 +19,9 @@ class UrlsTestCase(APITestCase):
             )
         user = User.objects.create(username="testuser")
         UserManagedModel.objects.create(id=1, user=user)
+        parent = Parent.objects.create(name="Test", pk=1)
+        parent.child_set.create(name="Test 1")
+        parent.child_set.create(name="Test 2")
 
     # Test existence and content of config.json
     def test_config_json(self):
@@ -59,6 +63,11 @@ class UrlsTestCase(APITestCase):
         self.assertNotIn("extramodel_set", response.data)
         self.assertNotIn("foreignkeymodel_set", response.data)
         self.assertNotIn("foreignkeymodels", response.data)
+
+    def test_filter_by_parent(self):
+        response = self.client.get('/parents/1/childs.json')
+        self.assertIn("list", response.data)
+        self.assertEqual(len(response.data['list']), 2)
 
     # Ensure nested serializers are created for SerializableGenericRelations
     # (e.g. identifiers), but only for detail views

@@ -34,3 +34,12 @@ class ExtraModel(models.Model):
 
 class UserManagedModel(models.Model):
     user = models.ForeignKey("auth.User")
+
+
+class Parent(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class Child(models.Model):
+    name = models.CharField(max_length=10)
+    parent = models.ForeignKey(Parent)
