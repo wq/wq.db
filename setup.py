@@ -123,5 +123,6 @@ setup(
         'psycopg2',
         'wq.io>=0.5.1',
         'rest-pandas',
+        'Pillow',
     ],
 )
