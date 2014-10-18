@@ -7,7 +7,7 @@ from django.db.models.fields import DateTimeField
 class ChartSerializer(PandasSerializer):
     index_none_value = "-"
 
-    key_fields = ["series"]
+    key_fields = ["series", "date"]
     parameter_fields = ["parameter", "units"]
     value_field = "value"
 

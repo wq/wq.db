@@ -18,6 +18,7 @@ INSTALLED_APPS = (
     'wq.db.contrib.files',
     'tests.rest_app',
     'tests.patterns_app',
+    'tests.chart_app',
 )
 
 DATABASES = {
