@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase
 from rest_pandas.test import parse_csv
 from tests.chart_app.models import Series, Value
 try:
-    from matplotlib.book import boxplot_stats
+    from matplotlib.cbook import boxplot_stats
 except ImportError:
     boxplot_stats = None
 
