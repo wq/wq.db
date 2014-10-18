@@ -1,6 +1,11 @@
+import unittest
 from rest_framework.test import APITestCase
 from rest_pandas.test import parse_csv
 from tests.chart_app.models import Series, Value
+try:
+    from matplotlib.book import boxplot_stats
+except ImportError:
+    boxplot_stats = None
 
 
 class ChartTestCase(APITestCase):
@@ -70,6 +75,7 @@ class ChartTestCase(APITestCase):
         self.assertEqual(d4['temp'], 0.2)
         self.assertEqual(d4['snow'], 0.0)
 
+    @unittest.skipUnless(boxplot_stats, "test requires matplotlib 1.4+")
     def test_boxplot(self):
         response = self.client.get("/chart/series1/temp/boxplot.csv")
 

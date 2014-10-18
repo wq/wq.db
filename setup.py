@@ -123,6 +123,5 @@ setup(
         'psycopg2',
         'wq.io>=0.5.1',
         'rest-pandas',
-        'matplotlib>=1.4.0',
     ],
 )
