@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_pandas import PandasSerializer
 from wq.db.rest.serializers import LocalDateTimeField
-from django.db.models.fields import DateTimeField
+from django.db.models.fields import DateTimeField, FieldDoesNotExist
 
 
 class ChartSerializer(PandasSerializer):
@@ -36,7 +36,10 @@ class ChartSerializer(PandasSerializer):
             fields[key] = serializers.Field(lookup)
 
         for key, lookup in zip(self.key_fields, self.key_lookups):
-            field = self.key_model._meta.get_field_by_name(key)[0]
+            try:
+                field = self.key_model._meta.get_field_by_name(key)[0]
+            except FieldDoesNotExist:
+                field = None
             if isinstance(field, DateTimeField):
                 fields[key] = LocalDateTimeField(lookup)
             else:

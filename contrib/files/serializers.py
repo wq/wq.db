@@ -16,5 +16,5 @@ class FileSerializer(serializers.ModelSerializer):
             if 'request' in self.context:
                 user = self.context['request'].user
                 if user.is_authenticated():
-                    obj.user = user
+                    obj.user_id = user.pk
         return obj
