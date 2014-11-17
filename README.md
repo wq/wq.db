@@ -1,8 +1,9 @@
 [![wq.db](https://raw.github.com/wq/wq/master/images/256/wq.db.png)](http://wq.io/wq.db)
   
-[wq.db] is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
+[wq.db](http://wq.io/wq.db) is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
 [![Build Status](https://travis-ci.org/wq/wq.db.png?branch=master)](https://travis-ci.org/wq/wq.db)
+[![PyPI Package](https://pypip.in/version/wq.db/badge.png)](https://pypi.python.org/pypi/wq.db)
 
 Tested on Python 2.7 and 3.4, with Django 1.6 and 1.7.
 
@@ -45,7 +46,6 @@ Views for searching and disambiguating models using the [identify] and [annotate
 Reference implementation of the [ERAV] model, an extension to EAV with support for maintaining multiple versions of an entity.
 
 [wq]: http://wq.io
-[wq.db]: http://wq.io/wq.db
 [Django]: https://www.djangoproject.com/
 [the documentation]: http://wq.io/docs/
 [wq.db.rest]: http://wq.io/docs/about-rest
