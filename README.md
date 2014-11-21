@@ -19,31 +19,16 @@ See [the documentation] for more information.
 
 ## Features
 
-wq.db has two primary components: a REST API generator ([wq.db.rest]) and a collection of schema design patterns ([wq.db.patterns]) that facilitate flexible database layouts.
+wq.db provides following modules:
 
 ### [wq.db.rest]
 Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library ([app.py]) includes an admin-style Router that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a CRS-aware GeoJSON serializer/renderer.
 
 ### [wq.db.patterns]
-A collection of recommended design patterns ([annotate], [identify], [locate], and [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
+A collection of [design patterns] (e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
 
-### Batteries Included
-Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library.
-
-#### [chart]
-Generates time series and box plot data for rendering by [wq/chart.js].  Powered by [Django REST Pandas] and [vera].
-
-#### [dbio]
-Load data from external files into the database. Powered by [wq.io], [files], and [vera].
-
-#### [files]
-Generic file manager.  Supports using the same `FileField` for both images and files.  Also includes a URL-driven thumbnail generator.
-
-#### [search]
-Views for searching and disambiguating models using the [identify] and [annotate] patterns.
-
-#### [vera]
-Reference implementation of the [ERAV] model, an extension to EAV with support for maintaining multiple versions of an entity.
+### [wq.db.contrib]
+Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library, including a [file manager], a [search] API, and a [chart] backend.
 
 [wq]: http://wq.io
 [Django]: https://www.djangoproject.com/
@@ -52,21 +37,15 @@ Reference implementation of the [ERAV] model, an extension to EAV with support f
 [wq.app]: http://wq.io/wq.app
 [its own REST API]: http://wq.io/docs/website-rest-api
 [wq.app's client-side router]: http://wq.io/docs/app-js
-[wq.db.patterns]: http://wq.io/docs/about-patterns
 [Django REST Framework]: http://django-rest-framework.org
 [app.py]: http://wq.io/docs/app.py
 [configuration object]: http://wq.io/docs/config
-[annotate]: http://wq.io/docs/annotate
+[wq.db.patterns]: http://wq.io/docs/about-patterns
+[design patterns]: http://wq.io/docs/about-patterns
 [identify]: http://wq.io/docs/identify
-[locate]: http://wq.io/docs/locate
 [relate]: http://wq.io/docs/relate
-[contrib]: http://wq.io/docs/?section=contrib
-[chart]: http://wq.io/docs/chart
-[wq/chart.js]: http://wq.io/docs/chart-js
-[Django REST Pandas]: https://github.com/wq/django-rest-pandas
-[dbio]: http://wq.io/docs/dbio
-[wq.io]: http://wq.io/wq.io
+[wq.db.contrib]: http://wq.io/chapters/contrib/docs
+[contrib]: http://wq.io/chapters/contrib/docs
+[file manager]: http://wq.io/docs/files
 [search]: http://wq.io/docs/search
-[files]: http://wq.io/docs/files
-[vera]: http://wq.io/vera
-[ERAV]: http://wq.io/docs/erav
+[chart]: http://wq.io/docs/chart

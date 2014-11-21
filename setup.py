@@ -97,7 +97,7 @@ setup(
     long_description=parse_markdown_readme(),
     install_requires=[
         'Django>=1.6',
-        'djangorestframework>=2.4',
+        'djangorestframework>=2.4,<3',
         'pystache',
         'python-social-auth',
         'swapper>=0.2',
@@ -122,7 +122,7 @@ setup(
     tests_require=[
         'psycopg2',
         'wq.io>=0.5.1',
-        'rest-pandas',
+        'rest-pandas>=0.2.1',
         'Pillow',
     ],
 )
