@@ -11,6 +11,7 @@ def pages_info(request):
         'full_path': request.path,
         'path': request.path[1:],
         'prev_path': '',  # Referer?
+        'params': request.GET,
     }
 
     return {
