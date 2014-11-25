@@ -10,9 +10,9 @@ Tested on Python 2.7 and 3.4, with Django 1.6 and 1.7.
 ## Getting Started
 
 ```bash
-pip install wq.db
+pip3 install wq.db
 # Or, if using together with wq.app and/or wq.io
-pip install wq
+pip3 install wq
 ```
 
 See [the documentation] for more information.
