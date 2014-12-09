@@ -16,7 +16,6 @@ from rest_framework.response import Response
 from .models import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
-from copy import copy
 
 PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
 
@@ -145,11 +144,11 @@ class Router(DefaultRouter):
         paginate_by = self.get_paginate_by_for_model(model)
         viewset = self.get_viewset_for_model(model)
         qs = self.get_queryset_for_model(model, request)
-        req = copy(request)
-        req.GET = {}
+        # FIXME: should copy() before modifying but doing so causes recursion
+        request.GET = {}
         qs = viewset(
             action="list",
-            request=req,
+            request=request,
             kwargs={}
         ).filter_queryset(qs)
 
