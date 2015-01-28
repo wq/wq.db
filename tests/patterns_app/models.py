@@ -6,7 +6,7 @@ from django.conf import settings
 class AnnotatedModel(models.AnnotatedModel):
     name = models.CharField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -25,7 +25,7 @@ class MarkedModel(models.MarkedModel):
 class LocatedModel(models.LocatedModel):
     name = models.CharField(max_length=255)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -35,5 +35,19 @@ class GeometryModel(models.Model):
 
     objects = GeoManager()
 
-    def __unicode__(self):
+    def __str__(self):
+        return self.name
+
+
+class RelatedModel(models.RelatedModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class AnotherRelatedModel(models.RelatedModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
         return self.name
