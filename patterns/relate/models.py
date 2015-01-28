@@ -149,10 +149,17 @@ class Relationship(models.Model):
             }
         return cache[key]
 
+    def _reset_dict_cache(self):
+        for cls in Relationship, InverseRelationship:
+            key = cls._cache_prefix + str(self.pk)
+            if key in cls._dict_cache:
+                del cls._dict_cache[key]
+
     def save(self, *args, **kwargs):
         rightct = self.reltype.right
         self.right = rightct.get_object_for_this_type(pk=self.right_object_id)
         super(Relationship, self).save(*args, **kwargs)
+        self._reset_dict_cache()
 
     def __str__(self):
         if (self.from_content_type_id and self.type_id
