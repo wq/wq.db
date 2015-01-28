@@ -59,8 +59,8 @@ class RelateTestCase(RelateBaseTestCase):
             name="Sibling Of",
             inverse_name="Sibling Of",
         )
-        self.assertEqual(rel.reltype.from_type, self.child_ct)
-        self.assertEqual(rel.reltype.to_type, self.child_ct)
+        self.assertEqual(rel.reltype.from_type.pk, self.child_ct.pk)
+        self.assertEqual(rel.reltype.to_type.pk, self.child_ct.pk)
         self.assertEqual(str(rel), "Child1 Sibling Of Child2")
         self.assertEqual(str(rel.reltype), "Sibling Of")
 
