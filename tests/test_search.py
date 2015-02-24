@@ -30,16 +30,16 @@ class SearchTestCase(APITestCase):
             'Label': 'Test 6'
         }
 
-    def test_all_search(self):
+    def test_search_all(self):
         # "Test" should match all 6 items..
         # but there will be one duplicate (Test 6) due to filter limitations
         self.assertResults(7, "Test", auto=False)
 
-    def test_one_search(self):
+    def test_search_one(self):
         # Exact match should return one item
         self.assertResults(1, "Test 2", auto=True)
 
-    def test_type_search(self):
+    def test_search_type(self):
         # Type filter should affect result
         self.assertResults(2, "Test", False, "identifiedmodel")
         self.assertResults(3, "Test", False, "annotatedmodel")
@@ -47,11 +47,11 @@ class SearchTestCase(APITestCase):
         # Duplicate match should be automatically removed in this case
         self.assertResults(1, "Test", False, "identifiedannotatedmodel")
 
-    def test_one_type_search(self):
+    def test_search_one_type(self):
         # Exact match but for wrong type should return zero items
         self.assertResults(0, "Test 2", True, "annotatedmodel")
 
-    def test_auth_search(self):
+    def test_search_authority(self):
         # Authority filter should affect result
         self.assertResults(1, "Test", False, "identifiedmodel", self.auth.id)
 

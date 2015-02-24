@@ -39,7 +39,7 @@ class ChartTestCase(APITestCase):
                 value=value,
             )
 
-    def test_timeseries(self):
+    def test_chart_timeseries(self):
         response = self.client.get(
             "/chart/series1/series2/temp/timeseries.csv"
         )
@@ -60,7 +60,7 @@ class ChartTestCase(APITestCase):
         self.assertEqual(d0['date'], '2014-01-01')
         self.assertEqual(d0['value'], 0.5)
 
-    def test_scatter(self):
+    def test_chart_scatter(self):
         response = self.client.get("/chart/series2/temp/snow/scatter.csv")
 
         datasets = self.parse_csv(response)
@@ -76,7 +76,7 @@ class ChartTestCase(APITestCase):
         self.assertEqual(d4['snow'], 0.0)
 
     @unittest.skipUnless(boxplot_stats, "test requires matplotlib 1.4+")
-    def test_boxplot(self):
+    def test_chart_boxplot(self):
         response = self.client.get("/chart/series1/temp/boxplot.csv")
 
         datasets = self.parse_csv(response)

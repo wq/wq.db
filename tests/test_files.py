@@ -12,7 +12,7 @@ class FilesTestCase(APITestCase):
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.client.force_authenticate(user=self.user)
 
-    def test_upload(self):
+    def test_files_upload(self):
         filename = os.path.join(os.path.dirname(__file__), "testimage.png")
         with open(filename, 'rb') as f:
             response = self.client.post('/files.json', {"file": f})

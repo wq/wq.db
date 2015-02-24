@@ -2,7 +2,7 @@ from wq.db.rest.models import get_ct
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
-from tests.patterns_app.models import LocatedModel, GeometryModel
+from tests.patterns_app.models import LocatedModel
 from wq.db.patterns.models import Location
 import json
 
@@ -15,7 +15,7 @@ class LocateRestTestCase(APITestCase):
         self.instance.locations.create(geometry='POINT(-96 45)')
         self.client.force_authenticate(user=self.user)
 
-    def test_locatedmodel_post(self):
+    def test_locate_post(self):
         """
         POSTing to a locatedmodel's viewset with a GeoJSON FeatureCollection in
         the "locations" field should result in Location objects being created.
@@ -59,7 +59,7 @@ class LocateRestTestCase(APITestCase):
         self.assertEqual(geom.x, -95)
         self.assertEqual(geom.y, 45)
 
-    def test_locatedmodel_put(self):
+    def test_locate_put(self):
         """
         PUTting to a locatedmodel's viewset with a GeoJSON FeatureCollection in
         the "locations" field should result in existing Location objects being
@@ -111,46 +111,3 @@ class LocateRestTestCase(APITestCase):
         self.assertEqual(geom.srid, 4326)
         self.assertEqual(geom.x, -92)
         self.assertEqual(geom.y, 47)
-
-    def test_geometry_post_geojson(self):
-        """
-        Posting GeoJSON to a model with a geometry field should work.
-        """
-        form = {
-            'name': "Geometry Test 1",
-            'geometry': json.dumps({
-                "type": "Point",
-                "coordinates": [-90, 44]
-            })
-        }
-
-        # Test for expected response
-        response = self.client.post('/geometrymodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data['id'])
-        geom = obj.geometry
-        self.assertEqual(geom.srid, 4326)
-        self.assertEqual(geom.x, -90)
-        self.assertEqual(geom.y, 44)
-
-    def test_geometry_post_wkt(self):
-        """
-        Posting WKT to a model with a geometry field should work.
-        """
-        form = {
-            'name': "Geometry Test 2",
-            'geometry': "POINT(%s %s)" % (-97, 50)
-        }
-
-        # Test for expected response
-        response = self.client.post('/geometrymodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data['id'])
-        geom = obj.geometry
-        self.assertEqual(geom.srid, 4326)
-        self.assertEqual(geom.x, -97)
-        self.assertEqual(geom.y, 50)

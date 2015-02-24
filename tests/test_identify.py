@@ -12,7 +12,7 @@ def ident_by_auth(idents):
     }
 
 
-class IdentifierTestCase(APITestCase):
+class IdentifyTestCase(APITestCase):
     def setUp(self):
         self.auth = Authority.objects.create(
             name="Example",
@@ -20,7 +20,7 @@ class IdentifierTestCase(APITestCase):
             object_url="http://example.com/pages/%s",
         )
 
-    def test_find(self):
+    def test_identify_find(self):
         instance = IdentifiedModel.objects.find("Test 1")
         self.assertEqual(instance.name, "Test 1")
         self.assertEqual(instance.primary_identifier.name, "Test 1")
@@ -29,7 +29,7 @@ class IdentifierTestCase(APITestCase):
         instance2 = IdentifiedModel.objects.find("Test 1")
         self.assertEqual(instance, instance2)
 
-    def test_auth_url(self):
+    def test_identify_auth_url(self):
         instance = IdentifiedModel.objects.find("Test 2")
         instance.identifiers.create(
             authority=self.auth,
@@ -44,7 +44,7 @@ class IdentifierTestCase(APITestCase):
         self.assertEqual(ident.url, "http://example.com/pages/test2")
 
 
-class IdentifierRestTestCase(APITestCase):
+class IdentifyRestTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.auth = Authority.objects.create(
@@ -60,7 +60,7 @@ class IdentifierRestTestCase(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_annotate_post(self):
+    def test_identify_post(self):
         form = {
             'name': 'Test 2',
             'identifier--name': "Test 2",
@@ -81,7 +81,7 @@ class IdentifierRestTestCase(APITestCase):
         self.assertEqual(idents[None]["slug"], "test-2")
         self.assertEqual(idents[self.auth.pk]["slug"], "test2")
 
-    def test_annotate_put(self):
+    def test_identify_put(self):
         form = {
             'name': 'Test 1 - Updated',
             'identifier--name': "Test 1 - Updated",
