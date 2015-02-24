@@ -4,6 +4,13 @@ from django.contrib.contenttypes import generic
 from wq.db.patterns.base import SerializableGenericRelation
 from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
+from django.conf import settings
+
+
+WQ_IDENTIFIER_ORDER = getattr(
+    settings, "WQ_IDENTIFIER_ORDER",
+    ["-is_primary", "authority_id", "name"]
+)
 
 
 class IdentifierManager(models.Manager):
@@ -111,6 +118,7 @@ class Identifier(models.Model):
 
     class Meta:
         db_table = 'wq_identifier'
+        ordering = WQ_IDENTIFIER_ORDER
 
 
 class PrimaryIdentifierManager(IdentifierManager):

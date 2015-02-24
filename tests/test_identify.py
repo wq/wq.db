@@ -43,6 +43,29 @@ class IdentifyTestCase(APITestCase):
         ident = instance.identifiers.get(authority=self.auth)
         self.assertEqual(ident.url, "http://example.com/pages/test2")
 
+    def test_identify_order(self):
+        auth2 = Authority.objects.create(
+            name="Example.org",
+            homepage="http://example.org/",
+            object_url="http://example.org/content.php?id=%s",
+        )
+        instance = IdentifiedModel.objects.find("Test 3")
+        instance.identifiers.create(
+            authority=auth2,
+            name="Test 3",
+            slug="123",
+        )
+        instance.identifiers.create(
+            authority=self.auth,
+            name="Test 3",
+            slug="test3"
+        )
+        idents = list(instance.identifiers.all())
+        self.assertIsNone(idents[0].authority)
+        self.assertTrue(idents[0].is_primary)
+        self.assertEqual(idents[1].authority, self.auth)
+        self.assertEqual(idents[2].authority, auth2)
+
 
 class IdentifyRestTestCase(APITestCase):
     def setUp(self):
