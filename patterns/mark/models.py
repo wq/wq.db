@@ -86,7 +86,9 @@ class MarkedModel(models.Model):
 
     def get_html(self, type):
         markdown = self.get_markdown(type)
-        return markdown.html
+        if markdown:
+            return markdown.html
+        return None
 
     class Meta:
         abstract = True

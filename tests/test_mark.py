@@ -42,6 +42,10 @@ class MarkTestCase(APITestCase):
             "<p><strong>Test</strong></p>"
         )
 
+    def test_mark_empty(self):
+        instance2 = MarkedModel.objects.create(name="Test 2")
+        self.assertIsNone(instance2.get_html(self.en))
+
     def test_mark_rest_en(self):
         self.rest("en", "<p><strong>Test</strong></p>")
 
