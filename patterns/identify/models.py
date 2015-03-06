@@ -9,7 +9,7 @@ from django.conf import settings
 
 WQ_IDENTIFIER_ORDER = getattr(
     settings, "WQ_IDENTIFIER_ORDER",
-    ["-is_primary", "authority_id", "name"]
+    ["-is_primary", "authority", "name"]
 )
 
 
