@@ -13,6 +13,7 @@ before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
+ - pip install requests
  - pip install $DJANGO
  - pip install $DRF
  - pip install $DRP
