@@ -4,9 +4,7 @@ from wq.db.rest.serializers import LocalDateTimeField
 from django.db.models.fields import DateTimeField, FieldDoesNotExist
 
 
-class ChartSerializer(PandasSerializer):
-    index_none_value = "-"
-
+class ChartModelSerializer(serializers.ModelSerializer):
     key_fields = ["series", "date"]
     parameter_fields = ["parameter", "units"]
     value_field = "value"
@@ -47,6 +45,21 @@ class ChartSerializer(PandasSerializer):
 
         return fields
 
+
+class ChartPandasSerializer(PandasSerializer):
+    index_none_value = "-"
+
+    @property
+    def model_serializer(self):
+        # Compatibility with ListSerializer and ModelSerializer
+        return getattr(self, 'child', self)
+
+    def get_key_fields(self):
+        return self.model_serializer.key_fields
+
+    def get_parameter_fields(self):
+        return self.model_serializer.parameter_fields
+
     def get_index(self, dataframe):
         """
         By default, all key fields need to be included or pivoting may break
@@ -54,18 +67,20 @@ class ChartSerializer(PandasSerializer):
         usually be the most important key) to the end to facilitate unstacking.
         """
         index_fields = []
-        for key in self.key_fields:
+        for key in self.get_key_fields():
             if key not in self.opts.exclude:
                 index_fields.append(key)
 
-        return index_fields[1:] + [index_fields[0]] + self.parameter_fields
+        return (
+            index_fields[1:] + [index_fields[0]] + self.get_parameter_fields()
+        )
 
     def get_dataframe(self, data):
         """
         Unstack the dataframe so parameter fields and most important key field
         are columns.
         """
-        dataframe = super(ChartSerializer, self).get_dataframe(data)
+        dataframe = super(ChartPandasSerializer, self).get_dataframe(data)
         dataframe.columns.name = ""
 
         for i in range(len(self.parameter_fields) + 1):

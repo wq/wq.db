@@ -1,10 +1,11 @@
 from rest_pandas import PandasView
 from wq.db.patterns.models import Identifier
-from .serializers import ChartSerializer
+from .serializers import ChartModelSerializer, ChartPandasSerializer
 
 
 class ChartView(PandasView):
-    serializer_class = ChartSerializer
+    serializer_class = ChartModelSerializer
+    pandas_serializer_class = ChartPandasSerializer
     ignore_extra = True
     exclude_apps = []
 

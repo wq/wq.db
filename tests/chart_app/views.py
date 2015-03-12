@@ -1,9 +1,9 @@
 from wq.db.contrib.chart import views as chart
-from wq.db.contrib.chart.serializers import ChartSerializer
+from wq.db.contrib.chart.serializers import ChartModelSerializer
 from .models import Value
 
 
-class ValueSerializer(ChartSerializer):
+class ValueSerializer(ChartModelSerializer):
     key_lookups = ['series.primary_identifier.slug', 'date']
 
     class Meta:

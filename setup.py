@@ -122,7 +122,7 @@ setup(
     tests_require=[
         'psycopg2',
         'wq.io>=0.5.1',
-        'rest-pandas>=0.2.1',
+        'rest-pandas>=0.3.0',
         'Pillow',
     ],
 )
