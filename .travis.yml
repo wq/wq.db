@@ -5,7 +5,7 @@ python:
 env:
   global:
    - DRF="djangorestframework==2.4.4"
-   - DRP="rest-pandas==0.2.1"
+   - DRP="rest-pandas==0.3.0"
   matrix:
    - DJANGO="django==1.6.8"
    - DJANGO="django==1.7.1"
