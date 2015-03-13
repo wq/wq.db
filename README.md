@@ -2,7 +2,7 @@
 
 [wq.db](https://wq.io/wq.db) is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
-[**Release Notes**](https://github.com/wq/wq.db/releases) | [**Installation**](https://wq.io/docs/setup) | [**Documentation**](https://wq.io/wq.db)
+[**Release Notes**](https://github.com/wq/wq.db/releases) | [**Installation**](https://wq.io/docs/setup) | [**Documentation**](https://wq.io/wq.db) | [**Issue Tracker**](https://github.com/wq/wq.db/issues)
 
 [![Build Status](https://travis-ci.org/wq/wq.db.svg?branch=master)](https://travis-ci.org/wq/wq.db)
 [![PyPI Package](https://pypip.in/version/wq.db/badge.svg?style=flat)](https://pypi.python.org/pypi/wq.db)
