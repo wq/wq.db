@@ -15,8 +15,6 @@ SESSION_COOKIE_HTTPONLY = False
 
 # Django Rest Framework settings
 REST_FRAMEWORK = {
-    'PAGINATE_BY': 50,
-    'PAGINATE_BY_PARAM': 'limit',
 
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.TemplateHTMLRenderer',
@@ -24,6 +22,7 @@ REST_FRAMEWORK = {
         'wq.db.rest.renderers.GeoJSONRenderer',
     ),
 
+    'PAGE_SIZE': 50,
     'DEFAULT_PAGINATION_CLASS': 'wq.db.rest.pagination.Pagination',
 
     'DEFAULT_PERMISSION_CLASSES': (

@@ -1,6 +1,6 @@
 from wq.db.rest import app
 from .views import LoginView, LogoutView, UserViewSet
-from .serializers import UserSerializer, SocialAuthSerializer, HAS_SOCIAL_AUTH
+from .serializers import UserSerializer, HAS_SOCIAL_AUTH
 from django.contrib.auth.models import User
 
 app.router.add_page('login', {'url': 'login'}, LoginView)
@@ -13,5 +13,6 @@ if HAS_SOCIAL_AUTH:
     # Configure UserSocialAuth as nested serializer for User
     # (without actually registering it)
     from social.apps.django_app.default.models import UserSocialAuth
+    from .serializers import SocialAuthSerializer
     app.router.register_serializer(UserSocialAuth, SocialAuthSerializer)
     app.router.register_config(UserSocialAuth, {'url': 'social_auth'})

@@ -3,7 +3,7 @@ from rest_framework import status
 import json
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, ItemType, GeometryModel,
+    Parent, ItemType, GeometryModel, SlugModel,
 )
 from django.contrib.auth.models import User
 
@@ -25,6 +25,10 @@ class RestTestCase(APITestCase):
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
+        slugmodel = SlugModel.objects.create(
+            code="test",
+            name="Test",
+        )
 
     # Test existence and content of config.json
     def test_rest_config_json(self):
@@ -92,6 +96,36 @@ class RestTestCase(APITestCase):
         self.assertIn('user', response.data)
         self.assertIn('label', response.data['user'])
         self.assertNotIn('password', response.data['user'])
+
+    def test_rest_multi(self):
+        lists = ['usermanagedmodels', 'items', 'childs']
+        response = self.client.get(
+            "/multi.json?lists=" + ",".join(lists)
+        )
+        for listurl in lists:
+            self.assertIn(listurl, response.data)
+            self.assertIn("list", response.data[listurl])
+            self.assertGreater(len(response.data[listurl]["list"]), 0)
+
+    def test_rest_custom_lookup(self):
+        response = self.client.get('/slugmodels/test.json')
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertEqual(response.data['id'], 'test')
+
+    def test_rest_default_per_page(self):
+        response = self.client.get('/parents.json')
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertEqual(response.data['per_page'], 50)
+
+    def test_rest_custom_per_page(self):
+        response = self.client.get('/childs.json')
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertEqual(response.data['per_page'], 100)
+
+    def test_rest_limit(self):
+        response = self.client.get('/childs.json?limit=10')
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertEqual(response.data['per_page'], 10)
 
 
 class RestPostTestCase(APITestCase):

@@ -152,7 +152,7 @@ class Router(DefaultRouter):
         paginate_by = config.get('per_page', None)
         if paginate_by:
             return paginate_by
-        return api_settings.PAGINATE_BY
+        return api_settings.PAGE_SIZE
 
     def paginate(self, model, page_num, request=None):
         obj_serializer = self.get_serializer_for_model(model)
@@ -161,22 +161,10 @@ class Router(DefaultRouter):
         qs = self.get_queryset_for_model(model, request)
         # FIXME: should copy() before modifying but doing so causes recursion
         request.GET = {}
-        qs = viewset(
-            action="list",
-            request=request,
-            kwargs={}
-        ).filter_queryset(qs)
-
-        paginator = Paginator(qs, paginate_by)
-        page = paginator.page(page_num)
-
-        class Serializer(api_settings.DEFAULT_PAGINATION_SERIALIZER_CLASS):
-            class Meta:
-                object_serializer_class = obj_serializer
-        return Serializer(
-            instance=page,
-            context={'router': self, 'request': request}
-        ).data
+        view = viewset.as_view(
+            actions={'get': 'list'},
+        )
+        return view(request).data
 
     def get_queryset_for_model(self, model, request=None):
         if model in self._querysets:
@@ -206,10 +194,20 @@ class Router(DefaultRouter):
                 viewset = ModelViewSet
         lookup = self.get_lookup_for_model(model_class)
 
+        per_page = self.get_paginate_by_for_model(model_class)
+        if per_page != api_settings.PAGE_SIZE:
+            class CustomPagination(api_settings.DEFAULT_PAGINATION_CLASS):
+                page_size = per_page
+        else:
+            CustomPagination = None
+
         class ViewSet(viewset):
             model = model_class
             router = self
             lookup_field = lookup
+
+            if CustomPagination:
+                pagination_class = CustomPagination
 
         return ViewSet
 

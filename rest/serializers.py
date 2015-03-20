@@ -114,10 +114,7 @@ class ModelSerializer(serializers.ModelSerializer):
             conf = get_ct(self.Meta.model).get_config() or {}
             lookup = conf.get('lookup', None)
             if lookup and lookup != 'id':
-                fields['id'] = serializers.Field(
-                    source=lookup,
-                    read_only=True
-                )
+                fields['id'] = serializers.ReadOnlyField(source=lookup)
 
         info = model_meta.get_field_info(self.Meta.model)
 
