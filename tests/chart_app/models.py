@@ -1,7 +1,8 @@
-from wq.db.patterns import models
+from django.db import models
+from wq.db.patterns import models as patterns
 
 
-class Series(models.IdentifiedModel):
+class Series(patterns.IdentifiedModel):
     name = models.CharField(max_length=20)
 
 

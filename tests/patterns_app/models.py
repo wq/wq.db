@@ -1,40 +1,42 @@
-from wq.db.patterns import models
+from django.db import models
+from wq.db.patterns import models as patterns
 
 
-class AnnotatedModel(models.AnnotatedModel):
+class AnnotatedModel(patterns.AnnotatedModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class IdentifiedModel(models.IdentifiedModel):
+class IdentifiedModel(patterns.IdentifiedModel):
     name = models.CharField(max_length=255)
 
 
-class IdentifiedAnnotatedModel(models.IdentifiedModel, models.AnnotatedModel):
+class IdentifiedAnnotatedModel(
+        patterns.IdentifiedModel, patterns.AnnotatedModel):
     name = models.CharField(max_length=255)
 
 
-class MarkedModel(models.MarkedModel):
+class MarkedModel(patterns.MarkedModel):
     name = models.CharField(max_length=255)
 
 
-class LocatedModel(models.LocatedModel):
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-
-class RelatedModel(models.RelatedModel):
+class LocatedModel(patterns.LocatedModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class AnotherRelatedModel(models.RelatedModel):
+class RelatedModel(patterns.RelatedModel):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class AnotherRelatedModel(patterns.RelatedModel):
     name = models.CharField(max_length=255)
 
     def __str__(self):
