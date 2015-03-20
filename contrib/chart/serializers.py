@@ -23,7 +23,7 @@ class ChartModelSerializer(serializers.ModelSerializer):
 
     @property
     def key_model(self):
-        return self.opts.model
+        return self.Meta.model
 
     def get_default_fields(self):
         fields = {
@@ -67,8 +67,9 @@ class ChartPandasSerializer(PandasSerializer):
         usually be the most important key) to the end to facilitate unstacking.
         """
         index_fields = []
+        meta = getattr(self, 'Meta', object())
         for key in self.get_key_fields():
-            if key not in self.opts.exclude:
+            if key not in getattr(meta, 'exclude', []):
                 index_fields.append(key)
 
         return (
@@ -83,7 +84,7 @@ class ChartPandasSerializer(PandasSerializer):
         dataframe = super(ChartPandasSerializer, self).get_dataframe(data)
         dataframe.columns.name = ""
 
-        for i in range(len(self.parameter_fields) + 1):
+        for i in range(len(self.get_parameter_fields()) + 1):
             dataframe = dataframe.unstack()
         dataframe = (
             dataframe
