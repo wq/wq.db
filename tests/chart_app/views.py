@@ -12,7 +12,7 @@ class ValueSerializer(ChartModelSerializer):
 
 class ChartView(chart.ChartView):
     serializer_class = ValueSerializer
-    model = Value
+    queryset = Value.objects.all()
 
     def filter_by_series(self, qs, series):
         return qs.filter(series_id__in=series)

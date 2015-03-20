@@ -25,23 +25,31 @@ class ChartModelSerializer(serializers.ModelSerializer):
     def key_model(self):
         return self.Meta.model
 
-    def get_default_fields(self):
-        fields = {
-            self.value_field: serializers.Field(self.value_lookup),
-        }
+    def get_fields(self):
+        fields = super(ChartModelSerializer, self).get_fields()
+        value_kwargs = {}
+        if self.value_field != self.value_lookup:
+            value_kwargs['source'] = self.value_lookup
+        fields[self.value_field] = serializers.ReadOnlyField(**value_kwargs)
 
         for key, lookup in zip(self.parameter_fields, self.parameter_lookups):
-            fields[key] = serializers.Field(lookup)
+            param_kwargs = {}
+            if key != lookup:
+                param_kwargs['source'] = lookup
+            fields[key] = serializers.ReadOnlyField(**param_kwargs)
 
         for key, lookup in zip(self.key_fields, self.key_lookups):
             try:
                 field = self.key_model._meta.get_field_by_name(key)[0]
             except FieldDoesNotExist:
                 field = None
+            key_kwargs = {}
+            if key != lookup:
+                key_kwargs['source'] = lookup
             if isinstance(field, DateTimeField):
-                fields[key] = LocalDateTimeField(lookup)
+                fields[key] = LocalDateTimeField(**key_kwargs)
             else:
-                fields[key] = serializers.Field(lookup)
+                fields[key] = serializers.ReadOnlyField(**key_kwargs)
 
         return fields
 

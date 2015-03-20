@@ -21,15 +21,14 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.TemplateHTMLRenderer',
         'wq.db.rest.renderers.JSONRenderer',
-        'wq.db.rest.renderers.AMDRenderer',
         'wq.db.rest.renderers.GeoJSONRenderer',
     ),
 
     'DEFAULT_MODEL_SERIALIZER_CLASS':
     'wq.db.rest.serializers.ModelSerializer',
 
-    'DEFAULT_PAGINATION_SERIALIZER_CLASS':
-    'wq.db.rest.serializers.PaginationSerializer',
+    'DEFAULT_PAGINATION_CLASS':
+    'wq.db.rest.pagination.Pagination',
 
     'DEFAULT_PERMISSION_CLASSES': (
         'wq.db.rest.permissions.ModelPermissions',

@@ -1,7 +1,7 @@
 from django.http import Http404
 from rest_framework.generics import GenericAPIView as RestGenericAPIView
 from rest_framework.response import Response
-from rest_framework.decorators import link
+from rest_framework.decorators import detail_route
 from rest_framework import status, viewsets
 from .models import get_ct, get_object_id, get_by_identifier
 
@@ -73,7 +73,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             return 0
 
-    @link()
+    @detail_route()
     def edit(self, request, *args, **kwargs):
         """
         Generates a context appropriate for editing a form
@@ -145,9 +145,9 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             qs = fn(qs, context)
         return app.router.serialize(qs, many=True)
 
-    def get_object(self, queryset=None):
+    def get_object(self):
         try:
-            obj = super(ModelViewSet, self).get_object(queryset)
+            obj = super(ModelViewSet, self).get_object()
         except Http404:
             if not get_ct(self.model).is_identified:
                 raise

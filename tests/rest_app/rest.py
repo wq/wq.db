@@ -2,7 +2,13 @@ from wq.db.rest import app
 from .models import (
     RootModel, UserManagedModel, Parent, Child, ItemType, Item, GeometryModel,
 )
-app.router.register_model(RootModel, url="")
+from .serializers import RootModelSerializer
+
+app.router.register_model(
+    RootModel,
+    url="",
+    serializer=RootModelSerializer,
+)
 app.router.register_model(UserManagedModel)
 app.router.register_model(Parent)
 app.router.register_model(Child)

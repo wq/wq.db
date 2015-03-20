@@ -1,11 +1,4 @@
-from rest_framework.serializers import ModelSerializer as RestModelSerializer
-from rest_framework.serializers import (
-    Field, DateTimeField, WritableField, RelatedField, PrimaryKeyRelatedField
-)
-from rest_framework.pagination import (
-    PaginationSerializer as RestPaginationSerializer
-)
-
+from rest_framework import serializers
 from django.contrib.gis.db.models import fields
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
@@ -17,15 +10,17 @@ from .models import (
     get_ct, get_object_id, get_by_identifier
 )
 
+from rest_framework.utils import model_meta
 
-class GeometryField(WritableField):
-    def to_native(self, value):
+
+class GeometryField(serializers.Field):
+    def to_representation(self, value):
         if value is None:
             return None
         import json
         return json.loads(value.geojson)
 
-    def from_native(self, value):
+    def to_internal_value(self, value):
         import json
         if isinstance(value, dict):
             value = json.dumps(value)
@@ -44,66 +39,32 @@ class GeometryField(WritableField):
         return geom
 
 
-class LabelRelatedField(RelatedField):
-    def field_to_native(self, obj, field_name):
-        if field_name.endswith('_label'):
-            field_name = field_name[:-6]
-            if getattr(obj, field_name + '_id') is None:
-                return None
-        val = getattr(obj, self.source or field_name)
-        if self.many:
-            return [str(item) for item in val.all()]
-        else:
-            return str(val)
-
-
-class IDField(Field):
-    def field_to_native(self, obj, field_name):
-        return get_object_id(obj)
+class LabelRelatedField(serializers.RelatedField):
+    def to_representation(self, obj):
+        return str(obj)
 
 
 # TODO: investigate use of SlugRelatedField and/or PrimaryKeyRelatedField
-class IDRelatedField(RelatedField):
-    read_only = False
+class IDRelatedField(serializers.RelatedField):
+    def to_representation(self, obj):
+        return get_object_id(obj)
 
-    def field_to_native(self, obj, field_name):
-        if field_name.endswith('_id'):
-            if getattr(obj, field_name) is None:
-                return None
-            field_name = field_name[:-3]
-        val = getattr(obj, self.source or field_name)
-        if val is None:
-            return None
-        if self.many:
-            return [get_object_id(item) for item in val.all()]
-        else:
-            return get_object_id(val)
-
-    def field_from_native(self, data, files, field_name, into):
-        if field_name.endswith('_id'):
-            field_name = field_name[:-3]
-        return super(IDRelatedField, self).field_from_native(
-            data, files, field_name, into
-        )
-
-    def from_native(self, data):
+    def to_internal_value(self, data):
         return get_by_identifier(self.queryset, data)
 
 
-class ContentTypeField(RelatedField):
-    read_only = False
+class ContentTypeField(serializers.SlugRelatedField):
+    queryset = ContentType.objects.all()
+    slug_field = "model"
 
-    def to_native(self, obj):
-        return ContentType.objects.get(pk=obj.pk).identifier
-
-    def from_native(self, data, files):
-        return get_ct(data)
+    def __init__(self, **kwargs):
+        super(serializers.RelatedField, self).__init__(**kwargs)
 
 
-class LocalDateTimeField(Field):
+class LocalDateTimeField(serializers.Field):
     read_only = True
 
-    def to_native(self, obj):
+    def to_representation(self, obj):
         if obj is None:
             return None
         if obj.tzinfo:
@@ -111,12 +72,15 @@ class LocalDateTimeField(Field):
         return obj.strftime('%Y-%m-%d %I:%M %p')
 
 
-class ModelSerializer(RestModelSerializer):
+class ModelSerializer(serializers.ModelSerializer):
+    serializer_related_field = IDRelatedField
+    add_label_fields = True
+
     def __init__(self, *args, **kwargs):
         for field in ('Geometry', 'GeometryCollection',
                       'Point', 'LineString', 'Polygon',
                       'MultiPoint', 'MultiLineString', 'MultiPolygon'):
-            self.field_mapping[
+            self.serializer_field_mapping[
                 getattr(fields, field + 'Field')
             ] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
@@ -130,161 +94,110 @@ class ModelSerializer(RestModelSerializer):
         else:
             return self.context['router']
 
-    def get_default_fields(self, *args, **kwargs):
-        fields = super(ModelSerializer, self).get_default_fields(
-            *args, **kwargs
-        )
-        fields['id'] = IDField()
-        if 'label' not in self.opts.exclude:
-            fields['label'] = Field(source='__str__')
+    @property
+    def is_detail(self):
+        if getattr(self.Meta, 'depth', 0) > 0:
+            return True
+        view = self.context.get('view', None)
+        return view and view.action != "list"
 
-        if not self.router:
-            return fields
+    def get_fields(self, *args, **kwargs):
+        fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
+        fields = self.update_id_fields(fields)
+        fields.update(self.get_label_fields(fields))
+        if not self.is_detail:
+            for field in getattr(self.Meta, 'list_exclude', []):
+                fields.pop(field, None)
+        return fields
 
-        nested = self.context.get('nested', False)
-        many = self.many or self.source == 'object_list'
-        if 'request' in self.context:
-            renderer = self.context['request'].accepted_renderer
-            geo = renderer.format == 'geojson'
-            saving = self.context['request'].method != 'GET'
-        else:
-            geo = False
-            saving = False
-        saving = self.context.get('saving', saving)
+    def update_id_fields(self, fields):
+        if 'id' not in self.fields:
+            conf = get_ct(self.Meta.model).get_config() or {}
+            lookup = conf.get('lookup', None)
+            if lookup and lookup != 'id':
+                fields['id'] = serializers.Field(
+                    source=lookup,
+                    read_only=True
+                )
 
-        def add_labels(name, field, qs):
-            # Add _id and _label for context
-            fields[name + '_id'] = IDRelatedField(
-                source=name,
-                required=field.required,
-                queryset=qs
+        info = model_meta.get_field_info(self.Meta.model)
+
+        # In list views, remove [fieldname] as an attribute in favor of
+        # [fieldname]_id.
+        for name, field in info.forward_relations.items():
+            if name in getattr(self.Meta, "exclude", []):
+                continue
+
+            id_field, id_field_kwargs = self.build_relational_field(
+                name, info.forward_relations[name],
             )
-            fields[name + '_label'] = LabelRelatedField(queryset=qs)
+            id_field_kwargs['source'] = name
+            fields[name + '_id'] = id_field(**id_field_kwargs)
 
-        # Special handling for related fields
-        for name, field in list(fields.items()):
-            if name == 'label':
-                continue
-
-            model_field, model, direct, m2m = (
-                self.opts.model._meta.get_field_by_name(name)
-            )
-
-            if isinstance(field, DateTimeField):
-                fields[name + '_label'] = LocalDateTimeField(name)
-
-            if model_field.choices:
-                fields[name + '_label'] = Field('get_%s_display' % name)
-
-            if (not isinstance(field, ModelSerializer)
-                    and not isinstance(field, PrimaryKeyRelatedField)):
-                continue
-
-            if model_field.rel.to == DjangoContentType:
-                fields['for'] = ContentTypeField(
-                    source=name,
-                    queryset=getattr(
-                        field, 'object', getattr(field, 'queryset', None)
-                    )
-                )
-                del fields[name]
-                continue
-
-            if ((self.opts.depth is None or self.opts.depth < 1)
-                    and not (saving and m2m)
-                    or (saving and not m2m) or nested):
-                # In list views, remove [fieldname] as an attribute in favor of
-                # [fieldname]_id and [fieldname]_label (below).
-                # (Except when saving m2m items, then we need the nested field)
-                del fields[name]
-            else:
-                # In detail views, always make [fieldname] a nested field. This
-                # is needed to generate renderer contexts to support deeplinks.
-                # (The list view doesn't need the full object, as REST clients
-                #  like wq.app's app.js can use preloaded lists and callbacks
-                #  to resolve [fieldname] to an object, given [fieldname]_id.)
-                fields[name] = self.get_nested_field(model_field)
-
-            # Stop processing if this is a many-to-many-field
-            if field.many or m2m:
-                continue
-            else:
-                if isinstance(field, PrimaryKeyRelatedField):
-                    add_labels(name, field, field.queryset)
-                else:
-                    add_labels(name, field, field.opts.model.objects)
-
-        # Add child objects (serialize with registered serializers)
-        if (not self.opts.depth and not saving and not geo) or nested:
-            return fields
-
-        for vf in self.opts.model._meta.virtual_fields:
-            if not self.opts.depth and geo and vf.name != "locations":
-                continue
-            if getattr(vf, 'serialize', False) and vf.name not in fields:
-                cls = self.router.get_serializer_for_model(
-                    vf.rel.to, max(self.opts.depth - 1, 0)
-                )
-                context = self.context.copy()
-                context['nested'] = True
-                fields[vf.name] = cls(context=context, many=True)
-
-        if geo and not self.opts.depth:
-            return fields
-
-        # For detail views, include any models with foreign keys pointing to
-        # this model - but only if their related_name is the same as the
-        # urlbase of the model or they are OneToOne relationships
-        # FIXME: deprecate this in favor of requiring explicit configuration
-        ct = get_ct(self.opts.model)
-        for cct, rel in ct.get_children(include_rels=True):
-            accessor = rel.get_accessor_name()
-            if accessor == cct.urlbase or rel.field.unique:
-                cls = self.router.get_serializer_for_model(
-                    cct.model_class(), max(self.opts.depth - 1, 0)
-                )
-                context = self.context.copy()
-                context['nested'] = True
-                many = not rel.field.unique  # Check for OneToOneField
-                fields[accessor] = cls(context=context, many=many)
+            if not (self.is_detail and name == 'user'):
+                fields.pop(name, None)
 
         return fields
 
-    def get_nested_field(self, model_field):
-        model = model_field.rel.to
+    def get_label_fields(self, default_fields):
+        if not self.add_label_fields:
+            return {}
+        fields = {}
+
+        if 'label' not in getattr(self.Meta, 'exclude', []):
+            fields['label'] = serializers.ReadOnlyField(source='__str__')
+
+        info = model_meta.get_field_info(self.Meta.model)
+
+#       FIXME: Restore date & choices labels
+#            if isinstance(field, DateTimeField):
+#                fields[name + '_label'] = LocalDateTimeField(name)
+#            if model_field.choices:
+#                fields[name + '_label'] = ReadOnlyField(
+#                    'get_%s_display' % name
+#                )
+
+        # Add labels for related fields
+        for name, field in info.forward_relations.items():
+            if name in getattr(self.Meta, "exclude", []):
+                continue
+
+            f, field_kwargs = self.build_relational_field(
+                name, info.forward_relations[name],
+            )
+            label_field_kwargs = {
+                'source': name,
+                'read_only': True,
+            }
+            if field_kwargs.get('many', None):
+                label_field_kwargs['many'] = field_kwargs['many']
+            fields[name + '_label'] = LabelRelatedField(**label_field_kwargs)
+
+        return fields
+
+    @classmethod
+    def for_model(cls, model_class):
+        class Serializer(cls):
+            class Meta(getattr(cls, 'Meta', object)):
+                model = model_class
+        return Serializer
+
+    @classmethod
+    def for_depth(cls, serializer_depth):
+        class Serializer(cls):
+            class Meta(getattr(cls, 'Meta', object)):
+                depth = serializer_depth
+        return Serializer
+
+    def build_nested_field(self, field_name, relation_info, nested_depth):
+        field_class, field_kwargs = super(
+            ModelSerializer, self
+        ).build_nested_field(
+            field_name, relation_info, nested_depth
+        )
+        field_kwargs['required'] = False
         if self.router:
-            cls = self.router.get_serializer_for_model(
-                model, self.opts.depth - 1
+            field_class = self.router.get_serializer_for_model(
+                relation_info.related_model, nested_depth
             )
-            return cls(
-                context=self.context,
-                required=not(model_field.null or model_field.blank)
-            )
-        return super(ModelSerializer, self).get_nested_field(model_field)
-
-    # Any IDRelatedField errors should be reported without the '_id' suffix
-    # FIXME: is there a better way to fix this?
-    @property
-    def errors(self):
-        errors = super(ModelSerializer, self).errors
-        for field_name in self.fields:
-            if field_name not in errors or not field_name.endswith('_id'):
-                continue
-            if not type(self.fields[field_name]) == IDRelatedField:
-                continue
-            field_name = field_name[:-3]
-            errors[field_name] = errors[field_name + '_id']
-            del errors[field_name + '_id']
-        return errors
-
-
-class PaginationSerializer(RestPaginationSerializer):
-    results_field = 'list'
-    page = Field('number')
-    pages = Field('paginator.num_pages')
-    per_page = Field('paginator.per_page')
-
-    def to_native(self, obj):
-        result = super(PaginationSerializer, self).to_native(obj)
-        result['multiple'] = result['pages'] > 1
-        return result
+        return field_class, field_kwargs

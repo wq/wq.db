@@ -97,7 +97,7 @@ setup(
     long_description=parse_markdown_readme(),
     install_requires=[
         'Django>=1.6',
-        'djangorestframework>=2.4,<3',
+        'djangorestframework>=3.1',
         'pystache',
         'python-social-auth',
         'swapper>=0.2',

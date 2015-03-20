@@ -1,4 +1,4 @@
-from rest_framework.renderers import BaseRenderer, JSONPRenderer, JSONRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from django.conf import settings
 from wq.db.rest.settings import SRID as DEFAULT_SRID
 
@@ -11,24 +11,6 @@ class JSONRenderer(JSONRenderer):
         return super(JSONRenderer, self).render(
             data, accepted_media_type, renderer_context
         )
-
-
-class AMDRenderer(JSONPRenderer):
-    media_type = 'application/javascript'
-    format = 'js'
-    default_callback = 'define'
-
-
-class BinaryRenderer(BaseRenderer):
-    def render(self, data, media_type=None, render_context=None):
-        return data
-
-
-def binary_renderer(mimetype, extension=None):
-    class Renderer(BinaryRenderer):
-        media_type = mimetype
-        format = extension
-    return Renderer
 
 
 class GeoJSONRenderer(JSONRenderer):

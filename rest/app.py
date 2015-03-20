@@ -16,6 +16,8 @@ from rest_framework.response import Response
 from .models import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
+from .serializers import ModelSerializer
+from ..patterns import serializers
 
 PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
 
@@ -102,6 +104,16 @@ class Router(DefaultRouter):
         self._extra_config.update(extra)
         self._base_config = None
 
+    def get_default_serializer_class(self, model_class):
+        ct = get_ct(model_class)
+        for predicate in PREDICATES:
+            if getattr(ct, 'is_' + predicate):
+                return getattr(
+                    serializers,
+                    predicate.title() + "ModelSerializer"
+                )
+        return ModelSerializer
+
     def get_serializer_for_model(self, model_class, serializer_depth=None):
         if model_class in self._serializers:
             serializer = self._serializers[model_class]
@@ -111,13 +123,16 @@ class Router(DefaultRouter):
             if real_model in self._serializers:
                 serializer = self._serializers[real_model]
             else:
-                serializer = api_settings.DEFAULT_MODEL_SERIALIZER_CLASS
+                serializer = self.get_default_serializer_class(real_model)
 
-        class Serializer(serializer):
-            class Meta(serializer.Meta):
-                depth = serializer_depth
-                model = model_class
-        return Serializer
+        meta = getattr(serializer, 'Meta', object)
+        if not getattr(meta, 'model', None):
+            serializer = serializer.for_model(model_class)
+
+        if serializer_depth is not None:
+            if serializer_depth != getattr(meta, 'depth', None):
+                serializer = serializer.for_depth(serializer_depth)
+        return serializer
 
     def serialize(self, obj, many=False, depth=None):
         if many:
