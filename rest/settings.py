@@ -24,17 +24,15 @@ REST_FRAMEWORK = {
         'wq.db.rest.renderers.GeoJSONRenderer',
     ),
 
-    'DEFAULT_MODEL_SERIALIZER_CLASS':
-    'wq.db.rest.serializers.ModelSerializer',
-
-    'DEFAULT_PAGINATION_CLASS':
-    'wq.db.rest.pagination.Pagination',
+    'DEFAULT_PAGINATION_CLASS': 'wq.db.rest.pagination.Pagination',
 
     'DEFAULT_PERMISSION_CLASSES': (
         'wq.db.rest.permissions.ModelPermissions',
     ),
 
-    'FILTER_BACKEND': 'wq.db.rest.filters.FilterBackend'
+    'DEFAULT_FILTER_BACKENDS': (
+        'wq.db.rest.filters.FilterBackend',
+    )
 }
 
 # Django Social Auth settings

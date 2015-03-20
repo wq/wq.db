@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from wq.db.patterns.base import serializers as base
 import swapper
-MarkdownType = swapper.load_model('mark', 'MarkdownType')
+MarkdownType = swapper.load_model(
+    'mark', 'MarkdownType', required=False
+)
 
 
 class MarkdownSerializer(base.TypedAttachmentSerializer):

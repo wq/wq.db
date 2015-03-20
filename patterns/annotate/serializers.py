@@ -3,8 +3,12 @@ import swapper
 
 from wq.db.rest.models import get_ct
 
-AnnotationType = swapper.load_model('annotate', 'AnnotationType')
-Annotation = swapper.load_model('annotate', 'Annotation')
+AnnotationType = swapper.load_model(
+    'annotate', 'AnnotationType', required=False
+)
+Annotation = swapper.load_model(
+    'annotate', 'Annotation', required=False
+)
 
 
 class AnnotationSerializer(base.TypedAttachmentSerializer):
