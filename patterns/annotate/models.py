@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation
 from wq.db.patterns.base.models import NaturalKeyModel
 from django.contrib import admin
 from django.core.exceptions import FieldError
@@ -131,7 +130,7 @@ class Annotation(BaseAnnotation):
         swappable = swapper.swappable_setting('annotate', 'Annotation')
 
 
-class AnnotationSet(SerializableGenericRelation):
+class AnnotationSet(generic.GenericRelation):
     def __init__(self, *args, **kwargs):
         if len(args) == 0:
             kwargs['to'] = ANNOTATION_MODEL
@@ -164,10 +163,3 @@ class AnnotatedModel(models.Model):
 
     class Meta:
         abstract = True
-
-# Tell south not to worry about the "custom" field type
-try:
-    from south.modelsinspector import add_ignored_fields
-    add_ignored_fields(["^wq.db.patterns.annotate.models.AnnotationSet"])
-except ImportError:
-    pass

@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation
 from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 from django.conf import settings
@@ -192,7 +191,7 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
 
 class IdentifiedModel(NaturalKeyModel):
-    identifiers = SerializableGenericRelation(Identifier)
+    identifiers = generic.GenericRelation(Identifier)
     primary_identifiers = generic.GenericRelation(PrimaryIdentifier)
     objects = IdentifiedModelManager()
 

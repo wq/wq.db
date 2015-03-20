@@ -1,7 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation
 
 from django.conf import settings
 SRID = getattr(settings, 'SRID', 4326)
@@ -30,7 +29,7 @@ class Location(models.Model):
 
 
 class LocatedModel(models.Model):
-    locations = SerializableGenericRelation(Location)
+    locations = generic.GenericRelation(Location)
 
     class Meta:
         abstract = True

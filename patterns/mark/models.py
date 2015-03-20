@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import get_language_from_request
-from wq.db.patterns.base import SerializableGenericRelation
 
 import swapper
 swapper.set_app_prefix('mark', 'WQ')
@@ -74,7 +73,7 @@ class Markdown(models.Model):
 
 
 class MarkedModel(models.Model):
-    markdown = SerializableGenericRelation(Markdown)
+    markdown = generic.GenericRelation(Markdown)
 
     def get_markdown(self, type):
         markdowns = self.markdown.filter(type=type)

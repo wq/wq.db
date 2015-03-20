@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from wq.db.patterns.base import SerializableGenericRelation
 
 
 class RelatedModelManager(models.Manager):
@@ -29,12 +28,12 @@ class RelatedModelManager(models.Manager):
 
 
 class RelatedModel(models.Model):
-    relationships = SerializableGenericRelation(
+    relationships = generic.GenericRelation(
         'Relationship',
         content_type_field='from_content_type',
         object_id_field='from_object_id',
     )
-    inverserelationships = SerializableGenericRelation(
+    inverserelationships = generic.GenericRelation(
         'InverseRelationship',
         content_type_field='to_content_type',
         object_id_field='to_object_id',
