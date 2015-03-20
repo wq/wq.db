@@ -6,8 +6,7 @@ from django.utils import timezone
 from django.conf import settings
 
 from .models import (
-    DjangoContentType, ContentType,
-    get_ct, get_object_id, get_by_identifier
+    ContentType, get_ct, get_object_id, get_by_identifier
 )
 
 from rest_framework.utils import model_meta

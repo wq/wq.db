@@ -1,9 +1,8 @@
-from wq.db.rest.models import get_ct
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import IdentifiedModel
-from wq.db.patterns.models import Authority, Identifier
+from wq.db.patterns.models import Authority
 
 
 def ident_by_auth(idents):

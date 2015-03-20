@@ -1,5 +1,4 @@
 from wq.db.rest.serializers import ModelSerializer
-from django.contrib.auth.models import User
 from django.conf import settings
 
 

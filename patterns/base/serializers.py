@@ -116,12 +116,10 @@ class TypedAttachmentSerializer(AttachmentSerializer):
 
 class AttachedModelSerializer(ModelSerializer):
     def create(self, validated_data):
+        model_data, attachment_data = self.extract_attachments(validated_data)
+        instance = super(AttachedModelSerializer, self).create(model_data)
+
         fields = self.get_fields()
-        attachment_data = {}
-        for name, field in fields.items():
-            if isinstance(field, AttachmentListSerializer):
-                attachment_data[name] = validated_data.pop(name, [])
-        instance = super(AttachedModelSerializer, self).create(validated_data)
         for name in attachment_data:
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
@@ -129,18 +127,13 @@ class AttachedModelSerializer(ModelSerializer):
                 model.objects.create(**attachment)
         return instance
 
-    def set_parent_object(self, attachment, instance, name):
-        attachment['content_object'] = instance
-
     def update(self, instance, validated_data):
-        fields = self.get_fields()
-        attachment_data = {}
-        for name, field in fields.items():
-            if isinstance(field, AttachmentListSerializer):
-                attachment_data[name] = validated_data.pop(name, [])
+        model_data, attachment_data = self.extract_attachments(validated_data)
         obj = super(
             AttachedModelSerializer, self
-        ).update(instance, validated_data)
+        ).update(instance, model_data)
+
+        fields = self.get_fields()
         for name in attachment_data:
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
@@ -150,3 +143,14 @@ class AttachedModelSerializer(ModelSerializer):
                     setattr(exist, key, val)
                 exist.save()
         return obj
+
+    def extract_attachments(self, validated_data):
+        fields = self.get_fields()
+        attachment_data = {}
+        for name, field in fields.items():
+            if isinstance(field, AttachmentListSerializer):
+                attachment_data[name] = validated_data.pop(name, [])
+        return validated_data, attachment_data
+
+    def set_parent_object(self, attachment, instance, name):
+        attachment['content_object'] = instance

@@ -18,7 +18,7 @@ class IdentifiedRelatedModelAdmin(IdentifiedModelAdmin, RelatedModelAdmin):
 
 
 class IdentifiedMarkedModelAdmin(IdentifiedModelAdmin, MarkedModelAdmin):
-    model = IdentifiedRelatedModel
+    model = IdentifiedMarkedModel
     inlines = [
         IdentifierInline,
         MarkdownInline,

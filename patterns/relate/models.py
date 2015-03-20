@@ -14,15 +14,16 @@ class RelatedModelManager(models.Manager):
 
         data = self.all()
         for ctype, objs in objects.items():
+            ids = [obj.pk for obj in objs]
             if kwargs.get('inverse', False):
-                data = data.filter(relationships__to_content_type=ctype,
-                                   relationships__to_object_id__in=
-                                   [obj.pk for obj in objs])
+                data = data.filter(
+                    relationships__to_content_type=ctype,
+                    relationships__to_object_id__in=ids,
+                )
             else:
                 data = data.filter(
                     inverserelationships__from_content_type=ctype,
-                    inverserelationships__from_object_id__in=
-                    [obj.pk for obj in objs]
+                    inverserelationships__from_object_id__in=ids,
                 )
         return data
 

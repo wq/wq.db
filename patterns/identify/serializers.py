@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from wq.db.patterns.base import serializers as base
-from wq.db.rest.serializers import ModelSerializer
 from wq.db.rest.models import get_object_id
 from .models import Identifier, Authority
 

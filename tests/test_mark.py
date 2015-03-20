@@ -2,10 +2,8 @@
 from __future__ import unicode_literals
 
 from rest_framework.test import APITestCase
-from rest_framework import status
-from django.contrib.auth.models import User
 from tests.patterns_app.models import MarkedModel
-from wq.db.patterns.models import MarkdownType, Markdown
+from wq.db.patterns.models import MarkdownType
 
 
 class MarkTestCase(APITestCase):

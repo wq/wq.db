@@ -3,8 +3,6 @@ from wq.db.patterns.base import serializers as base
 import swapper
 MarkdownType = swapper.load_model('mark', 'MarkdownType')
 
-from django.conf import settings
-
 
 class MarkdownSerializer(base.TypedAttachmentSerializer):
     attachment_fields = ['id', 'summary', 'markdown']

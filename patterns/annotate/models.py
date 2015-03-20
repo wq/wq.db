@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from wq.db.patterns.base.models import NaturalKeyModel
-from django.contrib import admin
 from django.core.exceptions import FieldError
 from collections import OrderedDict
 import swapper

@@ -1,7 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib.gis import admin
 from django.contrib.gis.db import models
-from .models import LocatedModel, Location, SRID
+from .models import Location, SRID
 
 
 class LocationInline(generic.GenericTabularInline):
@@ -12,7 +12,7 @@ class LocationInline(generic.GenericTabularInline):
     # (since there is not an Inline version of GeoModelAdmin)
     def formfield_for_dbfield(self, db_field, **kwargs):
         if isinstance(db_field, models.GeometryField):
-            request = kwargs.pop('request', None)
+            kwargs.pop('request', None)
             # Use parent (LocatedModelAdmin) class to actually get_map_widget
             kwargs['widget'] = self.admin_site._registry.get(
                 self.parent_model

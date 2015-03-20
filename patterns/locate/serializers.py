@@ -1,5 +1,3 @@
-from rest_framework import serializers
-from wq.db.rest.serializers import ModelSerializer
 from wq.db.rest.models import get_ct, get_object_id
 from wq.db.patterns.base import serializers as base
 from django.utils.six import string_types

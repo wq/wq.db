@@ -1,6 +1,5 @@
 from rest_framework.test import APITestCase
-from wq.db.patterns.models import AnnotationType, Identifier, Authority
-from wq.db.rest.models import get_ct
+from wq.db.patterns.models import AnnotationType, Authority
 from tests.patterns_app.models import (
     IdentifiedModel, AnnotatedModel, IdentifiedAnnotatedModel
 )

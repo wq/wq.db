@@ -1,6 +1,6 @@
 from wq.db.rest.serializers import ModelSerializer, ContentTypeField
 from wq.db.patterns.base import serializers as base
-from wq.db.rest.models import get_ct, get_object_id, get_by_identifier
+from wq.db.rest.models import get_by_identifier
 
 from .models import (
     Relationship, InverseRelationship,

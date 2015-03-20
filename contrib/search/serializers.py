@@ -3,7 +3,7 @@ from wq.db.rest.models import get_ct, ContentType, get_object_id
 
 
 class SearchResultSerializer(Serializer):
-    def to_native(self, obj):
+    def to_representation(self, obj):
         if hasattr(obj, 'content_type_id') and hasattr(obj, 'content_object'):
             ctype = ContentType.objects.get(pk=obj.content_type_id)
             obj = obj.content_object

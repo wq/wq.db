@@ -1,8 +1,5 @@
 from django.db import models
 from django import forms
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
-
 from django.conf import settings
 import swapper
 from wq.db.patterns.models import AnnotatedModel

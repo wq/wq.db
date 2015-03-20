@@ -3,7 +3,7 @@ from rest_framework import status
 import json
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, Child, ItemType, Item, GeometryModel,
+    Parent, ItemType, GeometryModel,
 )
 from django.contrib.auth.models import User
 
