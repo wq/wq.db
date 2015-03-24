@@ -38,6 +38,8 @@ class Router(DefaultRouter):
     include_config_view = True
     include_multi_view = True
 
+    default_serializer_class = ModelSerializer
+
     def __init__(self, trailing_slash=False):
         # Add trailing slash for HTML list views
         self.routes.append(Route(
@@ -105,14 +107,7 @@ class Router(DefaultRouter):
         self._base_config = None
 
     def get_default_serializer_class(self, model_class):
-        ct = get_ct(model_class)
-        for predicate in PREDICATES:
-            if getattr(ct, 'is_' + predicate):
-                return getattr(
-                    serializers,
-                    predicate.title() + "ModelSerializer"
-                )
-        return ModelSerializer
+        return self.default_serializer_class
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
         if model_class in self._serializers:
