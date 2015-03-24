@@ -10,7 +10,8 @@ chart_urls = make_urls({
 })
 
 app.autodiscover()
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^',       include(app.router.urls)),
     url(r'^chart',  include(chart_urls)),
 )

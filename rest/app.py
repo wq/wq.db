@@ -3,7 +3,6 @@ from django.utils.module_loading import module_has_submodule
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
-from django.core.paginator import Paginator
 
 from django.contrib.auth.models import AnonymousUser
 
@@ -17,7 +16,6 @@ from .models import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
-from ..patterns import serializers
 
 PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
 
@@ -149,14 +147,12 @@ class Router(DefaultRouter):
             return paginate_by
         return api_settings.PAGE_SIZE
 
-    def paginate(self, model, page_num, request=None):
-        obj_serializer = self.get_serializer_for_model(model)
-        paginate_by = self.get_paginate_by_for_model(model)
-        viewset = self.get_viewset_for_model(model)
-        qs = self.get_queryset_for_model(model, request)
+    def paginate(self, model, page_num, request):
         # FIXME: should copy() before modifying but doing so causes recursion
-        request.GET = {}
-        view = viewset.as_view(
+        request.GET = {
+            'page': page_num,
+        }
+        view = self.get_viewset_for_model(model).as_view(
             actions={'get': 'list'},
         )
         return view(request).data

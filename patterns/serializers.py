@@ -1,8 +1,8 @@
-from .annotate.serializers import *
-from .identify.serializers import *
-from .locate.serializers import *
-from .mark.serializers import *
-from .relate.serializers import *
+from .annotate.serializers import *  # NOQA
+from .identify.serializers import *  # NOQA
+from .locate.serializers import *  # NOQA
+from .mark.serializers import *  # NOQA
+from .relate.serializers import *  # NOQA
 
 
 class IdentifiedRelatedModelSerializer(

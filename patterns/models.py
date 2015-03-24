@@ -1,9 +1,9 @@
-from .base.models import *
-from .annotate.models import *
-from .identify.models import *
-from .locate.models import *
-from .mark.models import *
-from .relate.models import *
+from .base.models import *  # NOQA
+from .annotate.models import *  # NOQA
+from .identify.models import *  # NOQA
+from .locate.models import *  # NOQA
+from .mark.models import *  # NOQA
+from .relate.models import *  # NOQA
 
 
 class IdentifiedRelatedModelManager(

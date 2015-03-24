@@ -1,8 +1,8 @@
-from .annotate.admin import *
-from .identify.admin import *
-from .locate.admin import *
-from .mark.admin import *
-from .relate.admin import *
+from .annotate.admin import *  # NOQA
+from .identify.admin import *  # NOQA
+from .locate.admin import *  # NOQA
+from .mark.admin import *  # NOQA
+from .relate.admin import *  # NOQA
 
 from .models import IdentifiedRelatedModel, IdentifiedMarkedModel
 

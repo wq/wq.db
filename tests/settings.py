@@ -37,4 +37,4 @@ LANGUAGES = (
     ('ko', 'Korean'),
 )
 
-from wq.db.rest.settings import *
+from wq.db.rest.settings import *  # NOQA

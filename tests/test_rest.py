@@ -25,7 +25,7 @@ class RestTestCase(APITestCase):
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
-        slugmodel = SlugModel.objects.create(
+        SlugModel.objects.create(
             code="test",
             name="Test",
         )

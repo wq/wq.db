@@ -4,8 +4,7 @@ from django.contrib.auth.models import User
 from tests.patterns_app.models import (
     IdentifiedRelatedModel, IdentifiedMarkedModel,
 )
-from wq.db.rest.models import get_ct
-from wq.db.patterns.models import RelationshipType, MarkdownType
+from wq.db.patterns.models import MarkdownType
 
 
 # Tests for "composite" models combining two patterns
@@ -55,7 +54,6 @@ class PatternsRestTestCase(APITestCase):
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.client.force_authenticate(user=self.user)
 
-        ctype = get_ct(IdentifiedRelatedModel)
         self.parentinstance = IdentifiedRelatedModel.objects.find("Test 1")
         self.childinstance = IdentifiedRelatedModel.objects.find(
             "Test Child 1"
