@@ -41,3 +41,11 @@ class AnotherRelatedModel(patterns.RelatedModel):
 
     def __str__(self):
         return self.name
+
+
+class IdentifiedRelatedModel(patterns.IdentifiedRelatedModel):
+    name = models.CharField(max_length=255)
+
+
+class IdentifiedMarkedModel(patterns.IdentifiedMarkedModel):
+    name = models.CharField(max_length=255)

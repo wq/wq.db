@@ -4,6 +4,7 @@ import swapper
 MarkdownType = swapper.load_model(
     'mark', 'MarkdownType', required=False
 )
+from .models import Markdown
 
 
 class MarkdownSerializer(base.TypedAttachmentSerializer):
@@ -11,18 +12,29 @@ class MarkdownSerializer(base.TypedAttachmentSerializer):
     type_model = MarkdownType
     html = serializers.ReadOnlyField()
 
+    class Meta(base.TypedAttachmentSerializer.Meta):
+        model = Markdown
+
 
 class MarkedModelSerializer(base.AttachedModelSerializer):
-    markdown = serializers.SerializerMethodField()
+    markdown = MarkdownSerializer(many=True)
 
-    def get_markdown(self, instance):
+    def to_representation(self, instance):
+        data = super(MarkedModelSerializer, self).to_representation(instance)
+
+        # Only include active markdown in output
+        # (FIXME: ideally this filter would happen *before* initial
+        #  serialization)
         from .rest import active_markdown
-        from wq.db.rest import app
         request = self.context['request']
-        return app.router.serialize(
-            active_markdown(instance.markdown, request),
-            many=True
-        )
+        active_ids = active_markdown(
+            instance.markdown, request
+        ).values_list('pk', flat=True)
+        data['markdown'] = [
+            markdown for markdown in data['markdown']
+            if markdown['id'] in active_ids
+        ]
+        return data
 
     class Meta:
         list_exclude = ('markdown',)
