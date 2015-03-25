@@ -4,7 +4,12 @@ from wq.db.rest.models import get_ct, get_object_id
 
 
 class AttachmentListSerializer(serializers.ListSerializer):
-    pass
+    def to_representation(self, data):
+        data = super(AttachmentListSerializer, self).to_representation(data)
+        if self.parent:
+            for i, row in enumerate(data):
+                row['@index'] = i
+        return data
 
 
 class TypedAttachmentListSerializer(AttachmentListSerializer):
