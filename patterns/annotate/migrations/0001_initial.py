@@ -2,14 +2,12 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import swapper
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('contenttypes', '0001_initial'),
-        swapper.dependency('annotate', 'AnnotationType'),
     ]
 
     operations = [
@@ -23,7 +21,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'wq_annotation',
-                'swappable': swapper.swappable_setting('annotate', 'Annotation'),
             },
             bases=(models.Model,),
         ),
@@ -36,8 +33,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'wq_annotationtype',
-                'swappable': swapper.swappable_setting('annotate', 'AnnotationType'),
-                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -48,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='type',
-            field=models.ForeignKey(to=swapper.get_model_name('annotate', 'AnnotationType')),
+            field=models.ForeignKey(to='annotate.AnnotationType'),
             preserve_default=True,
         ),
     ]

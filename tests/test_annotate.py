@@ -1,4 +1,3 @@
-from wq.db.rest.models import get_ct
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -40,14 +39,11 @@ class AnnotateTestCase(APITestCase):
 class AnnotateRestTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser', is_superuser=True)
-        ct = get_ct(AnnotatedModel)
         self.width = AnnotationType.objects.create(
             name="Width",
-            contenttype=ct
         )
         self.height = AnnotationType.objects.create(
             name="Height",
-            contenttype=ct
         )
         self.instance = AnnotatedModel.objects.create(name="Test 1")
         self.instance.vals = {

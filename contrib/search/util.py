@@ -1,11 +1,5 @@
 from wq.db.rest.models import MultiQuerySet
-from wq.db.patterns.models import Identifier
-import swapper
-
-if swapper.is_swapped('annotate', 'Annotation'):
-    Annotation = None
-else:
-    Annotation = swapper.load_model('annotate', 'Annotation')
+from wq.db.patterns.models import Identifier, Annotation
 
 
 def search(query, auto=True, content_type=None, authority_id=None):

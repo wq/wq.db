@@ -6,7 +6,6 @@ from wq.db.patterns.models import (
     AnnotatedModel, IdentifiedModel, LocatedModel, MarkedModel, RelatedModel
 )
 from wq.db.patterns.models import RelationshipType
-from wq.db.patterns.models import BaseAnnotationType, BaseAnnotation
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 
@@ -38,16 +37,6 @@ class ContentType(DjangoContentType):
     def is_annotated(self):
         cls = self.model_class()
         return issubclass(cls, AnnotatedModel)
-
-    @property
-    def is_annotation(self):
-        cls = self.model_class()
-        return issubclass(cls, BaseAnnotation)
-
-    @property
-    def is_annotationtype(self):
-        cls = self.model_class()
-        return issubclass(cls, BaseAnnotationType)
 
     @property
     def is_identified(self):

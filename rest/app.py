@@ -260,10 +260,6 @@ class Router(DefaultRouter):
                         'label': str(label)
                     } for val, label in field.choices]
 
-            for name in ('annotationtype', 'annotation'):
-                if ct.identifier != name and getattr(ct, 'is_' + name):
-                    pages[name] = {'alias': ct.identifier}
-
             pages[info['name']] = info
 
         self._base_config = {'pages': pages}

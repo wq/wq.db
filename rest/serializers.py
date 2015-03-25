@@ -5,9 +5,7 @@ from django.utils import timezone
 
 from django.conf import settings
 
-from .models import (
-    ContentType, get_ct, get_object_id, get_by_identifier
-)
+from .models import get_ct, get_object_id, get_by_identifier
 
 from rest_framework.utils import model_meta
 from . import compat as html
@@ -51,14 +49,6 @@ class IDRelatedField(serializers.RelatedField):
 
     def to_internal_value(self, data):
         return get_by_identifier(self.queryset, data)
-
-
-class ContentTypeField(serializers.SlugRelatedField):
-    queryset = ContentType.objects.all()
-    slug_field = "model"
-
-    def __init__(self, **kwargs):
-        super(serializers.RelatedField, self).__init__(**kwargs)
 
 
 class LocalDateTimeField(serializers.Field):
