@@ -8,26 +8,22 @@ class AttachmentListSerializer(serializers.ListSerializer):
 
 
 class TypedAttachmentListSerializer(AttachmentListSerializer):
-    def to_internal_value(self, data):
+    def get_value(self, dictionary):
         # Handle attachments that are submitted together with their parent
 
-        # Ideal case: an array of dicts, this can be handled by the default
-        # implementation
-        if data:
-            return super(
-                TypedAttachmentListSerializer, self
-            ).to_internal_value(data)
+        # Ideal case: an array of dicts; this can be handled by the default
+        # implementation.  HTML JSON forms will use this approach.
+        if self.field_name in dictionary:
+            return super(TypedAttachmentListSerializer, self).get_value(
+                dictionary
+            )
 
-        # Common case: form submission.  In this case each attachment should
-        # be submitted as form fields with names in the format [model]_[typeid]
-        # e.g. annotation_23=30.5 will become {'type': 23, 'value': '30.5'}
+        # Deprecated/"classic" form style, where each attachment is submitted
+        # as form fields with names in the format [model]_[typeid] e.g.
+        # annotation_23=30.5 will become {'type': 23, 'value': '30.5'}
 
         # Retrieve form values into more usable array/dict format
         attachments = []
-
-        # FIXME: This needs data from the parent serializer until #33 is fixed
-        data = self.parent.initial_data
-
         ct = get_ct(self.child.Meta.model)
         i = 0
         for atype in self.child.expected_types:
@@ -40,18 +36,18 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
             }
             found = False
             for key in fields.values():
-                if key in data:
+                if key in dictionary:
                     found = True
             if found:
-                attachment = self.child.create_dict(atype, data, fields, i)
+                attachment = self.child.create_dict(
+                    atype, dictionary, fields, i
+                )
                 if attachment:
                     attachments.append(attachment)
                 i += 1
 
-        # Send modified object to default implementation
-        return super(
-            TypedAttachmentListSerializer, self
-        ).to_internal_value(attachments)
+        # Return extracted values to default implementation
+        return attachments
 
 
 class AttachmentSerializer(ModelSerializer):

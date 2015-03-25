@@ -27,12 +27,7 @@ class RelationshipSerializer(base.TypedAttachmentSerializer):
         data.update(rel.right_dict)
         return data
 
-    def create_dict(self, atype, data, fields, index):
-        attachment = super(RelationshipSerializer, self).create_dict(
-            atype, data, fields, index
-        )
-        if attachment is None:
-            return None
+    def to_internal_value(self, attachment):
         if 'item_id' in attachment and 'type_id' in attachment:
             type = self.type_model.objects.get(pk=attachment['type_id'])
             cls = type.right.model_class()
@@ -40,7 +35,9 @@ class RelationshipSerializer(base.TypedAttachmentSerializer):
             attachment[self.item_id_field] = obj.pk
             attachment[self.item_ct_field] = type.right.pk
             del attachment['item_id']
-        return attachment
+        return super(RelationshipSerializer, self).to_internal_value(
+            attachment
+        )
 
     class Meta(base.TypedAttachmentSerializer.Meta):
         model = Relationship

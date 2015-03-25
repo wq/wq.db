@@ -10,6 +10,7 @@ from .models import (
 )
 
 from rest_framework.utils import model_meta
+from . import compat as html
 
 
 class GeometryField(serializers.Field):
@@ -197,3 +198,8 @@ class ModelSerializer(serializers.ModelSerializer):
                 relation_info.related_model, nested_depth
             )
         return field_class, field_kwargs
+
+    def to_internal_value(self, data):
+        if html.is_html_input(data):
+            data = html.parse_json_form(data)
+        return super(ModelSerializer, self).to_internal_value(data)

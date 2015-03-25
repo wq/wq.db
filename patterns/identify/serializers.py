@@ -4,6 +4,15 @@ from wq.db.rest.models import get_object_id
 from .models import Identifier, Authority
 
 
+class IdentifierListSerializer(base.TypedAttachmentListSerializer):
+    def to_internal_value(self, data):
+        data = super(IdentifierListSerializer, self).to_internal_value(data)
+        primary = [ident for ident in data if ident.get('is_primary', None)]
+        if not any(primary) and len(data) > 0:
+            data[0]['is_primary'] = True
+        return data
+
+
 class IdentifierSerializer(base.TypedAttachmentSerializer):
     type_model = Authority
     type_field = 'authority_id'
@@ -16,18 +25,9 @@ class IdentifierSerializer(base.TypedAttachmentSerializer):
     def expected_types(self):
         return [None] + list(Authority.objects.all())
 
-    def create_dict(self, atype, data, fields, index):
-        obj = super(IdentifierSerializer, self).create_dict(
-            atype, data, fields, index
-        )
-        if obj is None:
-            return obj
-        if 'is_primary' not in obj:
-            obj['is_primary'] = (index == 0)
-        return obj
-
     class Meta(base.TypedAttachmentSerializer.Meta):
         model = Identifier
+        list_serializer_class = IdentifierListSerializer
 
 
 class IdentifiedModelSerializer(base.AttachedModelSerializer):

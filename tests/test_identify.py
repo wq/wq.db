@@ -82,16 +82,32 @@ class IdentifyRestTestCase(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
-    def test_identify_post(self):
+    def test_identify_post_classic(self):
         form = {
             'name': 'Test 2',
             'identifier--name': "Test 2",
         }
         form['identifier-%s-name' % self.auth.pk] = "Test 2"
         form['identifier-%s-slug' % self.auth.pk] = "test2"
-        response = self.client.post('/identifiedmodels.json', form)
+        self.validate_post(form)
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_identify_post_jsonform(self):
+        form = {
+            'name': 'Test 2',
+
+            'identifiers[0][name]': "Test 2",
+
+            'identifiers[1][name]': "Test 2",
+            'identifiers[1][authority_id]': self.auth.pk,
+            'identifiers[1][slug]': "test2",
+        }
+        self.validate_post(form)
+
+    def validate_post(self, form):
+        response = self.client.post('/identifiedmodels.json', form)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Test 2")
         self.assertEqual(response.data['id'], "test-2")
 
@@ -103,7 +119,7 @@ class IdentifyRestTestCase(APITestCase):
         self.assertEqual(idents[None]["slug"], "test-2")
         self.assertEqual(idents[self.auth.pk]["slug"], "test2")
 
-    def test_identify_put(self):
+    def test_identify_put_classic(self):
         form = {
             'name': 'Test 1 - Updated',
             'identifier--name': "Test 1 - Updated",
@@ -116,12 +132,30 @@ class IdentifyRestTestCase(APITestCase):
         ident = self.instance.identifiers.get(authority=self.auth)
         form['identifier-%s-id' % self.auth.pk] = ident.pk
 
+    def test_identify_put_jsonform(self):
+        ident = self.instance.identifiers.get(authority=self.auth)
+        form = {
+            'name': 'Test 1 - Updated',
+
+            'identifiers[0][id]': self.instance.primary_identifier.pk,
+            'identifiers[0][name]': "Test 1 - Updated",
+            'identifiers[0][slug]': "test-1-updated",
+
+            'identifiers[1][id]': ident.pk,
+            'identifiers[1][name]': "Test 1B",
+            'identifiers[1][slug]': "test1b",
+            'identifiers[1][type]': self.auth.pk,
+        }
+        self.validate_put(form)
+
+    def validate_put(self, form):
         url = (
             '/identifiedmodels/%s.json' % self.instance.primary_identifier.slug
         )
         response = self.client.put(url, form)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.instance = IdentifiedModel.objects.get(pk=self.instance.pk)
         self.assertEqual(self.instance.name, "Test 1 - Updated")
         self.assertEqual(response.data['id'], "test-1-updated")

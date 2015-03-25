@@ -21,8 +21,8 @@ class LocationListSerializer(base.AttachmentListSerializer):
         else:
             return None
 
-    def to_internal_value(self, vals):
-        vals = self.parent.initial_data.get(self.source, None)
+    def get_value(self, dictionary):
+        vals = dictionary.get(self.field_name, None)
         if isinstance(vals, string_types) and vals.strip() != '':
             vals = json.loads(vals)
         if (isinstance(vals, dict) and
@@ -39,7 +39,7 @@ class LocationListSerializer(base.AttachmentListSerializer):
         else:
             features = []
 
-        return super(LocationListSerializer, self).to_internal_value(features)
+        return features
 
 
 class LocationSerializer(base.AttachmentSerializer):

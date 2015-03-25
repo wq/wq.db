@@ -56,14 +56,31 @@ class AnnotateRestTestCase(APITestCase):
         }
         self.client.force_authenticate(user=self.user)
 
-    def test_annotate_post(self):
+    def test_annotate_post_classic(self):
         form = {
             'name': 'Test 2'
         }
         form['annotation-%s-value' % self.width.pk] = 350
         form['annotation-%s-value' % self.height.pk] = 400
+        self.validate_post(form)
+
+    def test_annotate_post_jsonform(self):
+        form = {
+            'name': 'Test 2',
+
+            'annotations[0][type_id]': self.width.pk,
+            'annotations[0][value]': 350,
+
+            'annotations[1][type_id]': self.height.pk,
+            'annotations[1][value]': 400,
+        }
+        self.validate_post(form)
+
+    def validate_post(self, form):
         response = self.client.post('/annotatedmodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Test 2")
         self.assertIn("annotations", response.data)
         self.assertEqual(len(response.data["annotations"]), 2)
@@ -71,7 +88,7 @@ class AnnotateRestTestCase(APITestCase):
         self.assertEqual(values[self.width.pk], '350')
         self.assertEqual(values[self.height.pk], '400')
 
-    def test_annotate_put(self):
+    def test_annotate_put_classic(self):
         form = {
             'name': 'Test 1 - Updated'
         }
@@ -81,11 +98,29 @@ class AnnotateRestTestCase(APITestCase):
             form[prefix + 'id'] = self.instance.annotations.get(type=atype).pk
             form[prefix + 'value'] = 600
 
+        self.validate_put(form)
+
+    def test_annotate_put_jsonform(self):
+        form = {
+            'name': 'Test 1 - Updated'
+        }
+        for i, aname in enumerate(['width', 'height']):
+            atype = getattr(self, aname)
+            annot = self.instance.annotations.get(type=atype)
+            prefix = 'annotations[%s]' % i
+            form[prefix + '[id]'] = annot.pk
+            form[prefix + '[type_id]'] = atype.pk
+            form[prefix + '[value]'] = 600
+        self.validate_put(form)
+
+    def validate_put(self, form):
         response = self.client.put(
             '/annotatedmodels/%s.json' % self.instance.pk,
             form
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.instance = AnnotatedModel.objects.get(pk=self.instance.pk)
         self.assertEqual(self.instance.name, "Test 1 - Updated")
         self.assertIn("annotations", response.data)
