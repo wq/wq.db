@@ -129,3 +129,18 @@ class AnnotateRestTestCase(APITestCase):
                 self.instance.annotations.get(type=atype).value,
                 '600'
             )
+
+    def test_annotate_list(self):
+        response = self.client.get('/annotations.json')
+        for row in response.data['list']:
+            self.assertIn('annotatedmodel_id', row)
+            self.assertEqual(row['annotatedmodel_id'], self.instance.pk)
+            self.assertNotIn('annotatedmodel', row)
+
+    def test_annotate_detail(self):
+        annot = self.instance.annotations.all()[0]
+        response = self.client.get('/annotations/%s.json' % annot.pk)
+        self.assertIn('annotatedmodel', response.data)
+        data = response.data['annotatedmodel']
+        self.assertEqual(data['id'], self.instance.pk)
+        self.assertEqual(data['label'], str(self.instance))

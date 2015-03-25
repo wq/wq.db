@@ -105,8 +105,13 @@ class TypedAttachmentSerializer(AttachmentSerializer):
             # object is an IdentifiedModel
 
             parent_obj = getattr(obj, self.object_field)
-            idname = get_ct(parent_obj).identifier + '_id'
-            data[idname] = get_object_id(parent_obj)
+            idname = get_ct(parent_obj).identifier
+            data[idname + '_id'] = get_object_id(parent_obj)
+
+            # In detail views, include full parent object (without _id suffix)
+            if self.is_detail:
+                from wq.db.rest import app
+                data[idname] = app.router.serialize(parent_obj)
         return data
 
     class Meta:
