@@ -156,7 +156,9 @@ class RelateRestTestCase(RelateBaseTestCase):
 
     def validate_post_inverse(self, form):
         response = self.client.post('/anotherrelatedmodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Child2")
         self.assertIn("inverserelationships", response.data)
         self.assertEqual(len(response.data["inverserelationships"]), 1)
@@ -237,7 +239,9 @@ class RelateRestTestCase(RelateBaseTestCase):
             '/anotherrelatedmodels/%s.json' % self.child.pk,
             form
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.child = AnotherRelatedModel.objects.get(pk=self.child.pk)
         self.assertEqual(self.child.name, "Child1 - Updated")
         self.assertIn("inverserelationships", response.data)

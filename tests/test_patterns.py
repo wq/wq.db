@@ -92,7 +92,9 @@ class PatternsRestTestCase(APITestCase):
     def validate_identifyrelate_post(self, form):
         response = self.client.post('/identifiedrelatedmodels.json', form)
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Test 3")
         self.assertEqual(response.data['id'], "test-3")
 
@@ -129,7 +131,9 @@ class PatternsRestTestCase(APITestCase):
     def validate_identifymark_post(self, form):
         response = self.client.post('/identifiedmarkedmodels.json', form)
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Test 4")
         self.assertEqual(response.data['id'], "test-4")
 
@@ -181,7 +185,9 @@ class PatternsRestTestCase(APITestCase):
         url = '/identifiedrelatedmodels/test-1.json'
         response = self.client.put(url, form)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.parentinstance = IdentifiedRelatedModel.objects.get(
             pk=self.parentinstance.pk
         )
@@ -241,7 +247,9 @@ class PatternsRestTestCase(APITestCase):
         url = '/identifiedmarkedmodels/test-2.json'
         response = self.client.put(url, form)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.markinstance = IdentifiedMarkedModel.objects.get(
             pk=self.markinstance.pk
         )

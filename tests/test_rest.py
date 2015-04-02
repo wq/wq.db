@@ -42,12 +42,12 @@ class RestTestCase(APITestCase):
     # Test url="" use case
     def test_rest_list_at_root(self):
         response = self.client.get("/.json")
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertTrue(len(response.data['list']) == 1)
 
     def test_rest_detail_at_root(self):
         response = self.client.get('/instance.json')
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertTrue(response.data['description'] == "Test")
 
     # Test nested models with foreign keys
@@ -109,22 +109,22 @@ class RestTestCase(APITestCase):
 
     def test_rest_custom_lookup(self):
         response = self.client.get('/slugmodels/test.json')
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['id'], 'test')
 
     def test_rest_default_per_page(self):
         response = self.client.get('/parents.json')
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 50)
 
     def test_rest_custom_per_page(self):
         response = self.client.get('/childs.json')
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 100)
 
     def test_rest_limit(self):
         response = self.client.get('/childs.json?limit=10')
-        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
 
 
@@ -147,7 +147,9 @@ class RestPostTestCase(APITestCase):
 
         # Test for expected response
         response = self.client.post('/geometrymodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
 
         # Double-check ORM model & geometry attribute
         obj = GeometryModel.objects.get(id=response.data['id'])
@@ -167,7 +169,9 @@ class RestPostTestCase(APITestCase):
 
         # Test for expected response
         response = self.client.post('/geometrymodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
 
         # Double-check ORM model & geometry attribute
         obj = GeometryModel.objects.get(id=response.data['id'])

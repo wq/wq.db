@@ -44,7 +44,9 @@ class LocateRestTestCase(APITestCase):
 
         # Test for expected response
         response = self.client.post('/locatedmodels.json', form)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
         self.assertEqual(response.data['name'], "Test 2")
         self.assertIn("locations", response.data)
         self.assertEqual(len(response.data["locations"]), 2)
@@ -99,7 +101,9 @@ class LocateRestTestCase(APITestCase):
             '/locatedmodels/%s.json' % self.instance.pk,
             form
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
         self.instance = LocatedModel.objects.get(pk=self.instance.pk)
         self.assertEqual(self.instance.name, "Test 1 - Updated")
         self.assertIn("locations", response.data)

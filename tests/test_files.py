@@ -17,8 +17,7 @@ class FilesTestCase(APITestCase):
         with open(filename, 'rb') as f:
             response = self.client.post('/files.json', {"file": f})
             self.assertTrue(
-                status.is_success(response.status_code),
-                "error uploading file"
+                status.is_success(response.status_code), response.data
             )
             fileid = response.data['id']
 

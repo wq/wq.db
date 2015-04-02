@@ -120,17 +120,23 @@ class ModelSerializer(serializers.ModelSerializer):
         # In list views, remove [fieldname] as an attribute in favor of
         # [fieldname]_id.
         for name, field in info.forward_relations.items():
-            if name in getattr(self.Meta, "exclude", []):
+            include = getattr(self.Meta, "fields", [])
+            exclude = getattr(self.Meta, "exclude", [])
+            if name in exclude or (include and name not in include):
+                fields.pop(name, None)
                 continue
 
             id_field, id_field_kwargs = self.build_relational_field(
-                name, info.forward_relations[name],
+                name, field
             )
             id_field_kwargs['source'] = name
             fields[name + '_id'] = id_field(**id_field_kwargs)
 
-            if not (self.is_detail and name == 'user'):
-                fields.pop(name, None)
+            if name in fields:
+                if self.is_detail:
+                    fields[name].read_only = True
+                else:
+                    del fields[name]
 
         return fields
 
