@@ -133,9 +133,13 @@ class ModelSerializer(serializers.ModelSerializer):
             fields[name + '_id'] = id_field(**id_field_kwargs)
 
             if name in fields:
-                if self.is_detail:
+                # Update/remove DRF default foreign key field (w/o _id)
+                if self.is_detail and isinstance(
+                        fields[name], serializers.Serializer):
+                    # Nested representation, keep for detail template context
                     fields[name].read_only = True
                 else:
+                    # Otherwise we don't need this field
                     del fields[name]
 
         return fields
