@@ -1,0 +1,12 @@
+<h1>{{label}}</h1>
+<p>{{description}}</p>
+<h3>OneToOneModel</h3>
+{{#onetoonemodel}}
+<p><a href="/onetoonemodels/{{id}}">{{label}}</a></p>
+{{/onetoonemodel}}
+<h3>ExtraModels</h3>
+<ul>
+{{#extramodels}}
+  <li><a href="/extramodels/{{id}}">{{label}}</a></li>
+{{/extramodels}}
+</ul>

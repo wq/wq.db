@@ -30,7 +30,11 @@ DATABASES = {
 }
 
 ROOT_URLCONF = "tests.urls"
-MEDIA_ROOT = os.path.join(os.path.dirname(__file__), "media")
+BASE_DIR = os.path.dirname(__file__)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, "templates"),
+)
 
 LANGUAGES = (
     ('en', 'English'),

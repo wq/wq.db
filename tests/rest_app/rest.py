@@ -8,6 +8,7 @@ from .serializers import RootModelSerializer
 app.router.register_model(
     RootModel,
     url="",
+    lookup="slug",
     serializer=RootModelSerializer,
 )
 app.router.register_model(UserManagedModel)

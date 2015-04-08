@@ -1,11 +1,14 @@
 from django.db import models
-from wq.db.patterns import models as patterns
 from django.contrib.gis.db.models import GeometryField, GeoManager
 from django.conf import settings
 
 
-class RootModel(patterns.IdentifiedModel):
+class RootModel(models.Model):
+    slug = models.SlugField()
     description = models.TextField()
+
+    def __str__(self):
+        return self.slug
 
 
 class OneToOneModel(models.Model):
@@ -42,19 +45,31 @@ class UserManagedModel(models.Model):
 class Parent(models.Model):
     name = models.CharField(max_length=10)
 
+    def __str__(self):
+        return self.name
+
 
 class Child(models.Model):
     name = models.CharField(max_length=10)
     parent = models.ForeignKey(Parent)
 
+    def __str__(self):
+        return self.name
+
 
 class ItemType(models.Model):
     name = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.name
 
 
 class Item(models.Model):
     name = models.CharField(max_length=10)
     type = models.ForeignKey(ItemType)
+
+    def __str__(self):
+        return self.name
 
 
 class GeometryModel(models.Model):

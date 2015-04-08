@@ -10,9 +10,10 @@ from django.contrib.auth.models import User
 
 class RestTestCase(APITestCase):
     def setUp(self):
-        instance = RootModel.objects.find('instance')
-        instance.description = "Test"
-        instance.save()
+        instance = RootModel.objects.create(
+            slug='instance',
+            description="Test",
+        )
         for cls in OneToOneModel, ForeignKeyModel, ExtraModel:
             cls.objects.create(
                 root=instance,
@@ -54,7 +55,7 @@ class RestTestCase(APITestCase):
     def test_rest_detail_nested_foreignkeys(self):
         response = self.client.get('/instance.json')
 
-        # Include OneToOne fields, and ForeignKeys with related_name=url
+        # Include explicitly declared serializers for related fields
         self.assertIn("onetoonemodel", response.data)
         self.assertEqual(
             response.data["onetoonemodel"]["label"],
@@ -66,7 +67,7 @@ class RestTestCase(APITestCase):
             "extramodel for instance"
         )
 
-        # ForeignKeys without related_name=url should not be included
+        # Related fields without explicit serializers will not be included
         self.assertNotIn("extramodel_set", response.data)
         self.assertNotIn("foreignkeymodel_set", response.data)
         self.assertNotIn("foreignkeymodels", response.data)
@@ -79,17 +80,6 @@ class RestTestCase(APITestCase):
         response = self.client.get('/itemtypes/1/items.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
-
-    # Ensure nested serializers are created for SerializableGenericRelations
-    # (e.g. identifiers), but only for detail views
-    def test_rest_detail_nested_identifiers(self):
-        response = self.client.get('/instance.json')
-        self.assertIn('identifiers', response.data)
-        self.assertEqual(response.data['identifiers'][0]['slug'], 'instance')
-
-    def test_rest_list_nested_identifiers(self):
-        response = self.client.get('/.json')
-        self.assertNotIn('identifiers', response.data['list'][0])
 
     def test_rest_detail_user_serializer(self):
         response = self.client.get('/usermanagedmodels/1.json')

@@ -1,12 +1,21 @@
 # Use Django's template loader with Pystache's renderer
-
+# NOTE: Support for multiple template engines was introduced in Django 1.8.
+# This code includes hacks to support both 1.7 and 1.8.  When 1.9 comes out and
+# we drop support for 1.7, we should be able to clean this up a bit.
 from pystache.renderer import Renderer as PystacheRenderer
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 
 
 class Renderer(PystacheRenderer):
+    def __init__(self, template, *args, **kwargs):
+        self.template = template
+        return super(Renderer, self).__init__(*args, **kwargs)
+
     def get_template_source(self, name):
-        template, origin = Loader().load_template(name)
+        kwargs = {}
+        if self.template.engine:
+            kwargs['engine'] = self.template.engine
+        template, origin = Loader(**kwargs).load_template(name)
         return template.source
 
     def _make_load_template(self):
@@ -22,15 +31,15 @@ class Renderer(PystacheRenderer):
             return ""
         return str(val)
 
-renderer = Renderer()
-
 
 class Template(object):
-    def __init__(self, source):
+    def __init__(self, source, engine):
         # save raw source for actual rendering by Pystache
         self.source = source
+        self.engine = engine
 
     def render(self, context):
+        renderer = Renderer(template=self)
         return renderer.render(self.source, *context)
 
 
@@ -39,5 +48,5 @@ class Loader(FileSystemLoader):
         source, origin = self.load_template_source(
             template_name, template_dirs
         )
-        template = Template(source)
+        template = Template(source, engine=getattr(self, 'engine', None))
         return template, origin

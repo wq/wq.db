@@ -1,0 +1,10 @@
+<p>{{count}} Records</p>
+{{>paginator}}
+{{#parent_id}}
+<h3>Childs for <a href="/{{parent_url}}">{{parent_label}}</a></h3>
+{{/parent_id}}
+<ul>
+{{#list}}
+  <li><a href="/childs/{{id}}">{{label}}</a></li>
+{{/list}}
+</ul>

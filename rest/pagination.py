@@ -17,7 +17,7 @@ class Pagination(PageNumberPagination):
             ('page', self.page.number),
             ('pages', self.page.paginator.num_pages),
             ('per_page', self.page.paginator.per_page),
-            ('multiple', self.page.paginator.count > 1),
+            ('multiple', self.page.paginator.num_pages > 1),
 
             # Actual data ('results' in DRF)
             ('list', data)

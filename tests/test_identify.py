@@ -82,6 +82,17 @@ class IdentifyRestTestCase(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
+    # Ensure nested serializers are created for identifiers
+    # but only for detail views
+    def test_identify_detail_nested_identifiers(self):
+        response = self.client.get('/identifiedmodels/test-1.json')
+        self.assertIn('identifiers', response.data)
+        self.assertEqual(response.data['identifiers'][0]['slug'], 'test-1')
+
+    def test_identify_list_nested_identifiers(self):
+        response = self.client.get('/identifiedmodels.json')
+        self.assertNotIn('identifiers', response.data['list'][0])
+
     def test_identify_post_classic(self):
         form = {
             'name': 'Test 2',
