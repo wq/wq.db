@@ -7,8 +7,8 @@ env:
    - DRF="djangorestframework==3.1.0"
    - DRP="rest-pandas==0.3.1"
   matrix:
-   - DJANGO="django==1.6.11"
    - DJANGO="django==1.7.7"
+   - DJANGO="django==1.8"
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
