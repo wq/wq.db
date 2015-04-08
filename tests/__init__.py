@@ -6,10 +6,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', "tests.settings")
 from django.test.utils import setup_test_environment
 setup_test_environment()
 
-# Django 1.7
 import django
-if hasattr(django, 'setup'):
-    django.setup()
+django.setup()
 
 from django.core.management import call_command
-call_command('syncdb', interactive=False)
+# Migrate auth first since some unmigrated test apps depend on it...
+call_command('migrate', 'auth', interactive=False)
+call_command('migrate', interactive=False)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.template.base import TemplateDoesNotExist
 
 from .models import Markdown
@@ -10,7 +10,7 @@ except (ImportError, TemplateDoesNotExist):
     from django.contrib.admin import StackedInline as InlineAdmin
 
 
-class MarkdownInline(generic.GenericTabularInline, InlineAdmin):
+class MarkdownInline(GenericTabularInline, InlineAdmin):
     model = Markdown
     extra = 0
 

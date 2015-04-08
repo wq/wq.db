@@ -1,11 +1,11 @@
-from django.contrib.contenttypes import generic
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 
 from .models import Annotation, AnnotatedModel
 from .forms import AnnotationForm
 
 
-class AnnotationInline(generic.GenericTabularInline):
+class AnnotationInline(GenericTabularInline):
     model = Annotation
     form = AnnotationForm
     extra = 0

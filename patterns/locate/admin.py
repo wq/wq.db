@@ -1,10 +1,10 @@
-from django.contrib.contenttypes import generic
 from django.contrib.gis import admin
 from django.contrib.gis.db import models
+from django.contrib.contenttypes.admin import GenericTabularInline
 from .models import Location, SRID
 
 
-class LocationInline(generic.GenericTabularInline):
+class LocationInline(GenericTabularInline):
     model = Location
     extra = 1  # Otherwise OpenLayers will not initialize properly...
 

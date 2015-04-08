@@ -1,9 +1,14 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation
+)
 from wq.db.patterns.base.models import NaturalKeyModel
 from django.core.exceptions import FieldError
 from collections import OrderedDict
+
+from django.conf import settings
+INSTALLED = ('wq.db.patterns.annotate' in settings.INSTALLED_APPS)
 
 
 class AnnotationType(NaturalKeyModel):
@@ -18,6 +23,7 @@ class AnnotationType(NaturalKeyModel):
     class Meta:
         unique_together = [['name']]
         db_table = 'wq_annotationtype'
+        abstract = not INSTALLED
 
 
 class AnnotationManager(models.Manager):
@@ -54,7 +60,7 @@ class AnnotationManager(models.Manager):
             kwargs['content_type'] = ctype
 
         for rel in self.model._meta.get_all_related_many_to_many_objects():
-            if not isinstance(rel.field, generic.GenericRelation):
+            if not isinstance(rel.field, GenericRelation):
                 continue
             rname = rel.field.related_query_name()
             for key in kwargs.keys():
@@ -70,7 +76,7 @@ class Annotation(models.Model):
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(db_index=True)
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     objects = AnnotationManager()
 
@@ -85,10 +91,11 @@ class Annotation(models.Model):
 
     class Meta:
         db_table = 'wq_annotation'
+        abstract = not INSTALLED
 
 
 class AnnotatedModel(models.Model):
-    annotations = generic.GenericRelation(Annotation)
+    annotations = GenericRelation(Annotation)
 
     @property
     def vals(self):

@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation
+)
+from django.conf import settings
+INSTALLED = ('wq.db.patterns.relate' in settings.INSTALLED_APPS)
 
 
 class RelatedModelManager(models.Manager):
@@ -29,12 +33,12 @@ class RelatedModelManager(models.Manager):
 
 
 class RelatedModel(models.Model):
-    relationships = generic.GenericRelation(
+    relationships = GenericRelation(
         'Relationship',
         content_type_field='from_content_type',
         object_id_field='from_object_id',
     )
-    inverserelationships = generic.GenericRelation(
+    inverserelationships = GenericRelation(
         'InverseRelationship',
         content_type_field='to_content_type',
         object_id_field='to_object_id',
@@ -91,13 +95,13 @@ class Relationship(models.Model):
     # Objects can contain pointers to any model
     from_content_type = models.ForeignKey(ContentType, related_name='+')
     from_object_id = models.PositiveIntegerField()
-    from_content_object = generic.GenericForeignKey(
+    from_content_object = GenericForeignKey(
         'from_content_type', 'from_object_id'
     )
 
     to_content_type = models.ForeignKey(ContentType, related_name='+')
     to_object_id = models.PositiveIntegerField()
-    to_content_object = generic.GenericForeignKey(
+    to_content_object = GenericForeignKey(
         'to_content_type', 'to_object_id'
     )
 
@@ -170,6 +174,7 @@ class Relationship(models.Model):
 
     class Meta:
         db_table = 'wq_relationship'
+        abstract = not INSTALLED
 
 
 class InverseRelationshipManager(models.Manager):
@@ -207,7 +212,8 @@ class InverseRelationship(Relationship):
         return InverseRelationshipType.objects.get_type(self.type_id)
 
     class Meta:
-        proxy = True
+        proxy = INSTALLED
+        abstract = not INSTALLED
 
 
 class RelationshipTypeManager(models.Manager):
@@ -246,6 +252,7 @@ class RelationshipType(models.Model):
 
     class Meta:
         db_table = 'wq_relationshiptype'
+        abstract = not INSTALLED
 
 
 class InverseRelationshipTypeManager(RelationshipTypeManager):
@@ -271,4 +278,5 @@ class InverseRelationshipType(RelationshipType):
         return self.inverse_name
 
     class Meta:
-        proxy = True
+        proxy = INSTALLED
+        abstract = not INSTALLED

@@ -1,9 +1,12 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation
+)
 from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 from django.conf import settings
+INSTALLED = ('wq.db.patterns.identify' in settings.INSTALLED_APPS)
 
 
 WQ_IDENTIFIER_ORDER = getattr(
@@ -67,14 +70,14 @@ class IdentifierManager(models.Manager):
             name = name[:45]
         slug = slugify(name)
         exists = self.filter(
-            content_type__name=model,
+            content_type__model=model,
             slug=slug
         )
         num = ''
         while exists.count() > 0:
             slug = slugify('%s %s' % (name, num))
             exists = self.filter(
-                content_type__name=model,
+                content_type__model=model,
                 slug=slug
             )
             if num == '':
@@ -93,7 +96,7 @@ class Identifier(models.Model):
     # Identifer can contain a pointer to any model
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     objects = IdentifierManager()
 
@@ -118,6 +121,7 @@ class Identifier(models.Model):
     class Meta:
         db_table = 'wq_identifier'
         ordering = WQ_IDENTIFIER_ORDER
+        abstract = not INSTALLED
 
 
 class PrimaryIdentifierManager(IdentifierManager):
@@ -191,8 +195,8 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
 
 class IdentifiedModel(NaturalKeyModel):
-    identifiers = generic.GenericRelation(Identifier)
-    primary_identifiers = generic.GenericRelation(PrimaryIdentifier)
+    identifiers = GenericRelation(Identifier)
+    primary_identifiers = GenericRelation(PrimaryIdentifier)
     objects = IdentifiedModelManager()
 
     @classmethod
@@ -230,9 +234,10 @@ class Authority(models.Model):
     homepage = models.URLField(null=True, blank=True)
     object_url = models.URLField(null=True, blank=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name_plural = 'authorities'
         db_table = 'wq_identifiertype'
-
-    def __str__(self):
-        return self.name
+        abstract = not INSTALLED

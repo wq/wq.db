@@ -1,26 +1,29 @@
-from django.contrib.contenttypes import generic
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django import forms
 
 from .models import (
     Relationship, InverseRelationship, RelatedModel,
-    RelationshipType, InverseRelationshipType
+    RelationshipType, InverseRelationshipType,
+    INSTALLED,
 )
 
 
 class RelationshipForm(forms.ModelForm):
-    type = forms.models.ModelChoiceField(
-        queryset=RelationshipType.objects.filter(computed=False)
-    )
+    if INSTALLED:
+        type = forms.models.ModelChoiceField(
+            queryset=RelationshipType.objects.filter(computed=False)
+        )
 
 
 class InverseRelationshipForm(forms.ModelForm):
-    type = forms.models.ModelChoiceField(
-        queryset=InverseRelationshipType.objects.filter(computed=False)
-    )
+    if INSTALLED:
+        type = forms.models.ModelChoiceField(
+            queryset=InverseRelationshipType.objects.filter(computed=False)
+        )
 
 
-class RelationshipInline(generic.GenericTabularInline):
+class RelationshipInline(GenericTabularInline):
     model = Relationship
     ct_field = "from_content_type"
     ct_fk_field = "from_object_id"
@@ -32,7 +35,7 @@ class RelationshipInline(generic.GenericTabularInline):
         return Relationship.objects.filter(computed=False)
 
 
-class InverseRelationshipInline(generic.GenericTabularInline):
+class InverseRelationshipInline(GenericTabularInline):
     model = InverseRelationship
     ct_field = "to_content_type"
     ct_fk_field = "to_object_id"

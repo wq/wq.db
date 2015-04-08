@@ -1,10 +1,10 @@
-from django.contrib.contenttypes import generic
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 
 from .models import Identifier, IdentifiedModel, Authority
 
 
-class IdentifierInline(generic.GenericTabularInline):
+class IdentifierInline(GenericTabularInline):
     model = Identifier
     prepopulated_fields = {"slug": ("name",)}
     extra = 0

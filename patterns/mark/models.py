@@ -1,12 +1,15 @@
 from django.db import models
-from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation
+)
 from django.utils.translation import get_language_from_request
 
 import swapper
 swapper.set_app_prefix('mark', 'WQ')
 
 from django.conf import settings
+INSTALLED = ('wq.db.patterns.relate' in settings.INSTALLED_APPS)
 
 
 class BaseMarkdownType(models.Model):
@@ -48,6 +51,7 @@ class MarkdownType(BaseMarkdownType):
     class Meta:
         swappable = swapper.swappable_setting('mark', 'MarkdownType')
         db_table = "wq_markdowntype"
+        abstract = not INSTALLED
 
 
 class Markdown(models.Model):
@@ -57,7 +61,7 @@ class Markdown(models.Model):
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey()
+    content_object = GenericForeignKey()
 
     def __str__(self):
         return self.summary
@@ -70,10 +74,11 @@ class Markdown(models.Model):
 
     class Meta:
         db_table = "wq_markdown"
+        abstract = not INSTALLED
 
 
 class MarkedModel(models.Model):
-    markdown = generic.GenericRelation(Markdown)
+    markdown = GenericRelation(Markdown)
 
     def get_markdown(self, type):
         markdowns = self.markdown.filter(type=type)
