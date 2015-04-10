@@ -7,7 +7,14 @@
 [![Build Status](https://travis-ci.org/wq/wq.db.svg?branch=master)](https://travis-ci.org/wq/wq.db)
 [![PyPI Package](https://pypip.in/version/wq.db/badge.svg?style=flat)](https://pypi.python.org/pypi/wq.db)
 
-Tested on Python 2.7 and 3.4, with Django 1.6 and 1.7.
+#### Support Matrix
+
+The master version of wq.db is no longer compatible with the DRF 2.x branch.  The following library versions are supported:
+
+          | Python | Django | Django REST Framework
+------------|--------|--------|-----------------------
+**wq.db 0.8.0-dev** | 2.7 & 3.4 | 1.7 & 1.8 | 3.1
+**wq.db 0.7.2** | 2.7 & 3.4 | 1.6 & 1.7 | 2.4
 
 ## Getting Started
 
