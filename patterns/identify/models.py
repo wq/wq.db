@@ -47,7 +47,9 @@ class IdentifierManager(models.Manager):
             ids = self.filter_by_identifier(identifier)
             if exclude_apps:
                 ids = ids.exclude(content_type__app_label__in=exclude_apps)
-            items = ids.distinct('content_type', 'object_id').count()
+            items = ids.order_by(
+                'content_type', 'object_id'
+            ).distinct('content_type', 'object_id').count()
             if items == 1:
                 if resolved is None:
                     resolved = {}

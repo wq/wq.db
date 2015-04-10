@@ -144,10 +144,13 @@ class AttachedModelSerializer(ModelSerializer):
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
                 self.set_parent_object(attachment, instance, name)
-                exist = model.objects.get(pk=attachment['id'])
-                for key, val in attachment.items():
-                    setattr(exist, key, val)
-                exist.save()
+                if 'id' in attachment:
+                    exist = model.objects.get(pk=attachment['id'])
+                    for key, val in attachment.items():
+                        setattr(exist, key, val)
+                    exist.save()
+                else:
+                    model.objects.create(**attachment)
         return obj
 
     def extract_attachments(self, validated_data):

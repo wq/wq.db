@@ -17,8 +17,9 @@ def search(query, auto=True, content_type=None, authority_id=None):
     id_matches = Identifier.objects.filter_by_identifier(query)
     id_matches = id_matches.filter(**idfilter)
     # If "auto" mode and only one distinct object, return first identifier
-    if id_matches.distinct(*distinct_on).count() == 1 and auto:
-        return id_matches[0:1]
+    if auto:
+        if len(id_matches.order_by(*distinct_on).distinct(*distinct_on)) == 1:
+            return id_matches[0:1]
 
     # Otherwise, include any identifiers containing the case-insensitive string
     id_matches = id_matches | Identifier.objects.filter(
