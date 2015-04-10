@@ -4,6 +4,7 @@
 # we drop support for 1.7, we should be able to clean this up a bit.
 from pystache.renderer import Renderer as PystacheRenderer
 from django.template.loaders.filesystem import Loader as FileSystemLoader
+from django.template.base import Template as DjangoTemplate
 
 
 class Renderer(PystacheRenderer):
@@ -32,13 +33,13 @@ class Renderer(PystacheRenderer):
         return str(val)
 
 
-class Template(object):
+class Template(DjangoTemplate):
     def __init__(self, source, engine):
         # save raw source for actual rendering by Pystache
         self.source = source
         self.engine = engine
 
-    def render(self, context):
+    def _render(self, context):
         renderer = Renderer(template=self)
         return renderer.render(self.source, *context)
 
