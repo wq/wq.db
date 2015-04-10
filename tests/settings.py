@@ -2,7 +2,9 @@ import os
 
 SECRET_KEY = '1234'
 
-MIDDLEWARE_CLASSES = tuple()
+MIDDLEWARE_CLASSES = (
+    'django.middleware.csrf.CsrfViewMiddleware',
+)
 
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
@@ -35,6 +37,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, "templates"),
 )
+VERSION_TXT = os.path.join(BASE_DIR, "version.txt")
 
 LANGUAGES = (
     ('en', 'English'),

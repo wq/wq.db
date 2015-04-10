@@ -27,3 +27,18 @@ class AuthTestCase(APITestCase):
 
         self.assertEqual(account['label'], "testuser@example.com")
         self.assertEqual(account['provider_label'], 'Google')
+
+    def test_auth_context_processors(self):
+        response = self.client.get('/auth_context')
+        result = response.content.decode('utf-8')
+        self.assertHTMLEqual(
+            result,
+            """
+            <div>
+                <p>testuser</p>
+                <ul>
+                  <li>Google - testuser@example.com</li>
+                </ul>
+            </div>
+            """
+        )

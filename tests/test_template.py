@@ -171,3 +171,14 @@ class TemplateTestCase(APITestCase):
            </ul>
         """
         self.check_html("/childs/?limit=10", html)
+
+    def test_template_context_processors(self):
+        resp = self.client.get('/rest_context')
+        token = resp.cookies['csrftoken'].value
+        self.check_html("/rest_context", """
+            <p>/rest_context</p>
+            <p>0.0.0</p>
+            <p>
+              <input name="csrfmiddlewaretoken" type="hidden" value="{csrf}">
+            </p>
+        """.format(csrf=token))

@@ -19,3 +19,6 @@ app.router.register_model(Item)
 app.router.register_model(GeometryModel)
 app.router.register_model(SlugModel, lookup="code")
 app.router.set_extra_config(debug=True)
+
+app.router.add_page("rest_context", {})
+app.router.add_page("auth_context", {})

@@ -4,10 +4,10 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.csrf',  # Django 1.7/1.8
     'django.contrib.auth.context_processors.auth',
     'wq.db.rest.auth.context_processors.is_authenticated',
     'wq.db.rest.auth.context_processors.social_auth',
-    'wq.db.rest.auth.context_processors.csrftoken',
     'wq.db.rest.context_processors.version',
     'wq.db.rest.context_processors.pages_info',
 )
