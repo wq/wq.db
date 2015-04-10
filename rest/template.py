@@ -5,6 +5,7 @@
 from pystache.renderer import Renderer as PystacheRenderer
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 from django.template.base import Template as DjangoTemplate
+from django.utils.encoding import force_text
 
 
 class Renderer(PystacheRenderer):
@@ -30,7 +31,7 @@ class Renderer(PystacheRenderer):
     def str_coerce(self, val):
         if val is None:
             return ""
-        return str(val)
+        return force_text(val)
 
 
 class Template(DjangoTemplate):
