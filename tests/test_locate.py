@@ -64,7 +64,7 @@ class LocateRestTestCase(APITestCase):
         """
         PUTting to a locatedmodel's viewset with a GeoJSON FeatureCollection in
         the "locations" field should result in existing Location objects being
-        updated.
+        updated, or (if necessary) new Location objects being created.
         """
 
         existing = self.instance.locations.all()
@@ -91,6 +91,13 @@ class LocateRestTestCase(APITestCase):
                             "type": "Point",
                             "coordinates": [-93, 48]
                         }
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [-94, 49]
+                        }
                     }
                 ]
             })
@@ -107,6 +114,7 @@ class LocateRestTestCase(APITestCase):
         self.instance = LocatedModel.objects.get(pk=self.instance.pk)
         self.assertEqual(self.instance.name, "Test 1 - Updated")
         self.assertIn("locations", response.data)
+        self.assertEqual(len(response.data["locations"]), 3)
 
         # Double-check ORM models & geometry attributes
         locs = self.instance.locations.all()
@@ -114,3 +122,6 @@ class LocateRestTestCase(APITestCase):
         self.assertEqual(geom.srid, 4326)
         self.assertEqual(geom.x, -92)
         self.assertEqual(geom.y, 47)
+
+        newlocs = locs.exclude(id__in=[eid1, eid2]).all()
+        self.assertEqual(len(newlocs), 1)
