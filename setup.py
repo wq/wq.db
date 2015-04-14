@@ -99,7 +99,7 @@ setup(
         'Django>=1.6',
         'djangorestframework>=3.1',
         'pystache',
-        'python-social-auth',
+        'python-social-auth!=0.2.5',
         'swapper>=0.2',
         'Markdown',
     ],
