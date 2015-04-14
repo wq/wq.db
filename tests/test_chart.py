@@ -84,6 +84,8 @@ class ChartTestCase(APITestCase):
 
         dataset = datasets[0]
         self.assertEqual(dataset['series'], 'series1')
+        self.assertEqual(dataset['parameter'], 'temp')
+        self.assertEqual(dataset['units'], '-')
         self.assertEqual(len(dataset['data']), 1)
 
         stats = dataset['data'][0]

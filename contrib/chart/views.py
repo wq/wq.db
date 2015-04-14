@@ -155,7 +155,7 @@ class BoxPlotMixin(object):
             if g[0] != serializer.value_field:
                 continue
             series_info = g[-1]
-            param_info = g[1:-1]
+            param_info = list(reversed(g[1:-1]))
             if "year" in group or "month" in group:
                 groupby = "year" if "year" in group else "month"
                 dstats = self.compute_boxplots(series, groupby)
