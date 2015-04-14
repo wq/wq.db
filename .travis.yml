@@ -4,8 +4,9 @@ python:
  - "3.4"
 env:
   global:
-   - DRF="djangorestframework==3.1.0"
+   - DRF="djangorestframework==3.1.1"
    - DRP="rest-pandas==0.3.1"
+   - MATPLOTLIB="matplotlib>=1.4"
   matrix:
    - DJANGO="django==1.7.7"
    - DJANGO="django==1.8"
@@ -16,5 +17,6 @@ install:
  - pip install $DJANGO
  - pip install $DRF
  - pip install $DRP
+ - pip install $MATPLOTLIB
 script:
  - python setup.py test
