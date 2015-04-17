@@ -6,6 +6,7 @@ from tests.rest_app.models import (
     Parent, ItemType, GeometryModel, SlugModel,
 )
 from django.contrib.auth.models import User
+from django.core.exceptions import ImproperlyConfigured
 
 
 class RestTestCase(APITestCase):
@@ -116,6 +117,36 @@ class RestTestCase(APITestCase):
         response = self.client.get('/childs.json?limit=10')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
+
+    def test_rest_model_conflict(self):
+        from wq.db import rest
+        from tests.conflict_app.models import Item
+
+        # Register model with same name as existing model
+        with self.assertRaises(ImproperlyConfigured) as e:
+            rest.router.register_model(Item)
+        self.assertEqual(
+            e.exception.args[0],
+            "Could not register <class 'tests.conflict_app.models.Item'>: "
+            "the name 'item' was already registered for "
+            "<class 'tests.rest_app.models.Item'>"
+        )
+
+        # Register model with different name, but same URL as existing model
+        with self.assertRaises(ImproperlyConfigured) as e:
+            rest.router.register_model(Item, name="conflictitem")
+        self.assertEqual(
+            e.exception.args[0],
+            "Could not register <class 'tests.conflict_app.models.Item'>: "
+            "the url 'items' was already registered for "
+            "<class 'tests.rest_app.models.Item'>"
+        )
+
+        # Register model with different name and URL
+        rest.router.register_model(
+            Item, name="conflictitem", url="conflictitems"
+        )
+        self.assertIn("conflictitem", rest.router.get_config()['pages'])
 
 
 class RestPostTestCase(APITestCase):

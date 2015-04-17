@@ -19,6 +19,7 @@ INSTALLED_APPS = (
     'wq.db.patterns.locate',
     'wq.db.contrib.files',
     'tests.rest_app',
+    'tests.conflict_app',
     'tests.patterns_app',
     'tests.chart_app',
 )

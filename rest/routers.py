@@ -1,6 +1,7 @@
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
+from django.core.exceptions import ImproperlyConfigured
 
 from django.contrib.auth.models import AnonymousUser
 
@@ -28,6 +29,7 @@ class ModelRouter(DefaultRouter):
     _config = {}
     _page_names = {}
     _page_models = {}
+    _url_models = {}
     _extra_config = {}
 
     include_root_view = False
@@ -72,9 +74,26 @@ class ModelRouter(DefaultRouter):
             url = force_text(model._meta.verbose_name_plural)
             kwargs['url'] = url.replace(' ', '')
 
+        other_model = self._page_models.get(kwargs['name'], None)
+        if other_model and other_model != model:
+            raise ImproperlyConfigured(
+                "Could not register %s: "
+                "the name '%s' was already registered for %s"
+                % (model, kwargs['name'], other_model)
+            )
+
+        other_model = self._url_models.get(kwargs['url'], None)
+        if other_model and other_model != model:
+            raise ImproperlyConfigured(
+                "Could not register %s: "
+                "the url '%s' was already registered for %s"
+                % (model, kwargs['url'], other_model)
+            )
+
         self.register_config(model, kwargs)
         self._page_names[model] = kwargs['name']
         self._page_models[kwargs['name']] = model
+        self._url_models[kwargs['url']] = model
 
     def register_viewset(self, model, viewset):
         self._viewsets[model] = viewset

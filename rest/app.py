@@ -6,4 +6,4 @@ warnings.warn(
 )
 
 
-from . import ModelRouter as Router, router, autodiscover
+from . import ModelRouter as Router, router, autodiscover  # NOQA
