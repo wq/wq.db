@@ -138,7 +138,7 @@ class PrimaryIdentifier(Identifier):
     objects = PrimaryIdentifierManager()
 
     class Meta:
-        proxy = True
+        proxy = INSTALLED
 
 
 class IdentifiedModelManager(NaturalKeyModelManager):
