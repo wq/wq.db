@@ -1,5 +1,5 @@
-from wq.db.rest import app
+from wq.db import rest
 from .models import Location
 from .serializers import LocationSerializer
 
-app.router.register_model(Location, serializer=LocationSerializer)
+rest.router.register_model(Location, serializer=LocationSerializer)

@@ -1,14 +1,14 @@
 from django.core.management.base import NoArgsCommand
-from wq.db.rest import app
+from wq.db import rest
 import json
 
 
 class Command(NoArgsCommand):
     def handle_noargs(self, **options):
-        app.autodiscover()
+        rest.autodiscover()
         self.stdout.write(
             json.dumps(
-                app.router.get_config(),
+                rest.router.get_config(),
                 indent=4,
             )
         )

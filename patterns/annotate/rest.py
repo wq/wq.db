@@ -1,6 +1,6 @@
-from wq.db.rest import app
+from wq.db import rest
 from .serializers import AnnotationSerializer
 from .models import Annotation, AnnotationType
 
-app.router.register_model(Annotation, serializer=AnnotationSerializer)
-app.router.register_model(AnnotationType)
+rest.router.register_model(Annotation, serializer=AnnotationSerializer)
+rest.router.register_model(AnnotationType)

@@ -2,18 +2,18 @@ from django.contrib.auth import authenticate, login, logout
 from django.middleware import csrf
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from wq.db.rest import app
+from wq.db import rest
 from wq.db.rest.models import get_object_id
 from wq.db.rest.views import SimpleViewSet, ModelViewSet
 
 
 class AuthView(SimpleViewSet):
     def user_info(self, request):
-        user_dict = app.router.serialize(request.user)
+        user_dict = rest.router.serialize(request.user)
         user_dict['id'] = get_object_id(request.user)
         return Response({
             'user': user_dict,
-            'config': app.router.get_config(request.user),
+            'config': rest.router.get_config(request.user),
             'csrftoken': csrf.get_token(request),
         })
 

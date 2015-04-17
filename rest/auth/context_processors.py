@@ -1,4 +1,4 @@
-from wq.db.rest import app
+from wq.db import rest
 
 
 def is_authenticated(request):
@@ -16,7 +16,7 @@ def is_authenticated(request):
 
     if request.user.is_authenticated():
         return {
-            'is_authenticated': {'user': app.router.serialize(request.user)}
+            'is_authenticated': {'user': rest.router.serialize(request.user)}
         }
     else:
         return {'is_authenticated': False}
@@ -31,7 +31,7 @@ def social_auth(request):
     return {
         'social_auth': {
             'accounts': [
-                app.router.serialize(auth)
+                rest.router.serialize(auth)
                 for auth in request.user.social_auth.all()
             ]
         }

@@ -110,8 +110,8 @@ class TypedAttachmentSerializer(AttachmentSerializer):
 
             # In detail views, include full parent object (without _id suffix)
             if self.is_detail:
-                from wq.db.rest import app
-                data[idname] = app.router.serialize(parent_obj)
+                from wq.db import rest
+                data[idname] = rest.router.serialize(parent_obj)
         return data
 
     class Meta:

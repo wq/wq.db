@@ -1,4 +1,4 @@
-from wq.db.rest import app
+from wq.db import rest
 from .models import Markdown
 from .serializers import MarkdownSerializer
 
@@ -10,10 +10,10 @@ def active_markdown(qs, request):
     mtype = MarkdownType.get_current(request)
     return qs.filter(type=mtype)
 
-app.router.register_model(
+rest.router.register_model(
     Markdown,
     serializer=MarkdownSerializer,
     filter=active_markdown,
     url='markdown',
 )
-app.router.register_model(MarkdownType)
+rest.router.register_model(MarkdownType)

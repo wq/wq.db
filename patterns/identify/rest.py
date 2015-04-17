@@ -1,6 +1,6 @@
-from wq.db.rest import app
+from wq.db import rest
 from .models import Identifier, Authority
 from .serializers import IdentifierSerializer
 
-app.router.register_model(Identifier, serializer=IdentifierSerializer)
-app.router.register_model(Authority)
+rest.router.register_model(Identifier, serializer=IdentifierSerializer)
+rest.router.register_model(Authority)

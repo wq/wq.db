@@ -1,5 +1,3 @@
-from django.utils.importlib import import_module
-from django.utils.module_loading import module_has_submodule
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
@@ -20,7 +18,7 @@ from .serializers import ModelSerializer
 PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
 
 
-class Router(DefaultRouter):
+class ModelRouter(DefaultRouter):
     _models = set()
     _serializers = {}
     _querysets = {}
@@ -49,7 +47,7 @@ class Router(DefaultRouter):
             name='{basename}-list',
             initkwargs={'suffix': 'List'}
         ))
-        super(Router, self).__init__(trailing_slash=trailing_slash)
+        super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
 
     def register_model(self, model, viewset=None, serializer=None,
                        queryset=None, filter=None, **kwargs):
@@ -384,7 +382,7 @@ class Router(DefaultRouter):
             # /multi.json
             self.register('multi', self.get_multi_view(), 'multi')
 
-        urls = super(Router, self).get_urls()
+        urls = super(ModelRouter, self).get_urls()
 
         if root:
             # / - Skip registration and directly generate custom URLs
@@ -415,7 +413,7 @@ class Router(DefaultRouter):
         return format_suffix_patterns(urls)
 
     def get_routes(self, viewset):
-        routes = super(Router, self).get_routes(viewset)
+        routes = super(ModelRouter, self).get_routes(viewset)
         model = getattr(viewset, "model", None)
         if not model:
             return routes
@@ -467,11 +465,5 @@ class Router(DefaultRouter):
                 vfile.close()
         return self._version
 
-router = Router()
-
-
-def autodiscover():
-    for app_name in settings.INSTALLED_APPS:
-        app = import_module(app_name)
-        if module_has_submodule(app, 'rest'):
-            import_module(app_name + '.rest')
+# Default router instance, c.f. django.contrib.admin.sites.site
+router = ModelRouter()

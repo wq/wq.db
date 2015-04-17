@@ -1,6 +1,6 @@
 from rest_framework.renderers import JSONRenderer
 from django.conf import settings
-from wq.db.rest.settings import SRID as DEFAULT_SRID
+from wq.db.default_settings import SRID as DEFAULT_SRID
 
 
 class JSONRenderer(JSONRenderer):

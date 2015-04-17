@@ -1,4 +1,4 @@
-from .app import router
+from . import router
 from django.utils.http import urlquote
 
 

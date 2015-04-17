@@ -135,15 +135,15 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 choice['selected'] = True
 
     def get_lookup_choices(self, ct, context, field_name=None):
-        from wq.db.rest import app
+        from wq.db import rest
         parent_model = ct.model_class()
         if not field_name:
             field_name = ct.model
-        qs = app.router.get_queryset_for_model(parent_model)
+        qs = rest.router.get_queryset_for_model(parent_model)
         fn = getattr(self, 'get_%s_choices' % field_name, None)
         if fn:
             qs = fn(qs, context)
-        return app.router.serialize(qs, many=True)
+        return rest.router.serialize(qs, many=True)
 
     def get_object(self):
         try:

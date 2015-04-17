@@ -53,7 +53,7 @@ def create_wqdb_namespace():
     if os.path.isdir("wq/db"):
         return
     os.makedirs("wq/db")
-    for folder in ("rest", "contrib", "patterns"):
+    for folder in ("rest", "contrib", "patterns", "default_settings.py"):
         os.symlink("../../" + folder, "wq/db/" + folder)
     init = open(os.path.join("wq/db", "__init__.py"), 'w')
     init.write("")
