@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, Child, ItemType, SlugModel,
+    Parent, Child, ItemType, Item, SlugModel,
 )
 from django.contrib.auth.models import User
 
@@ -17,7 +17,8 @@ class TemplateTestCase(APITestCase):
             cls.objects.create(
                 root=instance,
             )
-        user = User.objects.create(username="testuser")
+        user = User.objects.create(username="testuser", is_superuser=True)
+        self.client.force_authenticate(user)
         UserManagedModel.objects.create(id=1, user=user)
         parent = Parent.objects.create(name="Test", pk=1)
         parent.child_set.create(name="Test 1")
@@ -34,7 +35,7 @@ class TemplateTestCase(APITestCase):
         response = self.client.get(url)
         self.assertTrue(status.is_success(response.status_code), response.data)
         html = response.content.decode('utf-8')
-        self.assertHTMLEqual(html, expected_html)
+        self.assertHTMLEqual(expected_html, html)
 
     # Test url="" use case
     def test_template_list_at_root(self):
@@ -63,6 +64,7 @@ class TemplateTestCase(APITestCase):
                 </a>
               </li>
             </ul>
+            <p><a href="/instance/edit">Edit</a></p>
         """.format(
             onetoone_pk=instance.onetoonemodel.pk,
             extra_pk=instance.extramodels.all()[0].pk,
@@ -181,4 +183,14 @@ class TemplateTestCase(APITestCase):
             <p>
               <input name="csrfmiddlewaretoken" type="hidden" value="{csrf}">
             </p>
+            <p>rest_context</p>
+            <p>Can Edit Items</p>
         """.format(csrf=token))
+
+    def test_template_page_config(self):
+        item = Item.objects.get(name="Test 1")
+        self.check_html('/items/%s' % item.pk, """
+            <h3>Test 1</h3>
+            <a href="/itemtypes/1">Test</a>
+            <a href="/items/{pk}/edit">Edit</a>
+        """.format(pk=item.pk))

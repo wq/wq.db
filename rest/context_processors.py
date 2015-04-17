@@ -27,3 +27,26 @@ def pages_info(request):
     return {
         'pages_info': info
     }
+
+
+def wq_config(request):
+    # FIXME: support non-root base_url
+    parts = request.path.split('/')
+    user = request.user if request.user.is_authenticated() else None
+    wq_conf = router.get_config(user=user)
+    page_conf = None
+    root_conf = None
+
+    for name, conf in wq_conf['pages'].items():
+        if parts[1] == conf['url']:
+            page_conf = conf
+        elif conf['url'] == "":
+            root_conf = conf
+
+    if not page_conf and root_conf and len(parts) == 2:
+        page_conf = root_conf
+
+    return {
+        'wq_config': wq_conf,
+        'page_config': page_conf,
+    }

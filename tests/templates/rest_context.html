@@ -7,3 +7,11 @@
 <p>
   {{>csrf}}
 </p>
+<p>
+  {{#page_config}}{{url}}{{/page_config}}
+</p>
+<p>
+  {{#wq_config.pages.item.can_change}}
+  Can Edit Items
+  {{/wq_config.pages.item.can_change}}
+</p>

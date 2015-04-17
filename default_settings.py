@@ -10,6 +10,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'wq.db.rest.auth.context_processors.social_auth',
     'wq.db.rest.context_processors.version',
     'wq.db.rest.context_processors.pages_info',
+    'wq.db.rest.context_processors.wq_config',
 )
 SESSION_COOKIE_HTTPONLY = False
 
