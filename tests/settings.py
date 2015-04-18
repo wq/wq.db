@@ -32,6 +32,9 @@ DATABASES = {
     }
 }
 
+USE_TZ = True
+TIME_ZONE = "America/Chicago"
+
 ROOT_URLCONF = "tests.urls"
 BASE_DIR = os.path.dirname(__file__)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

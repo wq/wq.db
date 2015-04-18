@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.gis.db.models import fields
+from django.contrib.gis.db import models as model_fields
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
 
@@ -62,12 +62,12 @@ class ContentTypeField(serializers.SlugRelatedField):
 class LocalDateTimeField(serializers.Field):
     read_only = True
 
-    def to_representation(self, obj):
-        if obj is None:
+    def to_representation(self, value):
+        if value is None:
             return None
-        if obj.tzinfo:
-            obj = timezone.localtime(obj)
-        return obj.strftime('%Y-%m-%d %I:%M %p')
+        if value.tzinfo:
+            value = timezone.localtime(value)
+        return value.strftime('%Y-%m-%d %I:%M %p')
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -79,7 +79,7 @@ class ModelSerializer(serializers.ModelSerializer):
                       'Point', 'LineString', 'Polygon',
                       'MultiPoint', 'MultiLineString', 'MultiPolygon'):
             self.serializer_field_mapping[
-                getattr(fields, field + 'Field')
+                getattr(model_fields, field + 'Field')
             ] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
@@ -154,13 +154,14 @@ class ModelSerializer(serializers.ModelSerializer):
 
         info = model_meta.get_field_info(self.Meta.model)
 
-#       FIXME: Restore date & choices labels
-#            if isinstance(field, DateTimeField):
-#                fields[name + '_label'] = LocalDateTimeField(name)
-#            if model_field.choices:
-#                fields[name + '_label'] = ReadOnlyField(
-#                    'get_%s_display' % name
-#                )
+        # Add labels for dates and fields with choices
+        for name, field in info.fields.items():
+            if isinstance(field, model_fields.DateTimeField):
+                fields[name + '_label'] = LocalDateTimeField(source=name)
+            if field.choices:
+                fields[name + '_label'] = serializers.ReadOnlyField(
+                    source='get_%s_display' % name
+                )
 
         # Add labels for related fields
         for name, field in info.forward_relations.items():

@@ -3,7 +3,7 @@ from rest_framework import status
 import json
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, ItemType, GeometryModel, SlugModel,
+    Parent, ItemType, GeometryModel, SlugModel, DateModel, ChoiceModel,
 )
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
@@ -30,6 +30,16 @@ class RestTestCase(APITestCase):
         SlugModel.objects.create(
             code="test",
             name="Test",
+        )
+        DateModel.objects.create(
+            pk=1,
+            name="Test",
+            date="2015-01-01 12:00Z",
+        )
+        ChoiceModel.objects.create(
+            pk=1,
+            name="Test",
+            choice="two",
         )
 
     # Test existence and content of config.json
@@ -118,6 +128,20 @@ class RestTestCase(APITestCase):
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
 
+    def test_rest_date_label(self):
+        response = self.client.get("/datemodels/1.json")
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        self.assertIn('date_label', response.data)
+        self.assertEqual(response.data['date_label'], "2015-01-01 06:00 AM")
+
+    def test_rest_choice_label(self):
+        response = self.client.get("/choicemodels/1.json")
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        self.assertIn('choice_label', response.data)
+        self.assertEqual(response.data['choice_label'], "Choice Two")
+
+
+class RestRouterTestCase(APITestCase):
     def test_rest_model_conflict(self):
         from wq.db import rest
         from tests.conflict_app.models import Item

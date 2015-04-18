@@ -88,3 +88,24 @@ class SlugModel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class DateModel(models.Model):
+    name = models.CharField(max_length=10)
+    date = models.DateTimeField()
+
+    def __str__(self):
+        return "%s on %s" % (self.name, self.date.date())
+
+
+class ChoiceModel(models.Model):
+    CHOICE_CHOICES = [
+        ('one', 'Choice One'),
+        ('two', 'Choice Two'),
+        ('three', 'Choice Three'),
+    ]
+    name = models.CharField(max_length=10)
+    choice = models.CharField(max_length=10, choices=CHOICE_CHOICES)
+
+    def __str__(self):
+        return "%s: %s" % (self.name, self.choice)
