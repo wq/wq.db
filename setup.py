@@ -105,7 +105,7 @@ setup(
     ],
     extras_require={
         'chart': ['rest_pandas>=0.3.1'],
-        'files': ['wq.io>=0.5.1'],
+        'files': ['wq.io>=0.5.1', 'Pillow'],
     },
     classifiers=[
         'Framework :: Django',
@@ -127,5 +127,6 @@ setup(
         'psycopg2',
         'wq.io>=0.5.1',
         'rest_pandas>=0.3.1',
+        'Pillow',
     ],
 )
