@@ -2,24 +2,9 @@ from wq.db import rest
 
 
 def is_authenticated(request):
-    # FIXME: Pystache contexts aren't working with Django 1.6 SimpleLazyObject
-    # due to iter(data) not failing.  This makes it difficult to use {{user}}
-    # in Mustache templates.  We could just override the user context variable,
-    # but that will likely break Django templates, such as those used in
-    # contrib.admin.  Instead, the workaround is to define "user" only within
-    # the is_authenticated context.
-    #
-    # In Mustache templates, always use:
-    #   {{#is_authenticated}}{{user.username}}{{/is_authenticated}}
-    # In Django templates, just use:
-    #   {{user.username}}
-
-    if request.user.is_authenticated():
-        return {
-            'is_authenticated': {'user': rest.router.serialize(request.user)}
-        }
-    else:
-        return {'is_authenticated': False}
+    return {
+        'is_authenticated': request.user.is_authenticated()
+    }
 
 
 def social_auth(request):
