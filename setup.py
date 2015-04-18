@@ -96,13 +96,17 @@ setup(
     description=LONG_DESCRIPTION.strip(),
     long_description=parse_markdown_readme(),
     install_requires=[
-        'Django>=1.6',
+        'Django>=1.7',
         'djangorestframework>=3.1',
         'pystache',
-        'python-social-auth!=0.2.5',
+        'python-social-auth',
         'swapper>=0.2',
         'Markdown',
     ],
+    extras_require={
+        'chart': ['rest_pandas>=0.3.1'],
+        'files': ['wq.io>=0.5.1'],
+    },
     classifiers=[
         'Framework :: Django',
         'Development Status :: 5 - Production/Stable',
@@ -122,7 +126,6 @@ setup(
     tests_require=[
         'psycopg2',
         'wq.io>=0.5.1',
-        'rest-pandas>=0.3.0',
-        'Pillow',
+        'rest_pandas>=0.3.1',
     ],
 )
