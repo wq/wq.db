@@ -31,7 +31,7 @@ See [the documentation] for more information.
 wq.db provides the following modules:
 
 ### [wq.db.rest]
-Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library ([app.py]) includes an admin-style Router that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a CRS-aware GeoJSON serializer/renderer.
+Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a CRS-aware GeoJSON serializer/renderer.
 
 ### [wq.db.patterns]
 A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
@@ -47,7 +47,7 @@ Like Django itself, wq.db includes a [contrib] module that provides additional f
 [its own REST API]: https://wq.io/docs/website-rest-api
 [wq.app's client-side router]: https://wq.io/docs/app-js
 [Django REST Framework]: http://django-rest-framework.org
-[app.py]: https://wq.io/docs/app.py
+[ModelRouter]: https://wq.io/docs/router
 [configuration object]: https://wq.io/docs/config
 [wq.db.patterns]: https://wq.io/docs/about-patterns
 [design patterns]: https://wq.io/docs/about-patterns
