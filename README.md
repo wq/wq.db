@@ -11,7 +11,7 @@
 
 The master version of wq.db is no longer compatible with the DRF 2.x branch.  The following library versions are supported:
 
-          | Python | Django | Django REST Framework
+&nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
 **wq.db 0.8.0-dev** | 2.7 & 3.4 | 1.7 & 1.8 | 3.1
 **wq.db 0.7.2** | 2.7 & 3.4 | 1.6 & 1.7 | 2.4
