@@ -28,6 +28,17 @@ class Renderer(PystacheRenderer):
             return self.get_template_source('partials/' + name + '.html')
         return load_partial
 
+    def _make_resolve_context(self):
+        resolve_context = super(Renderer, self)._make_resolve_context()
+
+        def resolve(context, name):
+            value = resolve_context(context, name)
+            # Unwrap Django SimpleLazyObject
+            if hasattr(value, '_wrapped'):
+                return value._wrapped
+            return value
+        return resolve
+
     def str_coerce(self, val):
         if val is None:
             return ""
