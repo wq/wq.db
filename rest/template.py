@@ -6,6 +6,9 @@ from pystache.renderer import Renderer as PystacheRenderer
 from django.template.loaders.filesystem import Loader as FileSystemLoader
 from django.template.base import Template as DjangoTemplate
 from django.utils.encoding import force_text
+from django.utils.version import get_version
+
+DJANGO18 = get_version() >= "1.8"
 
 
 class Renderer(PystacheRenderer):
@@ -30,6 +33,8 @@ class Renderer(PystacheRenderer):
 
     def _make_resolve_context(self):
         resolve_context = super(Renderer, self)._make_resolve_context()
+        if DJANGO18:
+            return resolve_context
 
         def resolve(context, name):
             value = resolve_context(context, name)
