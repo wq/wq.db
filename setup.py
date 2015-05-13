@@ -99,13 +99,13 @@ setup(
         'Django>=1.7',
         'djangorestframework>=3.1',
         'pystache',
-        'python-social-auth',
         'swapper>=0.2',
         'Markdown',
     ],
     extras_require={
         'chart': ['rest_pandas>=0.3.1'],
         'files': ['wq.io>=0.5.1', 'Pillow'],
+        'social': ['python-social-auth'],
     },
     classifiers=[
         'Framework :: Django',
@@ -128,5 +128,6 @@ setup(
         'wq.io>=0.5.1',
         'rest_pandas>=0.3.1',
         'Pillow',
+        'python-social-auth==0.2.7',
     ],
 )
