@@ -21,6 +21,8 @@ class MarkedModelSerializer(base.AttachedModelSerializer):
 
     def to_representation(self, instance):
         data = super(MarkedModelSerializer, self).to_representation(instance)
+        if 'markdown' not in data:
+            return
 
         # Only include active markdown in output
         # (FIXME: ideally this filter would happen *before* initial
