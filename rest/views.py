@@ -153,7 +153,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 raise
 
             # Allow retrieval via non-primary identifiers
-            slug = self.kwargs.get(self.slug_url_kwarg)
+            slug = self.kwargs.get(self.lookup_url_kwarg)
             try:
                 obj = self.model.objects.get_by_identifier(slug)
             except:
