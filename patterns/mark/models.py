@@ -9,7 +9,7 @@ import swapper
 swapper.set_app_prefix('mark', 'WQ')
 
 from django.conf import settings
-INSTALLED = ('wq.db.patterns.relate' in settings.INSTALLED_APPS)
+INSTALLED = ('wq.db.patterns.mark' in settings.INSTALLED_APPS)
 
 
 class BaseMarkdownType(models.Model):
