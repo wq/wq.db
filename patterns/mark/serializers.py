@@ -21,7 +21,7 @@ class MarkedModelSerializer(base.AttachedModelSerializer):
 
     def to_representation(self, instance):
         data = super(MarkedModelSerializer, self).to_representation(instance)
-        if 'markdown' not in data:
+        if 'markdown' not in data or 'request' not in self.context:
             return data
 
         # Only include active markdown in output
