@@ -59,9 +59,7 @@ class ContentTypeField(serializers.SlugRelatedField):
         super(serializers.RelatedField, self).__init__(**kwargs)
 
 
-class LocalDateTimeField(serializers.Field):
-    read_only = True
-
+class LocalDateTimeField(serializers.ReadOnlyField):
     def to_representation(self, value):
         if value is None:
             return None

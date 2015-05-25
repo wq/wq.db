@@ -224,3 +224,20 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(geom.srid, 4326)
         self.assertEqual(geom.x, -97)
         self.assertEqual(geom.y, 50)
+
+    def test_rest_date_label_post(self):
+        """
+        Posting to a model with a date should return a label and an ISO date
+        """
+        form = {
+            'name': "Test Date",
+            'date': '2015-06-01 12:00:00Z',
+        }
+        response = self.client.post("/datemodels.json", form)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
+        self.assertIn('date_label', response.data)
+        self.assertEqual(response.data['date_label'], "2015-06-01 07:00 AM")
+        self.assertIn('date', response.data)
+        self.assertEqual(response.data['date'], "2015-06-01T12:00:00Z")
