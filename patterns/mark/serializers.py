@@ -14,10 +14,11 @@ class MarkdownSerializer(base.TypedAttachmentSerializer):
 
     class Meta(base.TypedAttachmentSerializer.Meta):
         model = Markdown
+        list_exclude = ('html',)
 
 
 class MarkedModelSerializer(base.AttachedModelSerializer):
-    markdown = MarkdownSerializer(many=True)
+    markdown = MarkdownSerializer.for_depth(1)(many=True)
 
     def to_representation(self, instance):
         data = super(MarkedModelSerializer, self).to_representation(instance)

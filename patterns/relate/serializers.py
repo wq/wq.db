@@ -63,9 +63,6 @@ class RelationshipTypeSerializer(ModelSerializer):
     from_type = ContentTypeField()
     to_type = ContentTypeField()
 
-    class Meta:
-        exclude = ('for',)
-
 
 class RelatedModelSerializer(base.AttachedModelSerializer):
     relationships = RelationshipSerializer(many=True)

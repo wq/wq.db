@@ -31,7 +31,7 @@ class BaseMarkdownType(models.Model):
 
     @classmethod
     def get_default(cls):
-        markdowns = cls.objects.order_by('pk')
+        markdowns = cls.objects.all()
         if len(markdowns) > 0:
             return markdowns[0]
 
@@ -40,6 +40,7 @@ class BaseMarkdownType(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['pk']
 
 
 class MarkdownType(BaseMarkdownType):
@@ -64,7 +65,7 @@ class Markdown(models.Model):
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return self.summary
+        return self.summary or ''
 
     @property
     def html(self):
