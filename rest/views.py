@@ -188,39 +188,56 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
         # HTML request, probably a form post from an older browser
         if response.status_code == status.HTTP_201_CREATED:
-            ct = get_ct(self.model)
-            conf = ct.get_config(request.user)
+            return self.postsave(request, response)
+        else:
+            return self.saveerror(request, response)
 
-            # Redirect to detail view
-            postsave = conf.get('postsave', ct.identifier)
-            if postsave != ct.identifier:
-                # Optional: return to detail view of a parent model
-                ct = get_ct(postsave)
-                oid = response.data.get(postsave + '_id', None) or ""
-            else:
-                # Default: return to detail view of the saved model
+    def postsave(self, request, response):
+        ct = get_ct(self.model)
+        conf = ct.get_config(request.user)
+
+        # Redirect to new page
+        postsave = conf.get('postsave', ct.identifier + '_detail')
+        if '_' in postsave:
+            page, mode = postsave.split('_')
+        else:
+            page = postsave
+            mode = 'detail'
+
+        oid = ""
+        if page != ct.identifier:
+            # Optional: return to detail view of a parent model
+            ct = get_ct(page)
+            if mode != "list":
+                oid = response.data.get(page + '_id', None)
+        else:
+            # Default: return to detail view of the saved model
+            if mode != "list":
                 oid = response.data['id']
 
-            url = '/%s/%s' % (ct.urlbase, oid)
-            return Response(
-                {'detail': 'Created'},
-                status=status.HTTP_302_FOUND,
-                headers={'Location': url}
-            )
-        else:
-            errors = [{
-                'field': key,
-                'errors': val
-            } for key, val in response.data.items()]
-            template = get_ct(self.model).identifier + '_error.html'
-            return Response(
-                {
-                    'errors': errors,
-                    'post': request.DATA
-                },
-                status=response.status_code,
-                template_name=template
-            )
+        if mode == "edit":
+            oid += "/edit"
+        url = '/%s/%s' % (ct.urlbase, oid)
+        return Response(
+            {'detail': 'Created'},
+            status=status.HTTP_302_FOUND,
+            headers={'Location': url}
+        )
+
+    def saverror(self, request, response):
+        errors = [{
+            'field': key,
+            'errors': val
+        } for key, val in response.data.items()]
+        template = get_ct(self.model).identifier + '_error.html'
+        return Response(
+            {
+                'errors': errors,
+                'post': request.DATA
+            },
+            status=response.status_code,
+            template_name=template
+        )
 
     def get_parent(self, ct, response):
         pid = self.kwargs.get(ct.identifier, None)
