@@ -2,14 +2,22 @@
 
 [wq.db](https://wq.io/wq.db) is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
-[**Release Notes**](https://github.com/wq/wq.db/releases) | [**Installation**](https://wq.io/docs/setup) | [**Documentation**](https://wq.io/wq.db) | [**Issue Tracker**](https://github.com/wq/wq.db/issues)
 
-[![Build Status](https://travis-ci.org/wq/wq.db.svg?branch=master)](https://travis-ci.org/wq/wq.db)
-[![PyPI Package](https://pypip.in/version/wq.db/badge.svg?style=flat)](https://pypi.python.org/pypi/wq.db)
+[![Latest PyPI Release](https://img.shields.io/pypi/v/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
+[![Release Notes](https://img.shields.io/github/release/wq/wq.db.svg)](https://github.com/wq/wq.db/releases)
+[![Documentation](https://img.shields.io/badge/Docs-0.8-blue.svg)](https://wq.io/wq.db)
+[![License](https://img.shields.io/pypi/l/wq.db.svg)](https://wq.io/license)
+[![GitHub Stars](https://img.shields.io/github/stars/wq/wq.db.svg)](https://github.com/wq/wq.db/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/wq/wq.db.svg)](https://github.com/wq/wq.db/network)
+[![GitHub Issues](https://img.shields.io/github/issues/wq/wq.db.svg)](https://github.com/wq/wq.db/issues)
+
+[![Travis Build Status](https://img.shields.io/travis/wq/wq.db.svg)](https://travis-ci.org/wq/wq.db)
+[![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
+[![Django Support](https://img.shields.io/badge/Django-1.7%2C%201.8-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
 #### Support Matrix
 
-The latest version of wq.db is no longer compatible with the DRF 2.x branch.  The following library versions are supported:
+The latest version of wq.db is only compatible with Django REST Framework 3.  The following library versions are supported:
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
