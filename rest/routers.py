@@ -266,7 +266,7 @@ class ModelRouter(DefaultRouter):
                 if getattr(ct, 'is_' + name):
                     info[name] = True
 
-            if ct.is_located or ct.has_geo_fields:
+            if (ct.is_located or ct.has_geo_fields) and 'map' not in info:
                 info['map'] = True
 
             for field in model._meta.fields:
