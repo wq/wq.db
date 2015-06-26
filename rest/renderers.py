@@ -65,9 +65,10 @@ class GeoJSONRenderer(JSONRenderer):
             feature['geometry'] = obj['geometry']
             del obj['geometry']
 
-        elif 'locations' in obj:
-            feature['geometry'] = obj['locations']
-            del obj['locations']
+        elif 'features' in obj:
+            feature['features'] = obj['features']
+            feature['type'] = 'FeatureCollection'
+            del obj['features']
 
         return feature, simple
 

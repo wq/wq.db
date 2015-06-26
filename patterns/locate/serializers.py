@@ -48,6 +48,9 @@ class LocationSerializer(base.AttachmentSerializer):
         if 'request' in self.context:
             renderer = self.context['request'].accepted_renderer
             if renderer.format == 'geojson':
+                view = self.context.get('view', None)
+                if view and view.action == 'edit':
+                    return False
                 return True
         return False
 
@@ -88,3 +91,26 @@ class LocationSerializer(base.AttachmentSerializer):
 
 class LocatedModelSerializer(base.AttachedModelSerializer):
     locations = LocationSerializer(many=True)
+
+    def to_representation(self, instance):
+        data = super(LocatedModelSerializer, self).to_representation(instance)
+        if 'request' in self.context:
+            renderer = self.context['request'].accepted_renderer
+            if renderer.format == 'geojson':
+                view = self.context.get('view', None)
+                if view and view.action == 'edit':
+                    data['features'] = []
+                    for loc in data['locations']:
+                        feat = {
+                            'id': loc['id'],
+                            'type': 'Feature',
+                            'geometry': loc['geometry'],
+                            'properties': loc
+                        }
+                        del loc['geometry']
+                        del loc['id']
+                        data['features'].append(feat)
+                else:
+                    data['geometry'] = data['locations']
+                del data['locations']
+        return data
