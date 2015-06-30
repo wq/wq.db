@@ -99,10 +99,16 @@ class ContentType(DjangoContentType):
         if cls is None:
             return []
         rels = cls._meta.get_all_related_objects()
+
+        # get_all_related_objects() structure changed in Django 1.8
+        def get_model(rel):
+            return getattr(rel, 'related_model', rel.model)
+
+        children = [(get_ct(get_model(rel)), rel) for rel in rels]
         if include_rels:
-            return set([(get_ct(rel.model), rel) for rel in rels])
+            return set(children)
         else:
-            return set([get_ct(rel.model) for rel in rels])
+            return set(child[0] for child in children)
 
     def get_all_children(self):
         children = self.get_children()

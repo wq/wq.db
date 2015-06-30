@@ -51,6 +51,18 @@ class RestTestCase(APITestCase):
         # Extra config
         self.assertIn("debug", result)
 
+    def test_rest_config_json_rels(self):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content.decode('utf-8'))
+        self.assertIn("pages", result)
+        pages = result['pages']
+        self.assertIn("parent", pages)
+        self.assertIn("children", pages["parent"])
+        self.assertEqual(pages['parent']['children'], ["child"])
+        self.assertIn("child", pages)
+        self.assertIn("parents", pages["child"])
+        self.assertEqual(pages['child']['parents'], ["parent"])
+
     # Test url="" use case
     def test_rest_list_at_root(self):
         response = self.client.get("/.json")
