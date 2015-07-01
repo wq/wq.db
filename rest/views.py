@@ -259,6 +259,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         response.data['parent_id'] = objid
         response.data['parent_url'] = '%s%s' % (urlbase, objid)
         response.data['parent_is_' + ct.identifier] = True
+        response.data['parent_page'] = ct.identifier
         if self.router:
             response.data['parent'] = self.router.serialize(parent)
         return parent
