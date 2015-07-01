@@ -130,7 +130,7 @@ class AttachedModelSerializer(ModelSerializer):
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
                 self.set_parent_object(attachment, instance, name)
-                model.objects.create(**attachment)
+                self.create_attachment(model, attachment, name)
         return instance
 
     def update(self, instance, validated_data):
@@ -146,11 +146,9 @@ class AttachedModelSerializer(ModelSerializer):
                 self.set_parent_object(attachment, instance, name)
                 if 'id' in attachment:
                     exist = model.objects.get(pk=attachment['id'])
-                    for key, val in attachment.items():
-                        setattr(exist, key, val)
-                    exist.save()
+                    self.update_attachment(exist, attachment, name)
                 else:
-                    model.objects.create(**attachment)
+                    self.create_attachment(model, attachment, name)
         return obj
 
     def extract_attachments(self, validated_data):
@@ -163,3 +161,11 @@ class AttachedModelSerializer(ModelSerializer):
 
     def set_parent_object(self, attachment, instance, name):
         attachment['content_object'] = instance
+
+    def update_attachment(self, exist, attachment, name):
+        for key, val in attachment.items():
+            setattr(exist, key, val)
+        exist.save()
+
+    def create_attachment(self, model, attachment, name):
+        model.objects.create(**attachment)
