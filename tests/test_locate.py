@@ -125,3 +125,134 @@ class LocateRestTestCase(APITestCase):
 
         newlocs = locs.exclude(id__in=[eid1, eid2]).all()
         self.assertEqual(len(newlocs), 1)
+
+    def test_locate_list_geojson(self):
+        pk = self.instance.pk
+        loc1 = self.instance.locations.all()[0]
+        loc2 = self.instance.locations.all()[1]
+        expected = {
+            'type': 'FeatureCollection',
+            'features': [{
+                'id': pk,
+                'type': 'Feature',
+                'properties': {
+                    'name': 'Test 1',
+                    'label': 'Test 1',
+                },
+                'geometry': {
+                    "type": "GeometryCollection",
+                    "geometries": [
+                        {
+                            "type": "Point",
+                            "coordinates": [loc1.geometry.x, loc1.geometry.y],
+                            "@index": 0,
+                        },
+                        {
+                            "type": "Point",
+                            "coordinates": [loc2.geometry.x, loc2.geometry.y],
+                            "@index": 1,
+                        }
+                    ]
+                }
+            }],
+
+            # NOTE: These (and @index) are wq.db-specific and not part of the
+            # GeoJSON spec.
+            'count': 1,
+            'multiple': False,
+            'page': 1,
+            'pages': 1,
+            'per_page': 50,
+            'previous': None,
+            'next': None,
+        }
+
+        # Test for expected response
+        response = self.client.get('/locatedmodels.geojson')
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(expected, data)
+
+    def test_locate_detail_geojson(self):
+        pk = self.instance.pk
+        loc1 = self.instance.locations.all()[0]
+        loc2 = self.instance.locations.all()[1]
+        expected = {
+            'id': pk,
+            'type': 'Feature',
+            'properties': {
+                'name': 'Test 1',
+                'label': 'Test 1',
+            },
+            'geometry': {
+                "type": "GeometryCollection",
+                "geometries": [
+                    {
+                        "type": "Point",
+                        "coordinates": [loc1.geometry.x, loc1.geometry.y],
+                        "@index": 0,
+                    },
+                    {
+                        "type": "Point",
+                        "coordinates": [loc2.geometry.x, loc2.geometry.y],
+                        "@index": 1,
+                    }
+                ]
+            }
+        }
+
+        # NOTE: @index is wq.db-specific and not part of the GeoJSON spec
+
+        # Test for expected response
+        response = self.client.get('/locatedmodels/%s.geojson' % pk)
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(expected, data)
+
+    def test_locate_edit_geojson(self):
+        pk = self.instance.pk
+        loc1 = self.instance.locations.all()[0]
+        loc2 = self.instance.locations.all()[1]
+        expected = {
+            'type': 'FeatureCollection',
+            'features': [{
+                "id": loc1.pk,
+                "type": "Feature",
+                "properties": {
+                    "@index": 0,
+                    "accuracy": None,
+                    "is_primary": False,
+                    "label": "Location %s - Test 1" % loc1.pk,
+                    "name": None,
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [loc1.geometry.x, loc1.geometry.y],
+                },
+            }, {
+                "id": loc2.pk,
+                "type": "Feature",
+                "properties": {
+                    "@index": 1,
+                    "accuracy": None,
+                    "is_primary": False,
+                    "label": "Location %s - Test 1" % loc2.pk,
+                    "name": None,
+                },
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [loc2.geometry.x, loc2.geometry.y],
+                }
+            }],
+
+            # NOTE: id/properties on FeatureCollection not part of GeoJSON spec
+            'id': pk,
+            'properties': {
+                'edit': True,
+                'name': 'Test 1',
+                'label': 'Test 1',
+            }
+        }
+
+        # Test for expected response
+        response = self.client.get('/locatedmodels/%s/edit.geojson' % pk)
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(expected, data)
