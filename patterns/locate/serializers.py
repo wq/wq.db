@@ -8,18 +8,32 @@ from .models import Location
 class LocationListSerializer(base.AttachmentListSerializer):
     def to_representation(self, data):
         data = super(LocationListSerializer, self).to_representation(data)
-        if not self.child.as_geometry:
+        if not self.child.is_geojson:
             return data
 
-        if len(data) == 1:
-            return data[0]
-        elif len(data) > 1:
-            return {
-                'type': 'GeometryCollection',
-                'geometries': data
-            }
+        if self.child.as_geometry:
+            if len(data) == 1:
+                return data[0]
+            elif len(data) > 1:
+                return {
+                    'type': 'GeometryCollection',
+                    'geometries': data
+                }
+            else:
+                return None
         else:
-            return None
+            features = []
+            for loc in data:
+                feat = {
+                    'id': loc['id'],
+                    'type': 'Feature',
+                    'geometry': loc['geometry'],
+                    'properties': loc
+                }
+                del loc['geometry']
+                del loc['id']
+                features.append(feat)
+            return features
 
     def get_value(self, dictionary):
         vals = dictionary.get(self.field_name, None)
@@ -43,16 +57,9 @@ class LocationListSerializer(base.AttachmentListSerializer):
 
 
 class LocationSerializer(base.AttachmentSerializer):
-    @property
-    def as_geometry(self):
-        if 'request' in self.context:
-            renderer = self.context['request'].accepted_renderer
-            if renderer.format == 'geojson':
-                view = self.context.get('view', None)
-                if view and view.action == 'edit':
-                    return False
-                return True
-        return False
+    def __init__(self, as_geometry=False, **kwargs):
+        self.as_geometry = as_geometry
+        super(LocationSerializer, self).__init__(**kwargs)
 
     def to_representation(self, loc):
         has_parent = (
@@ -92,25 +99,18 @@ class LocationSerializer(base.AttachmentSerializer):
 class LocatedModelSerializer(base.AttachedModelSerializer):
     locations = LocationSerializer(many=True)
 
-    def to_representation(self, instance):
-        data = super(LocatedModelSerializer, self).to_representation(instance)
-        if 'request' in self.context:
-            renderer = self.context['request'].accepted_renderer
-            if renderer.format == 'geojson':
-                view = self.context.get('view', None)
-                if view and view.action == 'edit':
-                    data['features'] = []
-                    for loc in data['locations']:
-                        feat = {
-                            'id': loc['id'],
-                            'type': 'Feature',
-                            'geometry': loc['geometry'],
-                            'properties': loc
-                        }
-                        del loc['geometry']
-                        del loc['id']
-                        data['features'].append(feat)
-                else:
-                    data['geometry'] = data['locations']
-                del data['locations']
-        return data
+    def get_fields(self):
+        fields = super(LocatedModelSerializer, self).get_fields()
+        if self.is_geojson:
+            # Rename locations to "features" or "geometry" for use as GeoJSON
+            locations = fields.pop('locations')
+            if self.is_edit:
+                name = 'features'
+            else:
+                name = 'geometry'
+                locations.child.as_geometry = True
+            locations.source = 'locations'
+            fields[name] = locations
+        elif not self.is_detail:
+            fields.pop('locations')
+        return fields

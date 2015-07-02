@@ -97,6 +97,20 @@ class ModelSerializer(serializers.ModelSerializer):
         view = self.context.get('view', None)
         return view and view.action != "list"
 
+    @property
+    def is_edit(self):
+        view = self.context.get('view', None)
+        return view and view.action == 'edit'
+
+    @property
+    def is_geojson(self):
+        request = self.context.get('request', None)
+        if not request:
+            return
+        if request.accepted_renderer.format == 'geojson':
+            return True
+        return False
+
     def get_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
         fields = self.update_id_fields(fields)
