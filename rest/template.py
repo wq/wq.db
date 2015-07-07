@@ -8,6 +8,8 @@ from django.template.base import Template as DjangoTemplate
 from django.utils.encoding import force_text
 from django.utils.version import get_version
 
+from django.utils.functional import empty
+from django.utils.six import PY3
 DJANGO18 = get_version() >= "1.8"
 
 
@@ -33,13 +35,15 @@ class Renderer(PystacheRenderer):
 
     def _make_resolve_context(self):
         resolve_context = super(Renderer, self)._make_resolve_context()
-        if DJANGO18:
+        if DJANGO18 and PY3:
             return resolve_context
 
         def resolve(context, name):
             value = resolve_context(context, name)
             # Unwrap Django SimpleLazyObject
             if hasattr(value, '_wrapped'):
+                if value._wrapped is empty:
+                    value._setup()
                 return value._wrapped
             return value
         return resolve
