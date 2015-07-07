@@ -6,7 +6,7 @@ def version(request):
     return {'version': router.version}
 
 
-def pages_info(request):
+def router_info(request):
     # FIXME: support non-root base_url
     base_url = ""
     path = request.path[1:]
@@ -25,8 +25,13 @@ def pages_info(request):
     }
 
     return {
-        'pages_info': info
+        'router_info': info,
+        'pages_info': info,
     }
+
+
+def pages_info(request):
+    return router_info(request)
 
 
 def wq_config(request):
