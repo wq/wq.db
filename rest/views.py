@@ -192,6 +192,20 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             return self.saveerror(request, response)
 
+    def update(self, request, *args, **kwargs):
+        response = super(ModelViewSet, self).update(
+            request, *args, **kwargs
+        )
+        if not request.accepted_media_type.startswith('text/html'):
+            # JSON request, assume client will handle redirect
+            return response
+
+        # HTML request, probably a form post from an older browser
+        if response.status_code == status.HTTP_200_OK:
+            return self.postsave(request, response)
+        else:
+            return self.saveerror(request, response)
+
     def postsave(self, request, response):
         ct = get_ct(self.model)
         conf = ct.get_config(request.user)
@@ -205,19 +219,25 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             mode = 'detail'
 
         oid = ""
-        if page != ct.identifier:
+        if page != ct.identifier and self.router:
             # Optional: return to detail view of a parent model
-            ct = get_ct(page)
-            if mode != "list":
+            pconf = self.router.get_page_config(page)
+            if pconf.get('list', None) and mode != "list":
                 oid = response.data.get(page + '_id', None)
         else:
             # Default: return to detail view of the saved model
+            pconf = conf
             if mode != "list":
                 oid = response.data['id']
 
-        if mode == "edit":
-            oid += "/edit"
-        url = '/%s/%s' % (ct.urlbase, oid)
+        url = "/" + pconf['url']
+        if pconf['url'] and pconf.get('list', None):
+            url += "/"
+        if oid:
+            url += str(oid)
+            if mode == "edit":
+                url += "/edit"
+
         return Response(
             {'detail': 'Created'},
             status=status.HTTP_302_FOUND,
