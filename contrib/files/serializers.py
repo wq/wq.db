@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from wq.db.rest.serializers import ModelSerializer
-from .models import FileField
+from wq.db.patterns.base import serializers as base
+from .models import FileField, FileType
+from django.core.files.uploadedfile import UploadedFile
 
 
 class FileSerializer(ModelSerializer):
@@ -18,3 +20,27 @@ class FileSerializer(ModelSerializer):
                 if user.is_authenticated():
                     obj.user_id = user.pk
         return obj
+
+
+class FileAttachmentListSerializer(base.TypedAttachmentListSerializer):
+    def get_value(self, dictionary):
+        values = dictionary.get(self.source, None)
+        if not isinstance(values, list):
+            values = [values]
+        if all(isinstance(value, UploadedFile) for value in values):
+            return [
+                {'file': value} for value in values
+            ]
+        return super(FileAttachmentListSerializer, self).get_value(dictionary)
+
+
+class FileAttachmentSerializer(base.TypedAttachmentSerializer, FileSerializer):
+    attachment_fields = ['id', 'name', 'file']
+    type_model = FileType
+
+    class Meta(base.TypedAttachmentSerializer.Meta):
+        list_serializer_class = FileAttachmentListSerializer
+
+
+class FileAttachedModelSerializer(base.AttachedModelSerializer):
+    pass

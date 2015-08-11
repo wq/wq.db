@@ -10,6 +10,7 @@ import django
 django.setup()
 
 from django.core.management import call_command
-# Migrate auth first since some unmigrated test apps depend on it...
+# Migrate auth & files first since some unmigrated test apps depend on them...
 call_command('migrate', 'auth', interactive=False)
+call_command('migrate', 'files', interactive=False)
 call_command('migrate', interactive=False)

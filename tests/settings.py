@@ -22,6 +22,7 @@ INSTALLED_APPS = (
     'tests.conflict_app',
     'tests.patterns_app',
     'tests.chart_app',
+    'tests.files_app',
 )
 
 DATABASES = {

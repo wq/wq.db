@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django import forms
 from django.conf import settings
 import swapper
@@ -52,7 +54,7 @@ class FileManager(models.Manager):
             return qs
 
 
-class BaseFile(AnnotatedModel):
+class BaseFile(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
     type = models.ForeignKey(FileType, null=True, blank=True)
     file = FileField(upload_to='.', width_field='width', height_field='height')
@@ -105,10 +107,24 @@ class BaseFile(AnnotatedModel):
         abstract = True
 
 
-class File(BaseFile):
+class File(BaseFile, AnnotatedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
 
     class Meta:
         db_table = 'wq_file'
         ordering = ("name",)
         swappable = swapper.swappable_setting('files', 'File')
+
+
+class BaseFileAttachment(BaseFile):
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField(db_index=True)
+    content_object = GenericForeignKey()
+
+    class Meta:
+        abstract = True
+
+
+class FileAttachedModel(models.Model):
+    class Meta:
+        abstract = True
