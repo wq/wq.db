@@ -1,4 +1,5 @@
 language: python
+sudo: false
 python:
  - "2.7"
  - "3.4"
@@ -8,8 +9,9 @@ env:
    - DRP="rest-pandas==0.3.1"
    - MATPLOTLIB="matplotlib>=1.4"
   matrix:
-   - DJANGO="django==1.7.7"
-   - DJANGO="django==1.8"
+   - DJANGO="django==1.7.10"
+   - DJANGO="django==1.8.4"
+   - DJANGO="django==1.8.4" LINT=1
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
@@ -18,5 +20,6 @@ install:
  - pip install $DRF
  - pip install $DRP
  - pip install $MATPLOTLIB
+ - pip install flake8
 script:
- - python setup.py test
+ - ./runtests.sh

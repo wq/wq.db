@@ -3,6 +3,7 @@ from rest_framework.utils.html import *  # NOQA
 # This is a verbatim "backport" of a pending patch to Django REST Framework.
 # See https://github.com/tomchristie/django-rest-framework/pull/2682.
 
+
 def parse_json_form(dictionary, prefix=''):
     """
     Parse an HTML JSON form submission as per the W3C Draft spec
