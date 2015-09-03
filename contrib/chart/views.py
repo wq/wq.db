@@ -1,62 +1,12 @@
 from rest_pandas import PandasView
-from wq.db.patterns.models import Identifier
+from wq.db.patterns.identify.filters import IdentifierFilterBackend
 from .serializers import ChartModelSerializer, ChartPandasSerializer
 
 
 class ChartView(PandasView):
     serializer_class = ChartModelSerializer
     pandas_serializer_class = ChartPandasSerializer
-    ignore_extra = True
-    exclude_apps = []
-
-    @property
-    def filter_options(self):
-        if hasattr(self, '_filter_options'):
-            return self._filter_options
-
-        slugs = self.kwargs['ids'].split('/')
-        id_map, unresolved = Identifier.objects.resolve(
-            slugs, exclude_apps=self.exclude_apps
-        )
-        options = {}
-        if unresolved:
-            options['extra'] = []
-            for key, items in unresolved.items():
-                if len(items) > 0:
-                    raise Exception(
-                        "Could not resolve %s to a single item!" % key
-                    )
-                options['extra'].append(key)
-
-        if id_map:
-            for slug, ident in id_map.items():
-                ctype = ident.content_type.model
-                if ctype not in options:
-                    options[ctype] = []
-                options[ctype].append(ident)
-
-        self._filter_options = options
-        return options
-
-    def filter_queryset(self, qs):
-        for name, idents in self.filter_options.items():
-            if name == "extra":
-                continue
-            fn = getattr(self, 'filter_by_%s' % name, None)
-            ids = [ident.object_id for ident in idents]
-            if fn:
-                qs = fn(qs, ids)
-            else:
-                raise Exception("Don't know how to filter by %s" % name)
-        if 'extra' in self.filter_options:
-            qs = self.filter_by_extra(qs, self.filter_options['extra'])
-        return qs
-
-    def filter_by_extra(self, qs, extra):
-        if self.ignore_extra:
-            return qs
-        else:
-            raise Exception("Extra URL options found: %s" % extra)
+    filter_backends = [IdentifierFilterBackend]
 
 
 class TimeSeriesMixin(object):
