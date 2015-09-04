@@ -160,7 +160,9 @@ class AttachedModelSerializer(ModelSerializer):
         return validated_data, attachment_data
 
     def set_parent_object(self, attachment, instance, name):
-        attachment['content_object'] = instance
+        serializer = self.get_fields()[name].child
+        fk_name = getattr(serializer, 'object_field', 'content_object')
+        attachment[fk_name] = instance
 
     def update_attachment(self, exist, attachment, name):
         for key, val in attachment.items():
