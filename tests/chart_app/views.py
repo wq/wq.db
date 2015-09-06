@@ -1,13 +1,15 @@
+from rest_framework import serializers
 from wq.db.contrib.chart import views as chart
 from wq.db.contrib.chart.serializers import ChartModelSerializer
 from .models import Value
 
 
 class ValueSerializer(ChartModelSerializer):
-    key_lookups = ['series.primary_identifier.slug', 'date']
+    series = serializers.ReadOnlyField(source="series.primary_identifier.slug")
 
-    class Meta:
+    class Meta(ChartModelSerializer.Meta):
         model = Value
+        fields = ['series', 'date', 'parameter', 'units', 'value']
 
 
 class ChartView(chart.ChartView):
@@ -21,13 +23,13 @@ class ChartView(chart.ChartView):
         return qs.filter(parameter__in=extra[0])
 
 
-class TimeSeriesView(ChartView, chart.TimeSeriesMixin):
+class TimeSeriesView(chart.TimeSeriesMixin, ChartView):
     pass
 
 
-class ScatterView(ChartView, chart.ScatterMixin):
+class ScatterView(chart.ScatterMixin, ChartView):
     pass
 
 
-class BoxPlotView(ChartView, chart.BoxPlotMixin):
+class BoxPlotView(chart.BoxPlotMixin, ChartView):
     pass

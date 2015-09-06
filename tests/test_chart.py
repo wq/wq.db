@@ -72,8 +72,8 @@ class ChartTestCase(APITestCase):
 
         d4 = dataset['data'][4]
         self.assertEqual(d4['date'], '2014-01-05')
-        self.assertEqual(d4['temp'], 0.2)
-        self.assertEqual(d4['snow'], 0.0)
+        self.assertEqual(d4['temp-value'], 0.2)
+        self.assertEqual(d4['snow-value'], 0.0)
 
     @unittest.skipUnless(boxplot_stats, "test requires matplotlib 1.4+")
     def test_chart_boxplot(self):
@@ -90,9 +90,9 @@ class ChartTestCase(APITestCase):
 
         stats = dataset['data'][0]
         self.assertEqual(stats['year'], '2014')
-        self.assertEqual(stats['min'], 0.1)
-        self.assertEqual(stats['mean'], 0.36)
-        self.assertEqual(stats['max'], 0.6)
+        self.assertEqual(stats['value-whislo'], 0.1)
+        self.assertEqual(stats['value-mean'], 0.36)
+        self.assertEqual(stats['value-whishi'], 0.6)
 
     def parse_csv(self, response):
         return parse_csv(response.content.decode('utf-8'))
