@@ -11,7 +11,7 @@ def parse_json_form(dictionary, prefix=''):
     http://www.w3.org/TR/html-json-forms/
     """
     # Step 1: Initialize output object
-    output = {}
+    output = MultiValueDict()
     for name, value in get_all_items(dictionary):
         # TODO: implement is_file flag
 
