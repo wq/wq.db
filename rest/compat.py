@@ -11,7 +11,7 @@ def parse_json_form(dictionary, prefix=''):
     http://www.w3.org/TR/html-json-forms/
     """
     # Step 1: Initialize output object
-    output = MultiValueDict()
+    output = {}
     for name, value in get_all_items(dictionary):
         # TODO: implement is_file flag
 
@@ -36,6 +36,7 @@ def parse_json_form(dictionary, prefix=''):
             )
     # Convert any remaining Undefined array entries to None
     output = clean_undefined(output)
+    output = clean_empty_string(output)
 
     # Account for DRF prefix (not part of JSON form spec)
     result = get_value(output, prefix, Undefined())
@@ -273,6 +274,25 @@ def clean_undefined(obj):
     if isinstance(obj, dict):
         for key in obj:
             obj[key] = clean_undefined(obj[key])
+    return obj
+
+
+def clean_empty_string(obj):
+    """
+    Replace empty form values with None, since the is_html_input() check in
+    Field won't work after we convert to JSON.
+    (FIXME: What about allow_blank=True?)
+    """
+    if obj == '':
+        return None
+    if isinstance(obj, list):
+        return [
+            None if item == '' else item
+            for item in obj
+        ]
+    if isinstance(obj, dict):
+        for key in obj:
+            obj[key] = clean_empty_string(obj[key])
     return obj
 
 

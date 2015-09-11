@@ -253,3 +253,17 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(response.data['date_label'], "2015-06-01 07:00 AM")
         self.assertIn('date', response.data)
         self.assertEqual(response.data['date'], "2015-06-01T12:00:00Z")
+
+    def test_rest_empty_date_post(self):
+        """
+        Allow posting an empty date if the field allows nulls
+        """
+        form = {
+            'name': "Test Date",
+            'date': '2015-06-01 12:00:00Z',
+            'empty_date': '',
+        }
+        response = self.client.post("/datemodels.json", form)
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )

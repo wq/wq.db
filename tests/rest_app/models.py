@@ -93,6 +93,7 @@ class SlugModel(models.Model):
 class DateModel(models.Model):
     name = models.CharField(max_length=10)
     date = models.DateTimeField()
+    empty_date = models.DateTimeField(null=True)
 
     def __str__(self):
         return "%s on %s" % (self.name, self.date.date())
