@@ -14,4 +14,5 @@ urlpatterns = patterns(
     '',
     url(r'^',       include(rest.router.urls)),
     url(r'^chart',  include(chart_urls)),
+    url(r'^search/', include('wq.db.contrib.search.urls')),
 )
