@@ -105,9 +105,9 @@ class SearchRestTestCase(BaseSearchTestCase):
             result.content.decode('utf-8'),
             """
             <ul>
+              <li><a href="/identifiedannotatedmodels/test-6">Test 6</a></li>
               <li><a href="/identifiedmodels/test">Test</a></li>
               <li><a href="/identifiedmodels/test-2">Test 2</a></li>
-              <li><a href="/identifiedannotatedmodels/test-6">Test 6</a></li>
               <li><a href="/annotatedmodels/{pk1}">Test 3</a></li>
               <li><a href="/annotatedmodels/{pk2}">Test 4</a></li>
               <li><a href="/annotatedmodels/{pk3}">Test 5</a></li>
