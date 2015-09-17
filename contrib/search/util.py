@@ -12,7 +12,7 @@ def search(query, auto=True, content_type=None, authority_id=None):
     if authority_id:
         idfilter['authority_id'] = authority_id
 
-    distinct_on = ('content_type__name', 'object_id')
+    distinct_on = ('content_type__model', 'object_id')
     # First check for exact identifier matches
     id_matches = Identifier.objects.filter_by_identifier(query)
     id_matches = id_matches.filter(**idfilter)
