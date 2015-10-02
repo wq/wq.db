@@ -275,8 +275,12 @@ class NaturalKeyModelSerializer(AttachedModelSerializer):
         if issubclass(relation_info.related_model, NaturalKeyModel):
             field_class = NaturalKeySerializer.for_model(
                 relation_info.related_model,
+                validate_key=False,
             )
-            return field_class, {}
+            field_kwargs = {}
+            if relation_info.model_field.null:
+                field_kwargs['required'] = False
+            return field_class, field_kwargs
 
         return super(NaturalKeyModelSerializer, self).build_nested_field(
             field_name, relation_info, nested_depth
@@ -330,6 +334,8 @@ class NaturalKeyModelSerializer(AttachedModelSerializer):
     def convert_natural_keys(self, validated_data):
         fields = self.get_fields()
         for name, field in fields.items():
+            if name not in validated_data:
+                continue
             if isinstance(field, NaturalKeySerializer):
                 validated_data[name] = fields[name].create(
                     validated_data[name]
