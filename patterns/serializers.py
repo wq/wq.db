@@ -1,3 +1,4 @@
+from .base.serializers import *  # NOQA
 from .annotate.serializers import *  # NOQA
 from .identify.serializers import *  # NOQA
 from .locate.serializers import *  # NOQA

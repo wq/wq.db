@@ -4,6 +4,7 @@ from .models import (
     AnnotatedModel, IdentifiedModel, MarkedModel, LocatedModel,
     RelatedModel, AnotherRelatedModel,
     IdentifiedRelatedModel, IdentifiedMarkedModel,
+    NaturalKeyChild, ModelWithNaturalKey,
 )
 rest.router.register_model(
     AnnotatedModel,
@@ -36,4 +37,12 @@ rest.router.register_model(
 rest.router.register_model(
     IdentifiedMarkedModel,
     serializer=patterns.IdentifiedMarkedModelSerializer,
+)
+rest.router.register_model(
+    NaturalKeyChild,
+    serializer=patterns.NaturalKeySerializer,
+)
+rest.router.register_model(
+    ModelWithNaturalKey,
+    serializer=patterns.NaturalKeyModelSerializer,
 )
