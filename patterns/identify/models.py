@@ -134,6 +134,22 @@ class PrimaryIdentifierManager(IdentifierManager):
         return qs.filter(is_primary=True)
 
 
+class PrimaryIdentifierRelation(GenericRelation):
+    def get_extra_restriction(self, where_class, alias, remote_alias):
+        """
+        Ensure is_primary filter is applied when joining via relation field
+        """
+        cond = super(PrimaryIdentifierRelation, self).get_extra_restriction(
+            where_class, alias, remote_alias
+        )
+        field = PrimaryIdentifier._meta.get_field_by_name('is_primary')[0]
+        cond.add(
+            field.get_lookup('exact')(field.get_col(remote_alias), True),
+            'AND'
+        )
+        return cond
+
+
 class PrimaryIdentifier(Identifier):
     objects = PrimaryIdentifierManager()
 
@@ -198,7 +214,7 @@ class IdentifiedModelManager(NaturalKeyModelManager):
 
 class IdentifiedModel(NaturalKeyModel):
     identifiers = GenericRelation(Identifier)
-    primary_identifiers = GenericRelation(PrimaryIdentifier)
+    primary_identifiers = PrimaryIdentifierRelation(PrimaryIdentifier)
     objects = IdentifiedModelManager()
 
     @classmethod

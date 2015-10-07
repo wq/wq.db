@@ -6,14 +6,9 @@ from .mark.serializers import *  # NOQA
 from .relate.serializers import *  # NOQA
 
 
-class IdentifiedRelatedModelSerializer(
-        IdentifiedModelSerializer, RelatedModelSerializer):
-    class Meta:
-        list_exclude = (
-            'identifiers',
-            'relationships',
-            'inverserelationships',
-        )
+class IdentifiedLocatedModelSerializer(
+        IdentifiedModelSerializer, LocatedModelSerializer):
+    pass
 
 
 class IdentifiedMarkedModelSerializer(
@@ -22,4 +17,14 @@ class IdentifiedMarkedModelSerializer(
         list_exclude = (
             'identifiers',
             'markdown',
+        )
+
+
+class IdentifiedRelatedModelSerializer(
+        IdentifiedModelSerializer, RelatedModelSerializer):
+    class Meta:
+        list_exclude = (
+            'identifiers',
+            'relationships',
+            'inverserelationships',
         )
