@@ -172,7 +172,8 @@ class AttachedModelSerializer(ModelSerializer):
 
     def update_attachment(self, exist, attachment, name):
         for key, val in attachment.items():
-            setattr(exist, key, val)
+            if key != 'id':
+                setattr(exist, key, val)
         exist.save()
 
     def create_attachment(self, model, attachment, name):
