@@ -177,7 +177,7 @@ class AttachedModelSerializer(ModelSerializer):
         exist.save()
 
     def create_attachment(self, model, attachment, name):
-        model.objects.create(**attachment)
+        return model.objects.create(**attachment)
 
 
 class NaturalKeyValidator(serializers.UniqueTogetherValidator):
