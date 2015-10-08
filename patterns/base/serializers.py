@@ -148,7 +148,7 @@ class AttachedModelSerializer(ModelSerializer):
             for attachment in attachment_data[name]:
                 self.set_parent_object(attachment, instance, name)
                 if 'id' in attachment:
-                    exist = model.objects.get(pk=attachment['id'])
+                    exist = self.get_attachment(model, attachment['id'])
                     self.update_attachment(exist, attachment, name)
                 else:
                     self.create_attachment(model, attachment, name)
@@ -166,6 +166,9 @@ class AttachedModelSerializer(ModelSerializer):
         serializer = self.get_fields()[name].child
         fk_name = getattr(serializer, 'object_field', 'content_object')
         attachment[fk_name] = instance
+
+    def get_attachment(self, model, pk):
+        return model.objects.get(pk=pk)
 
     def update_attachment(self, exist, attachment, name):
         for key, val in attachment.items():

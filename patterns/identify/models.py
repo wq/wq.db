@@ -143,10 +143,12 @@ class PrimaryIdentifierRelation(GenericRelation):
             where_class, alias, remote_alias
         )
         field = PrimaryIdentifier._meta.get_field_by_name('is_primary')[0]
-        cond.add(
-            field.get_lookup('exact')(field.get_col(remote_alias), True),
-            'AND'
-        )
+        if hasattr(field, 'get_col'):
+            # Requires Django 1.8+
+            cond.add(
+                field.get_lookup('exact')(field.get_col(remote_alias), True),
+                'AND'
+            )
         return cond
 
 
