@@ -119,6 +119,17 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         # Mimic _addLookups in wq.app/app.js
         context['edit'] = True
         ct = get_ct(self.model)
+        conf = ct.get_config()
+
+        # CharField choices
+        for field, choices in conf.get('choices', {}).items():
+            context[field + '_choices'] = [{
+                'value': choice['value'],
+                'label': choice['label'],
+                'selected': choice['value'] == context.get(field, ''),
+            } for choice in choices]
+
+        # ForeignKey lookups
         for pct, fields in ct.get_foreign_keys().items():
             if not pct.is_registered():
                 continue
