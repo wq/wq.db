@@ -3,7 +3,7 @@ RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
 from .models import get_ct, get_by_identifier
 from django.utils.six import string_types
-from django.core.exceptions import FieldDoesNotExist
+from django.db.models.fields import FieldDoesNotExist
 
 
 class FilterBackend(BaseFilterBackend):
