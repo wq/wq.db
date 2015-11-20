@@ -185,8 +185,11 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if self.target:
             response.data['target'] = self.target
         ct = get_ct(self.model)
-        for pct in ct.get_all_parents():
-            self.get_parent(pct, response)
+        for pct, fields in ct.get_foreign_keys().items():
+            if len(fields) == 1:
+                self.get_parent(pct, fields[0], response)
+        for pct in ct.get_relationshiptype_parents():
+            self.get_parent(pct, 'related_%s' % pct.identifier, response)
         return response
 
     def create(self, request, *args, **kwargs):
@@ -270,8 +273,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             template_name=template
         )
 
-    def get_parent(self, ct, response):
-        pid = self.kwargs.get(ct.identifier, None)
+    def get_parent(self, ct, kwarg_name, response):
+        pid = self.kwargs.get(kwarg_name, None)
         if not pid:
             return
 

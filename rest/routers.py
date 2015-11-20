@@ -439,8 +439,34 @@ class ModelRouter(DefaultRouter):
 
         # Custom routes
 
+        # Re-register list view, with an additional keyword to filter this
+        # model by parent models (e.g. foreign keys)
+
+        # /[parentmodel_url]/[foreignkey_value]/[model_url]
         ct = get_ct(model)
-        for pct in ct.get_all_parents():
+        parent_routes = []
+        for pct, fields in ct.get_foreign_keys().items():
+            if not pct.is_registered():
+                continue
+            if len(fields) > 1:
+                # Multiple foreign keys to same parent model; can't
+                # automatically determine which one to use
+                continue
+            if pct.urlbase == '':
+                purlbase = ''
+            else:
+                purlbase = pct.urlbase + '/'
+            parent_routes.append((
+                fields[0],
+                (
+                    '^' + purlbase + r'(?P<' + fields[0]
+                    + '>[^\/\?]+)/{prefix}{trailing_slash}$'
+                )
+            ))
+
+        # Similar but for RelatedModel parent-child relationships
+        # (FIXME: see #35)
+        for pct in ct.get_relationshiptype_parents():
             if not pct.is_registered():
                 continue
             if pct.urlbase == '':
@@ -448,14 +474,19 @@ class ModelRouter(DefaultRouter):
             else:
                 purlbase = pct.urlbase + '/'
 
-            purl = (
-                '^' + purlbase + r'(?P<' + pct.identifier
-                + '>[^\/\?]+)/{prefix}{trailing_slash}$'
-            )
+            parent_routes.append((
+                'related-' + pct.identifier,
+                (
+                    '^' + purlbase + r'(?P<related_' + pct.identifier
+                    + '>[^\/\?]+)/{prefix}{trailing_slash}$'
+                )
+            ))
+
+        for pname, purl in parent_routes:
             routes.append(Route(
                 url=purl,
                 mapping={'get': 'list'},
-                name="{basename}-for-%s" % pct.identifier,
+                name="{basename}-for-%s" % pname,
                 initkwargs={'suffix': 'List'},
             ))
 

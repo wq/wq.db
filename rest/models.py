@@ -85,8 +85,12 @@ class ContentType(DjangoContentType):
     # Get foreign keys and RelationshipType parents for this content type
     def get_all_parents(self):
         parents = self.get_parents()
-        if not self.is_related:
-            return parents
+        if self.is_related:
+            parents.update(self.get_relationshiptype_parents())
+        return parents
+
+    def get_relationshiptype_parents(self):
+        parents = set()
         for rtype in RelationshipType.objects.filter(to_type=self):
             ctype = rtype.from_type
             # This is a DjangoContentType, swap for our custom version

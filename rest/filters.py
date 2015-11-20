@@ -1,8 +1,9 @@
 from rest_framework.filters import BaseFilterBackend
 RESERVED_PARAMETERS = ('_', 'page', 'limit', 'format', 'slug', 'mode')
 
-from .models import get_ct
+from .models import get_ct, get_by_identifier
 from django.utils.six import string_types
+from django.core.exceptions import FieldDoesNotExist
 
 
 class FilterBackend(BaseFilterBackend):
@@ -16,37 +17,38 @@ class FilterBackend(BaseFilterBackend):
         ctype = get_ct(model)
 
         for key, val in list(kwargs.items()):
-            if key in ('target',):
+            if key.startswith('related_'):
+                continue
+            field_name = key.split('__')[0]
+            try:
+                field = model._meta.get_field_by_name(field_name)[0]
+            except FieldDoesNotExist:
                 del kwargs[key]
                 continue
-            found = False
-            for f in model._meta.fields:
-                if ((f.name != key and ctype.identifier + f.name != key)
-                        or f.name == ctype.model):
-                    continue
-                found = True
-                if getattr(f, 'rel', None):
-                    del kwargs[key]
-                    pcls = f.rel.to
-                    router = getattr(view, 'router', None)
-                    if router:
-                        slug = router.get_lookup_for_model(pcls)
-                        kwargs[f.name] = pcls.objects.get(**{slug: val})
-                    elif get_ct(f.rel.to).is_identified:
-                        kwargs[f.name] = pcls.objects.get_by_identifier(val)
-                    else:
-                        kwargs[f.name] = pcls.objects.get(pk=val)
 
-            if not found and ctype.is_related:
+            if field_name != key:
+                continue
+
+            rel = getattr(field, 'rel', None)
+            if not rel:
+                continue
+
+            pcls = field.rel.to
+            router = getattr(view, 'router', None)
+            if router:
+                slug = router.get_lookup_for_model(pcls)
+                kwargs[key] = pcls.objects.get(**{slug: val})
+            elif get_ct(pcls).is_identified:
+                kwargs[key] = pcls.objects.get_by_identifier(val)
+            else:
+                kwargs[key] = pcls.objects.get(pk=val)
+
+        for key, val in list(kwargs.items()):
+            if key.startswith('related_') and ctype.is_related:
                 for pct in ctype.get_all_parents():
-                    if pct.identifier == key:
+                    if key == 'related_' + pct.identifier:
                         pclass = pct.model_class()
-                        if pct.is_identified:
-                            parent = pclass.objects.get_by_identifier(
-                                kwargs[key]
-                            )
-                        else:
-                            parent = pclass.objects.get(pk=kwargs[key])
+                        parent = get_by_identifier(pclass.objects, kwargs[key])
                         del kwargs[key]
                         objs = model.objects.filter_by_related(parent)
                         kwargs['pk__in'] = objs.values_list('pk', flat=True)
