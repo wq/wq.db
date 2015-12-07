@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework import status, viewsets
 from .models import get_ct, get_object_id, get_by_identifier
+from django.db.models.fields import FieldDoesNotExist
 
 
 class GenericAPIView(RestGenericAPIView):
@@ -91,6 +92,21 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         init = request.GET.dict()
         for arg in self.ignore_kwargs:
             init.pop(arg, None)
+        for key in list(init.keys()):
+            try:
+                field = self.model._meta.get_field_by_name(key)[0]
+            except FieldDoesNotExist:
+                del init[key]
+            else:
+                if field.rel:
+                    fk_model = field.rel.to
+                    try:
+                        obj = get_by_identifier(fk_model.objects, init[key])
+                    except fk_model.DoesNotExist:
+                        del init[key]
+                    else:
+                        init[key] = obj.pk
+
         obj = self.model(**init)
         serializer = self.get_serializer(obj)
         data = serializer.data
@@ -135,6 +151,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 continue
             for field in fields:
                 choices = self.get_lookup_choices(pct, context, field)
+                if not choices:
+                    continue
                 self.set_selected(choices, context.get(field + '_id', ''))
                 if field == pct.model:
                     context[pct.urlbase] = choices
