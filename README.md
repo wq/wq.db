@@ -11,7 +11,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/wq/wq.db.svg)](https://github.com/wq/wq.db/network)
 [![GitHub Issues](https://img.shields.io/github/issues/wq/wq.db.svg)](https://github.com/wq/wq.db/issues)
 
-[![Travis Build Status](https://img.shields.io/travis/wq/wq.db.svg)](https://travis-ci.org/wq/wq.db)
+[![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
 [![Django Support](https://img.shields.io/badge/Django-1.7%2C%201.8-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
@@ -21,7 +21,7 @@ The latest version of wq.db is only compatible with Django REST Framework 3.  Th
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
-**wq.db 0.8.0** | 2.7 & 3.4 | 1.7 & 1.8 | 3.1
+**wq.db 0.8.3** | 2.7 & 3.4 | 1.7 & 1.8 | 3.3
 **wq.db 0.7.2** | 2.7 & 3.4 | 1.6 & 1.7 | 2.4
 
 ## Getting Started
