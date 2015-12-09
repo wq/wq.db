@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 LONG_DESCRIPTION = """
-Django design patterns and REST API for field data collection.
+Django design patterns and REST API for citizen science field data collection.
 """
 
 
@@ -85,7 +85,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='0.8.3-dev',
+    version='0.8.3',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
@@ -103,7 +103,7 @@ setup(
         'Markdown',
     ],
     extras_require={
-        'chart': ['rest_pandas>=0.3.1'],
+        'chart': ['rest_pandas>=0.4.0'],
         'files': ['wq.io>=0.5.1', 'Pillow'],
         'social': ['python-social-auth'],
     },
@@ -126,7 +126,7 @@ setup(
     tests_require=[
         'psycopg2',
         'wq.io>=0.5.1',
-        'rest_pandas>=0.3.1',
+        'rest_pandas>=0.4.0',
         'Pillow',
         'python-social-auth==0.2.7',
     ],
