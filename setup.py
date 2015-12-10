@@ -96,7 +96,7 @@ setup(
     description=LONG_DESCRIPTION.strip(),
     long_description=parse_markdown_readme(),
     install_requires=[
-        'Django>=1.7',
+        'Django>=1.7,<1.9',
         'djangorestframework>=3.1',
         'pystache',
         'swapper>=0.2',
