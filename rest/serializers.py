@@ -161,7 +161,8 @@ class ModelSerializer(serializers.ModelSerializer):
             return {}
         fields = {}
 
-        if 'label' not in getattr(self.Meta, 'exclude', []):
+        exclude = getattr(self.Meta, 'exclude', [])
+        if 'label' not in exclude and 'label' not in default_fields:
             fields['label'] = serializers.ReadOnlyField(source='__str__')
 
         info = model_meta.get_field_info(self.Meta.model)
