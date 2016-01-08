@@ -7,9 +7,15 @@ from .models import Identifier, Authority
 class IdentifierListSerializer(base.TypedAttachmentListSerializer):
     def to_internal_value(self, data):
         data = super(IdentifierListSerializer, self).to_internal_value(data)
-        primary = [ident for ident in data if ident.get('is_primary', None)]
+        primary = [
+            ident for ident in data
+            if ident and ident.get('is_primary', None)
+        ]
         if not any(primary) and len(data) > 0:
-            data[0]['is_primary'] = True
+            for ident in data:
+                if ident:
+                    ident['is_primary'] = True
+                    break
         return data
 
 

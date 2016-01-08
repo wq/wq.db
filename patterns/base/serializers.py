@@ -22,9 +22,19 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
         # Ideal case: an array of dicts; this can be handled by the default
         # implementation.  HTML JSON forms will use this approach.
         if self.field_name in dictionary:
-            return super(TypedAttachmentListSerializer, self).get_value(
+            value = super(TypedAttachmentListSerializer, self).get_value(
                 dictionary
             )
+            for i, row in enumerate(value):
+                empty = True
+                for key, val in row.items():
+                    if key == self.child.type_field:
+                        continue
+                    elif val:
+                        empty = False
+                if empty:
+                    value[i] = None
+            return value
 
         # Deprecated/"classic" form style, where each attachment is submitted
         # as form fields with names in the format [model]_[typeid] e.g.
@@ -60,6 +70,10 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
 
 class AttachmentSerializer(ModelSerializer):
     id = serializers.IntegerField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        kwargs['allow_null'] = True
+        super(AttachmentSerializer, self).__init__(*args, **kwargs)
 
 
 class TypedAttachmentSerializer(AttachmentSerializer):
@@ -132,6 +146,8 @@ class AttachedModelSerializer(ModelSerializer):
         for name in attachment_data:
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
+                if not attachment:
+                    continue
                 self.set_parent_object(attachment, instance, name)
                 self.create_attachment(model, attachment, name)
         return instance
@@ -146,6 +162,8 @@ class AttachedModelSerializer(ModelSerializer):
         for name in attachment_data:
             model = fields[name].child.Meta.model
             for attachment in attachment_data[name]:
+                if not attachment:
+                    continue
                 self.set_parent_object(attachment, instance, name)
                 if 'id' in attachment:
                     exist = self.get_attachment(model, attachment['id'])
@@ -171,13 +189,13 @@ class AttachedModelSerializer(ModelSerializer):
         return model.objects.get(pk=pk)
 
     def update_attachment(self, exist, attachment, name):
-        for key, val in attachment.items():
-            if key != 'id':
-                setattr(exist, key, val)
-        exist.save()
+        field = self.get_fields()[name]
+        attachment.pop('id')
+        field.child.update(exist, attachment)
 
     def create_attachment(self, model, attachment, name):
-        return model.objects.create(**attachment)
+        field = self.get_fields()[name]
+        field.child.create(attachment)
 
 
 class NaturalKeyValidator(serializers.UniqueTogetherValidator):
