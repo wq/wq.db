@@ -7,9 +7,12 @@ MarkdownType = swapper.load_model(
 from .models import Markdown
 
 
+def active_markdown(qs, request):
+    mtype = MarkdownType.get_current(request)
+    return qs.filter(type=mtype)
+
+
 class MarkdownSerializer(base.TypedAttachmentSerializer):
-    attachment_fields = ['id', 'summary', 'markdown']
-    type_model = MarkdownType
     html = serializers.ReadOnlyField()
 
     class Meta(base.TypedAttachmentSerializer.Meta):
@@ -28,7 +31,6 @@ class MarkedModelSerializer(base.AttachedModelSerializer):
         # Only include active markdown in output
         # (FIXME: ideally this filter would happen *before* initial
         #  serialization)
-        from .rest import active_markdown
         request = self.context['request']
         active_ids = active_markdown(
             instance.markdown, request
@@ -38,6 +40,3 @@ class MarkedModelSerializer(base.AttachedModelSerializer):
             if markdown['id'] in active_ids
         ]
         return data
-
-    class Meta:
-        list_exclude = ('markdown',)

@@ -18,54 +18,21 @@ class AttachmentListSerializer(serializers.ListSerializer):
 class TypedAttachmentListSerializer(AttachmentListSerializer):
     def get_value(self, dictionary):
         # Handle attachments that are submitted together with their parent
-
-        # Ideal case: an array of dicts; this can be handled by the default
-        # implementation.  HTML JSON forms will use this approach.
-        if self.field_name in dictionary:
-            value = super(TypedAttachmentListSerializer, self).get_value(
-                dictionary
-            )
-            for i, row in enumerate(value):
-                empty = True
-                for key, val in row.items():
-                    if key == self.child.type_field:
-                        continue
-                    elif val:
-                        empty = False
-                if empty:
-                    value[i] = None
-            return value
-
-        # Deprecated/"classic" form style, where each attachment is submitted
-        # as form fields with names in the format [model]_[typeid] e.g.
-        # annotation_23=30.5 will become {'type': 23, 'value': '30.5'}
-
-        # Retrieve form values into more usable array/dict format
-        attachments = []
-        ct = get_ct(self.child.Meta.model)
-        i = 0
-        for atype in self.child.expected_types:
-            fields = {
-                afield: '%s-%s-%s' % (
-                    ct.identifier,
-                    get_object_id(atype) if atype else '',
-                    afield
-                ) for afield in self.child.attachment_fields
-            }
-            found = False
-            for key in fields.values():
-                if key in dictionary:
-                    found = True
-            if found:
-                attachment = self.child.create_dict(
-                    atype, dictionary, fields, i
-                )
-                if attachment:
-                    attachments.append(attachment)
-                i += 1
-
-        # Return extracted values to default implementation
-        return attachments
+        value = super(TypedAttachmentListSerializer, self).get_value(
+            dictionary
+        )
+        if not isinstance(value, list):
+            return []
+        for i, row in enumerate(value):
+            empty = True
+            for key, val in row.items():
+                if key == self.child.Meta.type_field:
+                    continue
+                elif val:
+                    empty = False
+            if empty:
+                value[i] = None
+        return value
 
 
 class AttachmentSerializer(ModelSerializer):
@@ -75,32 +42,11 @@ class AttachmentSerializer(ModelSerializer):
         kwargs['allow_null'] = True
         super(AttachmentSerializer, self).__init__(*args, **kwargs)
 
+    class Meta:
+        list_serializer_class = AttachmentListSerializer
+
 
 class TypedAttachmentSerializer(AttachmentSerializer):
-    attachment_fields = ['id']
-    required_fields = []
-    type_model = None
-    type_field = 'type_id'
-    object_field = 'content_object'
-
-    def create_dict(self, atype, data, fields, index):
-        attachment = {
-            self.type_field: atype.pk if atype else None,
-        }
-        for field in fields:
-            if fields[field] in data:
-                attachment[field] = data[fields[field]]
-                if field == 'id' and attachment[field]:
-                    attachment[field] = int(attachment[field])
-        for field in self.required_fields:
-            if not attachment.get(field, None):
-                return None
-        return attachment
-
-    @property
-    def expected_types(self):
-        return self.type_model.objects.all()
-
     def to_representation(self, obj):
         data = super(TypedAttachmentSerializer, self).to_representation(obj)
 
@@ -135,6 +81,10 @@ class TypedAttachmentSerializer(AttachmentSerializer):
         # Don't validate these fields (items are saved with their parent)
         exclude = ("content_type", "object_id",)
         list_serializer_class = TypedAttachmentListSerializer
+
+        # patterns-specific meta
+        type_field = 'type_id'
+        object_field = 'content_object'
 
 
 class AttachedModelSerializer(ModelSerializer):
@@ -182,7 +132,7 @@ class AttachedModelSerializer(ModelSerializer):
 
     def set_parent_object(self, attachment, instance, name):
         serializer = self.get_fields()[name].child
-        fk_name = getattr(serializer, 'object_field', 'content_object')
+        fk_name = getattr(serializer.Meta, 'object_field', 'content_object')
         attachment[fk_name] = instance
 
     def get_attachment(self, model, pk):

@@ -107,23 +107,15 @@ class RelateRestTestCase(RelateBaseTestCase):
             'relatedmodels/%s' % self.parent.pk
         )
 
-    def test_relate_post_forward_classic(self):
-        form = {
-            'name': 'Parent2',
-            'relationship-%s-item_id' % self.reltype.pk: self.child.pk,
-        }
-        self.validate_post_forward(form)
-
-    def test_relate_post_forward_jsonform(self):
+    def test_relate_post_forward(self):
         form = {
             'name': 'Parent2',
             'relationships[0][type_id]': self.reltype.pk,
             'relationships[0][item_id]': self.child.pk,
         }
-        self.validate_post_forward(form)
 
-    def validate_post_forward(self, form):
         response = self.client.post('/relatedmodels.json', form)
+
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
@@ -138,24 +130,16 @@ class RelateRestTestCase(RelateBaseTestCase):
         )
         self.assertEqual(self.child.inverserelationships.count(), 2)
 
-    def test_relate_post_inverse_classic(self):
-        form = {
-            'name': 'Child2',
-            'inverserelationship-%s-item_id' % self.reltype.pk: self.parent.pk
-        }
-        self.validate_post_inverse(form)
-
-    def test_relate_post_inverse_jsonform(self):
+    def test_relate_post_inverse(self):
         form = {
             'name': 'Child2',
 
             'inverserelationships[0][type_id]': self.reltype.pk,
             'inverserelationships[0][item_id]': self.parent.pk,
         }
-        self.validate_post_inverse(form)
 
-    def validate_post_inverse(self, form):
         response = self.client.post('/anotherrelatedmodels.json', form)
+
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
@@ -170,17 +154,7 @@ class RelateRestTestCase(RelateBaseTestCase):
         )
         self.assertEqual(self.parent.relationships.count(), 2)
 
-    def test_relate_put_forward_classic(self):
-        child2 = AnotherRelatedModel.objects.create(name="Child2")
-        relid = self.parent.relationships.all()[0].pk
-        form = {
-            'name': 'Parent1 - Updated',
-            'relationship-%s-item_id' % self.reltype.pk: child2.pk,
-            'relationship-%s-id' % self.reltype.pk: relid
-        }
-        self.validate_put_forward(form)
-
-    def test_relate_put_forward_jsonform(self):
+    def test_relate_put_forward(self):
         child2 = AnotherRelatedModel.objects.create(name="Child2")
         relid = self.parent.relationships.all()[0].pk
         form = {
@@ -189,14 +163,12 @@ class RelateRestTestCase(RelateBaseTestCase):
             'relationships[0][type_id]': self.reltype.pk,
             'relationships[0][item_id]': child2.pk,
         }
-        self.validate_put_forward(form)
 
-    def validate_put_forward(self, form):
-        child2 = AnotherRelatedModel.objects.get(name="Child2")
         response = self.client.put(
             '/relatedmodels/%s.json' % self.parent.pk,
             form
         )
+
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )
@@ -211,17 +183,7 @@ class RelateRestTestCase(RelateBaseTestCase):
         rel = response.data["relationships"][0]
         self.assertEqual(rel['item_id'], child2.pk)
 
-    def test_relate_put_inverse_classic(self):
-        parent2 = RelatedModel.objects.create(name="Parent2")
-        relid = self.child.inverserelationships.all()[0].pk
-        form = {
-            'name': 'Child1 - Updated',
-            'inverserelationship-%s-item_id' % self.reltype.pk: parent2.pk,
-            'inverserelationship-%s-id' % self.reltype.pk: relid,
-        }
-        self.validate_put_inverse(form)
-
-    def test_relate_put_inverse_jsonform(self):
+    def test_relate_put(self):
         parent2 = RelatedModel.objects.create(name="Parent2")
         relid = self.child.inverserelationships.all()[0].pk
         form = {
@@ -231,14 +193,12 @@ class RelateRestTestCase(RelateBaseTestCase):
             'inverserelationships[0][type_id]': self.reltype.pk,
             'inverserelationships[0][item_id]': parent2.pk,
         }
-        self.validate_put_inverse(form)
 
-    def validate_put_inverse(self, form):
-        parent2 = RelatedModel.objects.get(name="Parent2")
         response = self.client.put(
             '/anotherrelatedmodels/%s.json' % self.child.pk,
             form
         )
+
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )

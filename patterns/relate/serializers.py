@@ -9,13 +9,6 @@ from .models import (
 
 
 class RelationshipSerializer(base.TypedAttachmentSerializer):
-    attachment_fields = ['id', 'item_id']
-    required_fields = ['item_id']
-    type_model = RelationshipType
-    object_field = 'left'
-    item_id_field = 'to_object_id'
-    item_ct_field = 'to_content_type_id'
-    parent_id_field = 'from_object_id'
 
     def get_fields(self):
         fields = super(RelationshipSerializer, self).get_fields()
@@ -29,11 +22,11 @@ class RelationshipSerializer(base.TypedAttachmentSerializer):
 
     def to_internal_value(self, attachment):
         if 'item_id' in attachment and 'type_id' in attachment:
-            type = self.type_model.objects.get(pk=attachment['type_id'])
+            type = self.Meta.type_model.objects.get(pk=attachment['type_id'])
             cls = type.right.model_class()
             obj = get_by_identifier(cls.objects, attachment['item_id'])
-            attachment[self.item_id_field] = obj.pk
-            attachment[self.item_ct_field] = type.right.pk
+            attachment[self.Meta.item_id_field] = obj.pk
+            attachment[self.Meta.item_ct_field] = type.right.pk
             del attachment['item_id']
         return super(RelationshipSerializer, self).to_internal_value(
             attachment
@@ -41,19 +34,28 @@ class RelationshipSerializer(base.TypedAttachmentSerializer):
 
     class Meta(base.TypedAttachmentSerializer.Meta):
         model = Relationship
+
+        # patterns-specific
+        object_field = 'left'
+
+        # relate-specific
+        type_model = RelationshipType
+        item_id_field = 'to_object_id'
+        item_ct_field = 'to_content_type_id'
+
         exclude = (
             'from_content_type', 'from_object_id',
         )
 
 
 class InverseRelationshipSerializer(RelationshipSerializer):
-    item_id_field = 'from_object_id'
-    item_ct_field = 'from_content_type_id'
-    parent_id_field = 'to_object_id'
-    type_model = InverseRelationshipType
-
     class Meta(RelationshipSerializer.Meta):
         model = InverseRelationship
+
+        type_model = InverseRelationshipType
+        item_id_field = 'from_object_id'
+        item_ct_field = 'from_content_type_id'
+
         exclude = (
             'to_content_type', 'to_object_id'
         )
@@ -77,6 +79,3 @@ class RelatedModelSerializer(base.AttachedModelSerializer):
             super(RelatedModelSerializer, self).set_parent_object(
                 attachment, instance, name
             )
-
-    class Meta:
-        list_exclude = ('relationships', 'inverserelationships')

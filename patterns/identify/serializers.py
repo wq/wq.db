@@ -20,11 +20,6 @@ class IdentifierListSerializer(base.TypedAttachmentListSerializer):
 
 
 class IdentifierSerializer(base.TypedAttachmentSerializer):
-    type_model = Authority
-    type_field = 'authority_id'
-    attachment_fields = ['id', 'name', 'slug', 'is_primary']
-    required_fields = ['name']
-
     url = serializers.ReadOnlyField()
 
     @property
@@ -35,6 +30,9 @@ class IdentifierSerializer(base.TypedAttachmentSerializer):
         model = Identifier
         list_serializer_class = IdentifierListSerializer
 
+        # patterns-specific
+        type_field = 'authority_id'
+
 
 class IdentifiedModelSerializer(base.AttachedModelSerializer):
     id = serializers.SerializerMethodField()
@@ -42,6 +40,3 @@ class IdentifiedModelSerializer(base.AttachedModelSerializer):
 
     def get_id(self, instance):
         return get_object_id(instance)
-
-    class Meta:
-        list_exclude = ('identifiers',)

@@ -72,24 +72,14 @@ class PatternsRestTestCase(APITestCase):
             markdown="**Test 2**"
         )
 
-    def test_identifyrelate_post_classic(self):
-        form = {
-            'name': 'Test 3',
-            'identifier--name': "Test 3",
-        }
-        form['inverserelationship-%s-item_id' % self.reltype.pk] = "test-1"
-        self.validate_identifyrelate_post(form)
-
-    def test_identifyrelate_post_jsonform(self):
+    def test_identifyrelate_post(self):
         form = {
             'name': 'Test 3',
             'identifiers[0][name]': "Test 3",
             'inverserelationships[0][type_id]': self.reltype.pk,
             'inverserelationships[0][item_id]': "test-1",
         }
-        self.validate_identifyrelate_post(form)
 
-    def validate_identifyrelate_post(self, form):
         response = self.client.post('/identifiedrelatedmodels.json', form)
 
         self.assertEqual(
@@ -110,15 +100,7 @@ class PatternsRestTestCase(APITestCase):
         self.assertEqual(len(irels), 1)
         self.assertEqual(irels[0]['item_id'], "test-1")
 
-    def test_identifymark_post_classic(self):
-        form = {
-            'name': 'Test 4',
-            'identifier--name': "Test 4",
-        }
-        form['markdown-%s-markdown' % self.marktype.pk] = "**test 4**"
-        self.validate_identifymark_post(form)
-
-    def test_identifymark_post_jsonform(self):
+    def test_identifymark_post(self):
         form = {
             'name': 'Test 4',
             'identifiers[0][name]': "Test 4",
@@ -126,9 +108,7 @@ class PatternsRestTestCase(APITestCase):
             'markdown[0][type_id]': self.marktype.pk,
             'markdown[0][markdown]': "**test 4**",
         }
-        self.validate_identifymark_post(form)
 
-    def validate_identifymark_post(self, form):
         response = self.client.post('/identifiedmarkedmodels.json', form)
 
         self.assertEqual(
@@ -148,22 +128,7 @@ class PatternsRestTestCase(APITestCase):
             '<p><strong>test 4</strong></p>',
         )
 
-    def test_identifyrelate_put_classic(self):
-        IdentifiedRelatedModel.objects.find("Test Child 2")
-        form = {
-            'name': 'Test 1 - Updated',
-            'identifier--name': "Test 1 - Updated",
-            'identifier--slug': "test-1-updated",
-            'identifier--id': self.parentinstance.primary_identifier.pk
-        }
-
-        form[
-            'relationship-%s-id' % self.reltype.pk
-        ] = self.parentinstance.relationships.all()[0].pk
-        form['relationship-%s-item_id' % self.reltype.pk] = 'test-child-2'
-        self.validate_identifyrelate_put(form)
-
-    def test_identifyrelate_put_jsonform(self):
+    def test_identifyrelate_put(self):
         IdentifiedRelatedModel.objects.find("Test Child 2")
         rel = self.parentinstance.relationships.all()[0]
         ident = self.parentinstance.primary_identifier
@@ -178,9 +143,7 @@ class PatternsRestTestCase(APITestCase):
             'relationships[0][type_id]': self.reltype.pk,
             'relationships[0][item_id]': 'test-child-2',
         }
-        self.validate_identifyrelate_put(form)
 
-    def validate_identifyrelate_put(self, form):
         newchildinstance = IdentifiedRelatedModel.objects.find("Test Child 2")
         url = '/identifiedrelatedmodels/test-1.json'
         response = self.client.put(url, form)
@@ -211,23 +174,7 @@ class PatternsRestTestCase(APITestCase):
             self.parentinstance,
         )
 
-    def test_identifymark_put_classic(self):
-        form = {
-            'name': 'Test 2 - Updated',
-            'identifier--name': "Test 2 - Updated",
-            'identifier--slug': "test-2-updated",
-            'identifier--id': self.markinstance.primary_identifier.pk
-        }
-
-        form[
-            'markdown-%s-id' % self.marktype.pk
-        ] = self.markinstance.markdown.all()[0].pk
-        form[
-            'markdown-%s-markdown' % self.marktype.pk
-        ] = '**Test 2 - Updated**'
-        self.validate_identifymark_put(form)
-
-    def test_identifymark_put_jsonform(self):
+    def test_identifymark_put(self):
         ident = self.markinstance.primary_identifier
         md = self.markinstance.markdown.all()[0]
         form = {
@@ -241,10 +188,8 @@ class PatternsRestTestCase(APITestCase):
             'markdown[0][type_id]': self.marktype.pk,
             'markdown[0][markdown]': '**Test 2 - Updated**',
         }
-        self.validate_identifymark_put(form)
-
-    def validate_identifymark_put(self, form):
         url = '/identifiedmarkedmodels/test-2.json'
+
         response = self.client.put(url, form)
 
         self.assertEqual(

@@ -70,3 +70,31 @@ class NaturalKeyChild(patterns.NaturalKeyModel):
 class ModelWithNaturalKey(models.Model):
     key = models.ForeignKey(NaturalKeyChild)
     value = models.CharField(max_length=10)
+
+
+class CustomPatternModel(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class CustomAttachment(models.Model):
+    name = models.CharField(max_length=10)
+    parent = models.ForeignKey(CustomPatternModel, related_name='attachments')
+
+
+class CustomTypedPatternModel(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class CustomType(models.Model):
+    name = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.name
+
+
+class CustomTypedAttachment(models.Model):
+    name = models.CharField(max_length=10)
+    type = models.ForeignKey(CustomType)
+    parent = models.ForeignKey(
+        CustomTypedPatternModel, related_name='attachments'
+    )

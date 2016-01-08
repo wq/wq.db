@@ -13,18 +13,9 @@ class IdentifiedLocatedModelSerializer(
 
 class IdentifiedMarkedModelSerializer(
         IdentifiedModelSerializer, MarkedModelSerializer):
-    class Meta:
-        list_exclude = (
-            'identifiers',
-            'markdown',
-        )
+    pass
 
 
 class IdentifiedRelatedModelSerializer(
         IdentifiedModelSerializer, RelatedModelSerializer):
-    class Meta:
-        list_exclude = (
-            'identifiers',
-            'relationships',
-            'inverserelationships',
-        )
+    pass
