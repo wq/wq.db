@@ -6,6 +6,11 @@ from .mark.models import *  # NOQA
 from .relate.models import *  # NOQA
 
 
+class IdentifiedAnnotatedModel(IdentifiedModel, AnnotatedModel):
+    class Meta:
+        abstract = True
+
+
 class IdentifiedLocatedModel(IdentifiedModel, LocatedModel):
     class Meta:
         abstract = True

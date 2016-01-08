@@ -10,12 +10,11 @@ class AnnotatedModel(patterns.AnnotatedModel):
 
 
 class IdentifiedModel(patterns.IdentifiedModel):
-    name = models.CharField(max_length=255)
+    pass
 
 
-class IdentifiedAnnotatedModel(
-        patterns.IdentifiedModel, patterns.AnnotatedModel):
-    name = models.CharField(max_length=255)
+class IdentifiedAnnotatedModel(patterns.IdentifiedAnnotatedModel):
+    pass
 
 
 class MarkedModel(patterns.MarkedModel):
@@ -44,11 +43,11 @@ class AnotherRelatedModel(patterns.RelatedModel):
 
 
 class IdentifiedRelatedModel(patterns.IdentifiedRelatedModel):
-    name = models.CharField(max_length=255)
+    pass
 
 
 class IdentifiedMarkedModel(patterns.IdentifiedMarkedModel):
-    name = models.CharField(max_length=255)
+    pass
 
 
 class NaturalKeyParent(patterns.NaturalKeyModel):

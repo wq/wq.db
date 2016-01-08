@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from wq.db import rest
 from wq.db.rest.models import get_object_id
-from wq.db.rest.views import SimpleViewSet, ModelViewSet
+from wq.db.rest.views import SimpleViewSet
 
 
 class AuthView(SimpleViewSet):
@@ -48,7 +48,3 @@ class LogoutView(AuthView):
         if request.user.is_authenticated():
             logout(request)
         return self.csrf_info(request)
-
-
-class UserViewSet(ModelViewSet):
-    lookup_field = 'username'

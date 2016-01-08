@@ -38,8 +38,6 @@ class FilterBackend(BaseFilterBackend):
             if router:
                 slug = router.get_lookup_for_model(pcls)
                 kwargs[key] = pcls.objects.get(**{slug: val})
-            elif get_ct(pcls).is_identified:
-                kwargs[key] = pcls.objects.get_by_identifier(val)
             else:
                 kwargs[key] = pcls.objects.get(pk=val)
 

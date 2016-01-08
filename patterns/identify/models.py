@@ -15,6 +15,25 @@ WQ_IDENTIFIER_ORDER = getattr(
 )
 
 
+def find_unique_slug(name, queryset):
+    if not name:
+        maxobj = queryset.order_by('-pk').first()
+        name = str(maxobj.pk + 1 if maxobj else 1)
+    if len(name) > 45:
+        name = name[:45]
+    slug = slugify(name)
+    exists = queryset.filter(slug=slug)
+    num = ''
+    while exists.count() > 0:
+        slug = slugify('%s %s' % (name, num))
+        exists = queryset.filter(slug=slug)
+        if num == '':
+            num = 1
+        else:
+            num += 1
+    return slug
+
+
 class IdentifierManager(models.Manager):
     _cache = {}
 
@@ -61,32 +80,12 @@ class IdentifierManager(models.Manager):
         return resolved, unresolved
 
     # Default implementation of get_or_create doesn't work well with generics
-    def get_or_create(self, **kwargs):
+    def get_or_create(self, defaults={}, **kwargs):
         try:
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
+            kwargs.update(defaults)
             return self.create(**kwargs), True
-
-    def find_unique_slug(self, name, model):
-        if len(name) > 45:
-            name = name[:45]
-        slug = slugify(name)
-        exists = self.filter(
-            content_type__model=model,
-            slug=slug
-        )
-        num = ''
-        while exists.count() > 0:
-            slug = slugify('%s %s' % (name, num))
-            exists = self.filter(
-                content_type__model=model,
-                slug=slug
-            )
-            if num == '':
-                num = 1
-            else:
-                num += 1
-        return slug
 
 
 class Identifier(models.Model):
@@ -110,12 +109,29 @@ class Identifier(models.Model):
             return self.authority.object_url % self.slug
 
     def save(self, *args, **kwargs):
-        if self.slug is None or self.slug == '':
-            model = self.content_type.name
-            self.slug = type(self).objects.find_unique_slug(self.name, model)
+        if not self.slug:
+            model = self.content_type.model_class()
+            queryset = model.objects.exclude(pk=self.object_id)
+            self.slug = find_unique_slug(self.name, queryset)
+
+        if self.is_primary and not self.pk:
+            exist = self.content_object.primary_identifier
+            if exist:
+                # Primary identifier already exists for this object, update
+                # instead of adding another
+                self.pk = exist.pk
+                kwargs.pop('force_insert', None)
+                kwargs['force_update'] = True
+
         super(Identifier, self).save(*args, **kwargs)
+
         if self.is_primary:
             IdentifierManager.update_cache(self)
+            obj = self.content_object
+            if self.name != obj.name or self.slug != obj.slug:
+                obj.name = self.name
+                obj.slug = self.slug
+                obj.save()
 
     def __str__(self):
         return self.name
@@ -126,126 +142,82 @@ class Identifier(models.Model):
         abstract = not INSTALLED
 
 
-class PrimaryIdentifierManager(IdentifierManager):
-    use_for_related_fields = True
-
-    def get_queryset(self):
-        qs = super(PrimaryIdentifierManager, self).get_queryset()
-        return qs.filter(is_primary=True)
-
-
-class PrimaryIdentifierRelation(GenericRelation):
-    def get_extra_restriction(self, where_class, alias, remote_alias):
-        """
-        Ensure is_primary filter is applied when joining via relation field
-        """
-        cond = super(PrimaryIdentifierRelation, self).get_extra_restriction(
-            where_class, alias, remote_alias
-        )
-        field = PrimaryIdentifier._meta.get_field_by_name('is_primary')[0]
-        if hasattr(field, 'get_col'):
-            # Requires Django 1.8+
-            cond.add(
-                field.get_lookup('exact')(field.get_col(remote_alias), True),
-                'AND'
-            )
-        return cond
-
-
-class PrimaryIdentifier(Identifier):
-    objects = PrimaryIdentifierManager()
-
-    class Meta:
-        proxy = INSTALLED
-
-
 class IdentifiedModelManager(NaturalKeyModelManager):
     def get_by_identifier(self, identifier, auto_create=False):
         searches = [
-            {'identifiers__slug': identifier, 'identifiers__is_primary': True},
-            {'identifiers__name': identifier, 'identifiers__is_primary': True},
+            {'slug': identifier},
+            {'name': identifier},
             {'identifiers__slug': identifier},
             {'identifiers__name': identifier},
-            {'pk': identifier}
         ]
 
-        object = None
+        obj = None
         for search in searches:
             try:
-                object = self.get(**search)
+                obj = self.get(**search)
                 break
             except (ValueError, self.model.DoesNotExist):
-                if 'pk' not in search:
-                    continue
-                elif (not auto_create):
-                    name = self.model._meta.object_name
-                    raise self.model.DoesNotExist(
-                        '%s "%s" does not exist' % (name, identifier)
-                    )
+                pass
 
-        if object is None and auto_create:
-            object = self.create_by_natural_key(identifier)
+        if obj is None:
+            if auto_create:
+                obj = self.create_by_natural_key(identifier)
+            else:
+                name = self.model._meta.object_name
+                raise self.model.DoesNotExist(
+                    '%s "%s" does not exist' % (name, identifier)
+                )
 
-        return object
+        return obj
 
     def get_by_natural_key(self, identifier):
         return self.get_by_identifier(identifier)
 
     def create_by_natural_key(self, identifier):
-        if ('name' in self.model._meta.get_all_field_names()):
-            object = self.create(name=identifier)
-        else:
-            object = self.create()
-        object.identifiers.create(name=identifier, is_primary=True)
-        return object
-
-    def get_queryset(self):
-        qs = super(IdentifiedModelManager, self).get_queryset()
-        meta = self.model._meta
-        if meta.ordering:
-            return qs
-        ct = ContentType.objects.get_for_model(self.model)
-        query = (
-            """ SELECT name FROM wq_identifier
-                WHERE content_type_id=%s AND object_id=%s.%s AND is_primary
-                LIMIT 1 """
-            % (ct.pk, meta.db_table, meta.pk.get_attname_column()[1]))
-        qs = qs.extra(select={'wq_id_name': query})
-        return qs.order_by('wq_id_name')
+        return self.create(name=identifier)
 
 
 class IdentifiedModel(NaturalKeyModel):
+    name = models.CharField(
+        max_length=255, blank=True, db_index=True
+    )
+    slug = models.CharField(max_length=255, unique=True, blank=True)
+
     identifiers = GenericRelation(Identifier)
-    primary_identifiers = PrimaryIdentifierRelation(PrimaryIdentifier)
     objects = IdentifiedModelManager()
 
-    @classmethod
-    def get_natural_key_fields(cls):
-        return ['primary_identifiers__slug']
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = find_unique_slug(self.name, type(self).objects)
+        if not self.name:
+            self.name = self.slug
+        super(IdentifiedModel, self).save()
+        ident, is_new = self.identifiers.get_or_create(
+            is_primary=True,
+            defaults={
+                'name': self.name,
+                'slug': self.slug,
+            }
+        )
+        if not is_new and (ident.name != self.name or ident.slug != self.slug):
+            ident.name = self.name
+            ident.slug = self.slug
+            ident.save()
 
     @property
     def primary_identifier(self):
         return Identifier.objects.get_for_object(self)
 
-    def fallback_identifier(self):
-        if hasattr(self, 'name'):
-            return str(self.name)
-        else:
-            return ContentType.objects.get_for_model(self).name
-
     def __str__(self):
-        if self.primary_identifier:
-            return self.primary_identifier.name
-        else:
-            return self.fallback_identifier()
+        return self.name
 
     def natural_key(self):
-        if self.primary_identifier:
-            return (self.primary_identifier.slug,)
-        else:
-            return (self.pk,)
+        # In case user neglects to extend IdentifiedModel.Meta
+        return (self.slug,)
 
     class Meta:
+        unique_together = [['slug']]
+        ordering = ['name']
         abstract = True
 
 

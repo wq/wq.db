@@ -5,7 +5,7 @@ from .models import Value
 
 
 class ValueSerializer(ChartModelSerializer):
-    series = serializers.ReadOnlyField(source="series.primary_identifier.slug")
+    series = serializers.ReadOnlyField(source="series.slug")
 
     class Meta(ChartModelSerializer.Meta):
         model = Value

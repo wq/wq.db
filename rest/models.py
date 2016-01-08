@@ -2,9 +2,6 @@ from django.contrib.contenttypes.models import (
     ContentType as DjangoContentType,
     ContentTypeManager as DjangoContentTypeManager
 )
-from wq.db.patterns.models import (
-    AnnotatedModel, IdentifiedModel, LocatedModel, MarkedModel, RelatedModel
-)
 from wq.db.patterns.models import RelationshipType
 from django.utils.encoding import force_text
 from django.utils.six import string_types
@@ -32,31 +29,6 @@ class ContentType(DjangoContentType):
             return config['url']
         urlbase = force_text(cls._meta.verbose_name_plural)
         return urlbase.replace(' ', '')
-
-    @property
-    def is_annotated(self):
-        cls = self.model_class()
-        return issubclass(cls, AnnotatedModel)
-
-    @property
-    def is_identified(self):
-        cls = self.model_class()
-        return issubclass(cls, IdentifiedModel)
-
-    @property
-    def is_located(self):
-        cls = self.model_class()
-        return issubclass(cls, LocatedModel)
-
-    @property
-    def is_marked(self):
-        cls = self.model_class()
-        return issubclass(cls, MarkedModel)
-
-    @property
-    def is_related(self):
-        cls = self.model_class()
-        return issubclass(cls, RelatedModel)
 
     @property
     def has_geo_fields(self):
@@ -132,6 +104,11 @@ class ContentType(DjangoContentType):
         cls = self.model_class()
         return router.get_model_config(cls, user)
 
+    @property
+    def is_related(self):
+        config = self.get_config()
+        return config.get('related', False)
+
     def is_registered(self):
         from . import router  # avoid circular import
         cls = self.model_class()
@@ -160,8 +137,6 @@ def get_object_id(instance):
     config = ct.get_config()
     if config and 'lookup' in config:
         return getattr(instance, config['lookup'])
-    elif ct.is_identified and instance.primary_identifier:
-        return instance.primary_identifier.slug
     return instance.pk
 
 

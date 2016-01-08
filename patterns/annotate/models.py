@@ -4,7 +4,6 @@ from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from wq.db.patterns.base.models import NaturalKeyModel
-from django.core.exceptions import FieldError
 from collections import OrderedDict
 
 from django.conf import settings
@@ -16,9 +15,6 @@ class AnnotationType(NaturalKeyModel):
 
     def __str__(self):
         return self.name
-
-    def natural_key(self):
-        return (self.name,)
 
     class Meta:
         unique_together = [['name']]
@@ -47,27 +43,6 @@ class AnnotationManager(models.Manager):
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
             return self.create(**kwargs), True
-
-    # Fix filtering across generic relations
-    def filter(self, *args, **kwargs):
-
-        def add_content_type(model):
-            ctype = ContentType.objects.get_for_model(model)
-            if 'content_type' in kwargs and kwargs['content_type'] != ctype:
-                raise FieldError(
-                    "Cannot match more than one generic relationship!"
-                )
-            kwargs['content_type'] = ctype
-
-        for rel in self.model._meta.get_all_related_many_to_many_objects():
-            if not isinstance(rel.field, GenericRelation):
-                continue
-            rname = rel.field.related_query_name()
-            for key in kwargs.keys():
-                if key == rname or key.startswith(rname + '__'):
-                    add_content_type(rel.model)
-
-        return super(AnnotationManager, self).filter(*args, **kwargs)
 
 
 class Annotation(models.Model):

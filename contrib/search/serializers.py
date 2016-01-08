@@ -1,6 +1,7 @@
 from rest_framework.serializers import Serializer
 from wq.db.rest.models import get_ct, ContentType, get_object_id
 from wq.db.patterns.models import Identifier, Annotation
+from django.core.exceptions import ImproperlyConfigured
 
 
 class SearchResultSerializer(Serializer):
@@ -17,6 +18,11 @@ class SearchResultSerializer(Serializer):
         else:
             ctype = get_ct(obj)
             match_str = str(obj)
+        if not ctype.is_registered():
+            raise ImproperlyConfigured(
+                "Register %s to include it in search results"
+                % ctype.model_class()
+            )
 
         obj_id = get_object_id(obj)
 

@@ -3,7 +3,7 @@ from wq.db.patterns import models as patterns
 
 
 class Series(patterns.IdentifiedModel):
-    name = models.CharField(max_length=20)
+    pass
 
 
 class Value(models.Model):

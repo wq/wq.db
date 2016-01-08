@@ -13,11 +13,7 @@ def social_auth(request):
             or request.user.social_auth.count() == 0):
         return {}
 
+    user = rest.router.serialize(request.user)
     return {
-        'social_auth': {
-            'accounts': [
-                rest.router.serialize(auth)
-                for auth in request.user.social_auth.all()
-            ]
-        }
+        'social_auth': user.get('social_auth', {})
     }

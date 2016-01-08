@@ -1,4 +1,3 @@
-from django.http import Http404
 from rest_framework.generics import GenericAPIView as RestGenericAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
@@ -173,25 +172,6 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if fn:
             qs = fn(qs, context)
         return rest.router.serialize(qs, many=True)
-
-    def get_object(self):
-        try:
-            obj = super(ModelViewSet, self).get_object()
-        except Http404:
-            if not get_ct(self.model).is_identified:
-                raise
-
-            # Allow retrieval via non-primary identifiers
-            slug = self.kwargs.get(self.lookup_url_kwarg)
-            try:
-                obj = self.model.objects.get_by_identifier(slug)
-            except:
-                raise Http404("Could not find %s with id '%s'" % (
-                    self.model._meta.verbose_name,
-                    slug
-                ))
-            # TODO: automatically redirect to primary identifier?
-        return obj
 
     def list(self, request, *args, **kwargs):
         response = super(ModelViewSet, self).list(

@@ -6,16 +6,42 @@ from .mark.serializers import *  # NOQA
 from .relate.serializers import *  # NOQA
 
 
+class IdentifiedAnnotatedModelSerializer(
+        IdentifiedModelSerializer, AnnotatedModelSerializer):
+    class Meta:
+        wq_config = {
+            'identified': True,
+            'annotated': True,
+            'lookup': 'slug',
+        }
+
+
 class IdentifiedLocatedModelSerializer(
         IdentifiedModelSerializer, LocatedModelSerializer):
-    pass
+    class Meta:
+        wq_config = {
+            'identified': True,
+            'located': True,
+            'map': True,
+            'lookup': 'slug',
+        }
 
 
 class IdentifiedMarkedModelSerializer(
         IdentifiedModelSerializer, MarkedModelSerializer):
-    pass
+    class Meta:
+        wq_config = {
+            'identified': True,
+            'marked': True,
+            'lookup': 'slug',
+        }
 
 
 class IdentifiedRelatedModelSerializer(
         IdentifiedModelSerializer, RelatedModelSerializer):
-    pass
+    class Meta:
+        wq_config = {
+            'identified': True,
+            'related': True,
+            'lookup': 'slug',
+        }

@@ -38,5 +38,5 @@ class UserSerializer(ModelSerializer):
         return result
 
     class Meta:
-        exclude = ('id', 'password')
+        exclude = ('id', 'password', 'user_permissions', 'groups',)
         list_exclude = ('social_auth',)

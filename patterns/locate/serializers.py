@@ -114,3 +114,9 @@ class LocatedModelSerializer(base.AttachedModelSerializer):
         elif not self.is_detail:
             fields.pop('locations')
         return fields
+
+    class Meta:
+        wq_config = {
+            'located': True,
+            'map': True,
+        }

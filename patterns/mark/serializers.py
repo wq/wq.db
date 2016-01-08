@@ -40,3 +40,8 @@ class MarkedModelSerializer(base.AttachedModelSerializer):
             if markdown['id'] in active_ids
         ]
         return data
+
+    class Meta:
+        wq_config = {
+            'marked': True,
+        }

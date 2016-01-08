@@ -79,3 +79,8 @@ class RelatedModelSerializer(base.AttachedModelSerializer):
             super(RelatedModelSerializer, self).set_parent_object(
                 attachment, instance, name
             )
+
+    class Meta:
+        wq_config = {
+            'related': True,
+        }

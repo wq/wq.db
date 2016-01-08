@@ -9,3 +9,8 @@ class AnnotationSerializer(base.TypedAttachmentSerializer):
 
 class AnnotatedModelSerializer(base.AttachedModelSerializer):
     annotations = AnnotationSerializer(many=True)
+
+    class Meta:
+        wq_config = {
+            'annotated': True,
+        }

@@ -1,7 +1,7 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from wq.db.patterns.base import serializers as base
-from wq.db.rest.models import get_object_id
-from .models import Identifier, Authority
+from .models import Identifier
 
 
 class IdentifierListSerializer(base.TypedAttachmentListSerializer):
@@ -22,10 +22,6 @@ class IdentifierListSerializer(base.TypedAttachmentListSerializer):
 class IdentifierSerializer(base.TypedAttachmentSerializer):
     url = serializers.ReadOnlyField()
 
-    @property
-    def expected_types(self):
-        return [None] + list(Authority.objects.all())
-
     class Meta(base.TypedAttachmentSerializer.Meta):
         model = Identifier
         list_serializer_class = IdentifierListSerializer
@@ -34,9 +30,36 @@ class IdentifierSerializer(base.TypedAttachmentSerializer):
         type_field = 'authority_id'
 
 
-class IdentifiedModelSerializer(base.AttachedModelSerializer):
-    id = serializers.SerializerMethodField()
-    identifiers = IdentifierSerializer(many=True)
+class IdentifiedModelValidator(UniqueTogetherValidator):
+    def enforce_required_fields(self, attrs):
+        pass
 
-    def get_id(self, instance):
-        return get_object_id(instance)
+    def filter_queryset(self, attrs, queryset):
+        for field in self.fields:
+            attrs.setdefault(field, None)
+        return super(IdentifiedModelValidator, self).filter_queryset(
+            attrs, queryset
+        )
+
+
+class IdentifiedModelSerializer(base.AttachedModelSerializer):
+    identifiers = IdentifierSerializer(many=True)
+    slug = serializers.SlugField(required=False)
+
+    def get_unique_together_validators(self):
+        return [IdentifiedModelValidator(
+            queryset=self.Meta.model.objects.all(),
+            fields=['slug']
+        )]
+
+    def save(self, *args, **kwargs):
+        super(IdentifiedModelSerializer, self).save(*args, **kwargs)
+        # Fetch instance from DB in case identifier changed slug while saving
+        self.instance = self.Meta.model.objects.get(pk=self.instance.pk)
+        return self.instance
+
+    class Meta:
+        wq_config = {
+            'lookup': 'slug',
+            'identified': True,
+        }

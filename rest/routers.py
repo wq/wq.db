@@ -16,8 +16,6 @@ from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
 
-PREDICATES = ('annotated', 'identified', 'located', 'marked', 'related')
-
 
 class ModelRouter(DefaultRouter):
     _models = set()
@@ -61,8 +59,6 @@ class ModelRouter(DefaultRouter):
 
         if viewset:
             self.register_viewset(model, viewset)
-        if serializer:
-            self.register_serializer(model, serializer)
         if queryset:
             self.register_queryset(model, queryset)
         if filter:
@@ -91,6 +87,10 @@ class ModelRouter(DefaultRouter):
             )
 
         self.register_config(model, kwargs)
+
+        if serializer:
+            self.register_serializer(model, serializer)
+
         self._page_names[model] = kwargs['name']
         self._page_models[kwargs['name']] = model
         self._url_models[kwargs['url']] = model
@@ -100,6 +100,14 @@ class ModelRouter(DefaultRouter):
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
+        if model not in self._config:
+            return
+        if hasattr(serializer, 'Meta'):
+            config = getattr(serializer.Meta, 'wq_config', {})
+            for key in config:
+                if key not in self._config[model]:
+                    self._config[model][key] = config[key]
+                    self._base_config = None
 
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
@@ -133,6 +141,10 @@ class ModelRouter(DefaultRouter):
             if real_model in self._serializers:
                 serializer = self._serializers[real_model]
             else:
+                if real_model not in self._config:
+                    raise ImproperlyConfigured(
+                        "No serializer configured for %s" % real_model
+                    )
                 serializer = self.get_default_serializer_class(real_model)
 
         meta = getattr(serializer, 'Meta', object)
@@ -184,11 +196,8 @@ class ModelRouter(DefaultRouter):
         return qs
 
     def get_lookup_for_model(self, model_class):
-        if get_ct(model_class).is_identified:
-            return 'primary_identifiers__slug'
-        else:
-            config = self.get_model_config(model_class) or {}
-            return config.get('lookup', 'pk')
+        config = self.get_model_config(model_class) or {}
+        return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
         if model_class in self._viewsets:
@@ -262,11 +271,7 @@ class ModelRouter(DefaultRouter):
                         if has_perm(user, cct, 'view'):
                             info['children'].append(cct.identifier)
 
-            for name in PREDICATES:
-                if getattr(ct, 'is_' + name):
-                    info[name] = True
-
-            if (ct.is_located or ct.has_geo_fields) and 'map' not in info:
+            if ct.has_geo_fields and 'map' not in info:
                 info['map'] = True
 
             for field in model._meta.fields:
