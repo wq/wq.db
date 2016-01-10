@@ -21,7 +21,6 @@ INSTALLED_APPS = (
     'tests.rest_app',
     'tests.conflict_app',
     'tests.patterns_app',
-    'tests.chart_app',
     'tests.files_app',
 )
 

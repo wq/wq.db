@@ -126,8 +126,7 @@ setup(
     tests_require=[
         'psycopg2',
         'wq.io>=0.5.1',
-        'rest_pandas>=0.4.0',
         'Pillow',
-        'python-social-auth==0.2.7',
+        'python-social-auth',
     ],
 )
