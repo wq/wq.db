@@ -3,6 +3,9 @@ from wq.db import rest
 from wq.db.contrib.chart.urls import make_urls
 from tests.chart_app import views
 
+from tests.test_relate import create_reltype
+create_reltype()
+
 chart_urls = make_urls({
     'timeseries': views.TimeSeriesView,
     'scatter': views.ScatterView,

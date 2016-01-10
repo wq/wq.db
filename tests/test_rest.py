@@ -24,6 +24,8 @@ class RestTestCase(APITestCase):
         parent = Parent.objects.create(name="Test", pk=1)
         parent.child_set.create(name="Test 1")
         parent.child_set.create(name="Test 2")
+        parent2 = Parent.objects.create(name="Test 2", pk=2)
+        parent2.child_set.create(name="Test 1")
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
@@ -103,6 +105,13 @@ class RestTestCase(APITestCase):
         response = self.client.get('/itemtypes/1/items.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
+
+    def test_rest_target_to_children(self):
+        response = self.client.get('/childs-by-parents.json')
+        self.assertIn("list", response.data)
+        self.assertEqual(len(response.data['list']), 2)
+        self.assertIn("target", response.data)
+        self.assertEqual(response.data['target'], 'childs')
 
     def test_rest_detail_user_serializer(self):
         response = self.client.get('/usermanagedmodels/1.json')

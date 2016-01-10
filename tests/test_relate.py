@@ -6,12 +6,23 @@ from tests.patterns_app.models import RelatedModel, AnotherRelatedModel
 from wq.db.patterns.models import RelationshipType, Relationship
 
 
+def create_reltype():
+    parent_ct = get_ct(RelatedModel)
+    child_ct = get_ct(AnotherRelatedModel)
+
+    RelationshipType.objects.get_or_create(
+        name="Parent Of",
+        inverse_name="Child Of",
+        from_type=parent_ct,
+        to_type=child_ct,
+    )
+
+
 class RelateBaseTestCase(APITestCase):
     def setUp(self):
         self.parent_ct = get_ct(RelatedModel)
         self.child_ct = get_ct(AnotherRelatedModel)
-
-        self.reltype = RelationshipType.objects.create(
+        self.reltype = RelationshipType.objects.get(
             name="Parent Of",
             inverse_name="Child Of",
             from_type=self.parent_ct,
@@ -212,3 +223,21 @@ class RelateRestTestCase(RelateBaseTestCase):
 
         invrel = response.data["inverserelationships"][0]
         self.assertEqual(invrel['item_id'], parent2.pk)
+
+    def test_relate_filter_by_parent(self):
+        response = self.client.get(
+            '/relatedmodels/%s/anotherrelatedmodels.json' % self.parent.pk
+        )
+        self.assertIn("list", response.data)
+        self.assertEqual(len(response.data['list']), 1)
+        self.assertEqual(response.data['list'][0]['id'], self.child.pk)
+
+    def test_relate_target_to_children(self):
+        response = self.client.get(
+            '/anotherrelatedmodels-by-relatedmodels.json'
+        )
+        self.assertIn("list", response.data)
+        self.assertEqual(len(response.data['list']), 1)
+        self.assertEqual(response.data['list'][0]['id'], self.parent.pk)
+        self.assertIn("target", response.data)
+        self.assertEqual(response.data['target'], 'anotherrelatedmodels')

@@ -1,6 +1,5 @@
 from django.http import Http404
 from wq.db.rest.views import ModelViewSet
-from rest_framework.response import Response
 
 
 class IdentifiedModelViewSet(ModelViewSet):
