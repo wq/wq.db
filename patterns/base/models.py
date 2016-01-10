@@ -122,13 +122,17 @@ class NaturalKeyModel(models.Model):
         Derive natural key from first unique_together definition, noting which
         fields are related objects vs. regular fields.
         """
-        fields = cls._meta.unique_together[0]
+        fields = cls.get_natural_key_def()
         info = []
         for name in fields:
             field = cls._meta.get_field_by_name(name)[0]
             rel_to = field.rel.to if field.rel else None
             info.append((name, rel_to))
         return info
+
+    @classmethod
+    def get_natural_key_def(cls):
+        return cls._meta.unique_together[0]
 
     @classmethod
     def get_natural_key_fields(cls):

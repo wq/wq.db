@@ -211,9 +211,13 @@ class IdentifiedModel(NaturalKeyModel):
     def __str__(self):
         return self.name
 
-    def natural_key(self):
-        # In case user neglects to extend IdentifiedModel.Meta
-        return (self.slug,)
+    @classmethod
+    def get_natural_key_def(cls):
+        if cls._meta.unique_together:
+            return cls._meta.unique_together[0]
+        else:
+            # In case user neglects to extend IdentifiedModel.Meta
+            return ('slug',)
 
     class Meta:
         unique_together = [['slug']]
