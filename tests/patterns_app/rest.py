@@ -1,6 +1,7 @@
 from wq.db import rest
 from wq.db.patterns import rest as patterns
 from wq.db.patterns.identify.views import IdentifiedModelViewSet
+from wq.db.patterns.relate.views import RelatedModelViewSet
 from .models import (
     AnnotatedModel, IdentifiedModel, MarkedModel, LocatedModel,
     RelatedModel, AnotherRelatedModel,
@@ -32,10 +33,12 @@ rest.router.register_model(
 rest.router.register_model(
     RelatedModel,
     serializer=patterns.RelatedModelSerializer,
+    viewset=RelatedModelViewSet,
 )
 rest.router.register_model(
     AnotherRelatedModel,
     serializer=patterns.RelatedModelSerializer,
+    viewset=RelatedModelViewSet,
 )
 rest.router.register_model(
     IdentifiedAnnotatedModel,

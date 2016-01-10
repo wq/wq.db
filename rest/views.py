@@ -186,8 +186,6 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         for pct, fields in ct.get_foreign_keys().items():
             if len(fields) == 1:
                 self.get_parent(pct, fields[0], response)
-        for pct in ct.get_relationshiptype_parents():
-            self.get_parent(pct, 'related_%s' % pct.identifier, response)
         return response
 
     def create(self, request, *args, **kwargs):

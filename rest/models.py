@@ -2,7 +2,6 @@ from django.contrib.contenttypes.models import (
     ContentType as DjangoContentType,
     ContentTypeManager as DjangoContentTypeManager
 )
-from wq.db.patterns.models import RelationshipType
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 
@@ -54,24 +53,6 @@ class ContentType(DjangoContentType):
     def get_parents(self):
         return set(self.get_foreign_keys().keys())
 
-    # Get foreign keys and RelationshipType parents for this content type
-    def get_all_parents(self):
-        parents = self.get_parents()
-        if self.is_related:
-            parents.update(self.get_relationshiptype_parents())
-        return parents
-
-    def get_relationshiptype_parents(self):
-        parents = set()
-        if not self.is_related:
-            return parents
-        for rtype in RelationshipType.objects.filter(to_type=self):
-            ctype = rtype.from_type
-            # This is a DjangoContentType, swap for our custom version
-            ctype = ContentType.objects.get_for_id(ctype.pk)
-            parents.add(ctype)
-        return parents
-
     def get_children(self, include_rels=False):
         cls = self.model_class()
         if cls is None:
@@ -88,26 +69,10 @@ class ContentType(DjangoContentType):
         else:
             return set(child[0] for child in children)
 
-    def get_all_children(self):
-        children = self.get_children()
-        if not self.is_related:
-            return children
-        for rtype in RelationshipType.objects.filter(from_type=self):
-            ctype = rtype.to_type
-            # This is a DjangoContentType, swap for our custom version
-            ctype = ContentType.objects.get_for_id(ctype.pk)
-            children.add(ctype)
-        return children
-
     def get_config(self, user=None):
         from . import router  # avoid circular import
         cls = self.model_class()
         return router.get_model_config(cls, user)
-
-    @property
-    def is_related(self):
-        config = self.get_config()
-        return config.get('related', False)
 
     def is_registered(self):
         from . import router  # avoid circular import

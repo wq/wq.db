@@ -280,3 +280,21 @@ class InverseRelationshipType(RelationshipType):
     class Meta:
         proxy = INSTALLED
         abstract = not INSTALLED
+
+
+def get_related_types(cls, **kwargs):
+    from wq.db.rest.models import ContentType as RestContentType
+    ctypes = set()
+    for rtype in cls.objects.filter(**kwargs):
+        # This is a DjangoContentType, swap for our custom version
+        ctype = RestContentType.objects.get_for_id(rtype.right.pk)
+        ctypes.add(ctype)
+    return ctypes
+
+
+def get_related_children(contenttype):
+    return get_related_types(RelationshipType, from_type=contenttype)
+
+
+def get_related_parents(contenttype):
+    return get_related_types(InverseRelationshipType, to_type=contenttype)

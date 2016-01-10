@@ -449,7 +449,6 @@ class ModelRouter(DefaultRouter):
 
         # /[parentmodel_url]/[foreignkey_value]/[model_url]
         ct = get_ct(model)
-        parent_routes = []
         for pct, fields in ct.get_foreign_keys().items():
             if not pct.is_registered():
                 continue
@@ -461,41 +460,17 @@ class ModelRouter(DefaultRouter):
                 purlbase = ''
             else:
                 purlbase = pct.urlbase + '/'
-            parent_routes.append((
-                fields[0],
-                (
+            routes.append(Route(
+                url=(
                     '^' + purlbase + r'(?P<' + fields[0]
                     + '>[^\/\?]+)/{prefix}{trailing_slash}$'
-                )
-            ))
-
-        # Similar but for RelatedModel parent-child relationships
-        # (FIXME: see #35)
-        for pct in ct.get_relationshiptype_parents():
-            if not pct.is_registered():
-                continue
-            if pct.urlbase == '':
-                purlbase = ''
-            else:
-                purlbase = pct.urlbase + '/'
-
-            parent_routes.append((
-                'related-' + pct.identifier,
-                (
-                    '^' + purlbase + r'(?P<related_' + pct.identifier
-                    + '>[^\/\?]+)/{prefix}{trailing_slash}$'
-                )
-            ))
-
-        for pname, purl in parent_routes:
-            routes.append(Route(
-                url=purl,
+                ),
                 mapping={'get': 'list'},
-                name="{basename}-for-%s" % pname,
+                name="{basename}-for-%s" % fields[0],
                 initkwargs={'suffix': 'List'},
             ))
 
-        for cct in ct.get_all_children():
+        for cct in ct.get_children():
             if not cct.is_registered():
                 continue
             cbase = cct.urlbase
@@ -505,6 +480,9 @@ class ModelRouter(DefaultRouter):
                 name="%s-by-%s" % (cct.identifier, ct.identifier),
                 initkwargs={'target': cbase, 'suffix': 'List'},
             ))
+
+        if hasattr(viewset, 'extra_routes'):
+            routes += viewset.extra_routes()
 
         return routes
 

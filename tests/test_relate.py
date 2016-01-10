@@ -4,6 +4,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import RelatedModel, AnotherRelatedModel
 from wq.db.patterns.models import RelationshipType, Relationship
+from wq.db.patterns.models import get_related_parents, get_related_children
 
 
 def create_reltype():
@@ -37,7 +38,7 @@ class RelateBaseTestCase(APITestCase):
             from_content_type=self.parent_ct,
             from_object_id=self.parent.pk,
 
-            to_content_type=self.parent_ct,
+            to_content_type=self.child_ct,
             to_object_id=self.child.pk,
         )
 
@@ -78,6 +79,14 @@ class RelateTestCase(RelateBaseTestCase):
         invrel = child2.inverserelationships.all()[0]
         self.assertEqual(str(invrel), "Child2 Sibling Of Child1")
         self.assertEqual(str(invrel.reltype), "Sibling Of")
+
+    def test_relate_parents(self):
+        parents = get_related_parents(self.child_ct)
+        self.assertEqual(set([self.parent_ct]), parents)
+
+    def test_relate_children(self):
+        children = get_related_children(self.parent_ct)
+        self.assertEqual(set([self.child_ct]), children)
 
 
 class RelateRestTestCase(RelateBaseTestCase):
@@ -225,6 +234,8 @@ class RelateRestTestCase(RelateBaseTestCase):
         self.assertEqual(invrel['item_id'], parent2.pk)
 
     def test_relate_filter_by_parent(self):
+        AnotherRelatedModel.objects.create(name="Child2")
+        AnotherRelatedModel.objects.create(name="Child3")
         response = self.client.get(
             '/relatedmodels/%s/anotherrelatedmodels.json' % self.parent.pk
         )
