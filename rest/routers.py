@@ -100,14 +100,7 @@ class ModelRouter(DefaultRouter):
 
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
-        if model not in self._config:
-            return
-        if hasattr(serializer, 'Meta'):
-            config = getattr(serializer.Meta, 'wq_config', {})
-            for key in config:
-                if key not in self._config[model]:
-                    self._config[model][key] = config[key]
-                    self._base_config = None
+        self._base_config = None
 
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
@@ -281,6 +274,13 @@ class ModelRouter(DefaultRouter):
                         'value': val,
                         'label': str(label)
                     } for val, label in field.choices]
+
+            serializer = self._serializers.get(model, None)
+            if serializer and hasattr(serializer, 'Meta'):
+                config = getattr(serializer.Meta, 'wq_config', {})
+                for key in config:
+                    if key not in info:
+                        info[key] = config[key]
 
             pages[info['name']] = info
 
