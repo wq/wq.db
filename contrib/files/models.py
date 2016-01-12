@@ -3,12 +3,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django import forms
 from django.conf import settings
-import swapper
 from wq.db.patterns.models import AnnotatedModel
 
 from wq.io.util import guess_type
-
-swapper.set_app_prefix('files', 'WQ')
 
 
 # Custom FileField handles both images and files
@@ -113,7 +110,6 @@ class File(BaseFile, AnnotatedModel):
     class Meta:
         db_table = 'wq_file'
         ordering = ("name",)
-        swappable = swapper.swappable_setting('files', 'File')
 
 
 class BaseFileAttachment(BaseFile):

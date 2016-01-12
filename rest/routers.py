@@ -3,15 +3,13 @@ from django.utils.six import string_types
 from django.conf.urls import url
 from django.core.exceptions import ImproperlyConfigured
 
-from django.contrib.auth.models import AnonymousUser
-
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 
-from .models import get_ct
+from .model_tools import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
@@ -228,6 +226,7 @@ class ModelRouter(DefaultRouter):
         if self._base_config:
             return self._base_config
 
+        from django.contrib.auth.models import AnonymousUser
         user = AnonymousUser()
         pages = {}
         for page in self._extra_pages:

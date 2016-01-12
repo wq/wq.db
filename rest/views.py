@@ -2,7 +2,7 @@ from rest_framework.generics import GenericAPIView as RestGenericAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework import status, viewsets
-from .models import get_ct, get_object_id, get_by_identifier
+from .model_tools import get_ct, get_object_id, get_by_identifier
 from django.db.models.fields import FieldDoesNotExist
 
 

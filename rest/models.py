@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import (
     ContentTypeManager as DjangoContentTypeManager
 )
 from django.utils.encoding import force_text
-from django.utils.six import string_types
+from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
 class ContentTypeManager(DjangoContentTypeManager):
@@ -81,41 +81,6 @@ class ContentType(DjangoContentType):
 
     class Meta:
         proxy = True
-
-
-def get_ct(model, for_concrete_model=False):
-    if isinstance(model, string_types):
-        ctype = ContentType.objects.get_by_identifier(model)
-    else:
-        ctype = ContentType.objects.get_for_model(
-            model, for_concrete_model=for_concrete_model
-        )
-        # get_for_model sometimes returns a DjangoContentType - caching issue?
-        if not isinstance(ctype, ContentType):
-            ctype = ContentType.objects.get(pk=ctype.pk)
-            ContentType.objects._add_to_cache(ContentType.objects.db, ctype)
-    return ctype
-
-
-def get_object_id(instance):
-    ct = get_ct(instance)
-    config = ct.get_config()
-    if config and 'lookup' in config:
-        return getattr(instance, config['lookup'])
-    return instance.pk
-
-
-def get_by_identifier(queryset, ident):
-    if hasattr(queryset, 'get_by_identifier'):
-        return queryset.get_by_identifier(ident)
-    else:
-        ct = get_ct(queryset.model)
-        config = ct.get_config()
-        if config and 'lookup' in config:
-            lookup = config['lookup']
-        else:
-            lookup = 'pk'
-        return queryset.get(**{lookup: ident})
 
 
 class MultiQuerySet(object):

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
+import wq.db.contrib.files.models
 
 
 class Migration(migrations.Migration):
@@ -12,40 +13,35 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('contenttypes', '0002_remove_content_type_name'),
+        ('files', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Annotation',
+            name='Photo',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.TextField(blank=True, null=True)),
+                ('name', models.CharField(blank=True, max_length=255, null=True)),
+                ('file', wq.db.contrib.files.models.FileField(height_field='height', upload_to='.', width_field='width')),
+                ('size', models.IntegerField(blank=True, null=True)),
+                ('width', models.IntegerField(blank=True, null=True)),
+                ('height', models.IntegerField(blank=True, null=True)),
                 ('object_id', models.PositiveIntegerField(db_index=True)),
                 ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType')),
+                ('type', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='files.FileType')),
             ],
             options={
                 'abstract': False,
-                'db_table': 'wq_annotation',
             },
         ),
         migrations.CreateModel(
-            name='AnnotationType',
+            name='PhotoAttachedModel',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
             ],
             options={
                 'abstract': False,
-                'db_table': 'wq_annotationtype',
             },
-        ),
-        migrations.AlterUniqueTogether(
-            name='annotationtype',
-            unique_together=set([('name',)]),
-        ),
-        migrations.AddField(
-            model_name='annotation',
-            name='type',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='annotate.AnnotationType'),
         ),
     ]

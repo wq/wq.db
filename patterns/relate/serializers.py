@@ -1,11 +1,20 @@
-from wq.db.rest.serializers import ModelSerializer, ContentTypeField
+from rest_framework import serializers
+from wq.db.rest.serializers import ModelSerializer
 from wq.db.patterns.base import serializers as base
-from wq.db.rest.models import get_by_identifier
+from wq.db.rest.models import get_by_identifier, ContentType
 
 from .models import (
     Relationship, InverseRelationship,
     RelationshipType, InverseRelationshipType
 )
+
+
+class ContentTypeField(serializers.SlugRelatedField):
+    queryset = ContentType.objects.all()
+    slug_field = "model"
+
+    def __init__(self, **kwargs):
+        super(serializers.RelatedField, self).__init__(**kwargs)
 
 
 class RelationshipSerializer(base.TypedAttachmentSerializer):
