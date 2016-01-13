@@ -181,7 +181,7 @@ class IdentifiedModel(NaturalKeyModel):
     name = models.CharField(
         max_length=255, blank=True, db_index=True
     )
-    slug = models.CharField(max_length=255, unique=True, blank=True)
+    slug = models.CharField(max_length=255, blank=True)
 
     identifiers = GenericRelation(Identifier)
     objects = IdentifiedModelManager()

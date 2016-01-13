@@ -26,7 +26,7 @@ if HAS_SOCIAL_AUTH:
 
 class UserSerializer(ModelSerializer):
     if HAS_SOCIAL_AUTH:
-        social_auth = SocialAuthSerializer(many=True)
+        social_auth = SocialAuthSerializer(many=True, read_only=True)
 
     def to_representation(self, instance):
         result = super(UserSerializer, self).to_representation(instance)
@@ -39,4 +39,5 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         exclude = ('id', 'password', 'user_permissions', 'groups',)
+        readonly_fields = ('last_login', 'date_joined')
         list_exclude = ('social_auth',)

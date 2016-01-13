@@ -23,7 +23,6 @@ REST_FRAMEWORK = {
         'wq.db.rest.renderers.GeoJSONRenderer',
     ),
 
-    'PAGE_SIZE': 50,
     'DEFAULT_PAGINATION_CLASS': 'wq.db.rest.pagination.Pagination',
 
     'DEFAULT_PERMISSION_CLASSES': (

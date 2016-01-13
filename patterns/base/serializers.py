@@ -25,11 +25,12 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
             return []
         for i, row in enumerate(value):
             empty = True
-            for key, val in row.items():
-                if key == self.child.Meta.type_field:
-                    continue
-                elif val:
-                    empty = False
+            if isinstance(row, dict):
+                for key, val in row.items():
+                    if key == self.child.Meta.type_field:
+                        continue
+                    elif val:
+                        empty = False
             if empty:
                 value[i] = None
         return value

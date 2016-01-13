@@ -7,17 +7,17 @@ from .relate.models import *  # NOQA
 
 
 class IdentifiedAnnotatedModel(IdentifiedModel, AnnotatedModel):
-    class Meta:
+    class Meta(IdentifiedModel.Meta):
         abstract = True
 
 
 class IdentifiedLocatedModel(IdentifiedModel, LocatedModel):
-    class Meta:
+    class Meta(IdentifiedModel.Meta):
         abstract = True
 
 
 class IdentifiedMarkedModel(IdentifiedModel, MarkedModel):
-    class Meta:
+    class Meta(IdentifiedModel.Meta):
         abstract = True
 
 
@@ -29,5 +29,5 @@ class IdentifiedRelatedModelManager(
 class IdentifiedRelatedModel(IdentifiedModel, RelatedModel):
     objects = IdentifiedRelatedModelManager()
 
-    class Meta:
+    class Meta(IdentifiedModel.Meta):
         abstract = True

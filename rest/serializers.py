@@ -103,6 +103,15 @@ class ModelSerializer(serializers.ModelSerializer):
             return True
         return False
 
+    @property
+    def is_html(self):
+        request = self.context.get('request', None)
+        if not request:
+            return
+        if request.accepted_renderer.format == 'html':
+            return True
+        return False
+
     def get_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
         fields = self.update_id_fields(fields)
@@ -110,6 +119,9 @@ class ModelSerializer(serializers.ModelSerializer):
         if not self.is_detail:
             for field in getattr(self.Meta, 'list_exclude', []):
                 fields.pop(field, None)
+            if self.is_html:
+                for field in getattr(self.Meta, 'html_list_exclude', []):
+                    fields.pop(field, None)
         return fields
 
     def update_id_fields(self, fields):
