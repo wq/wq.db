@@ -98,7 +98,7 @@ setup(
     install_requires=[
         'Django>=1.8',
         'djangorestframework>=3.1',
-        'pystache',
+        'django-mustache',
         'swapper>=0.2',
         'Markdown',
     ],

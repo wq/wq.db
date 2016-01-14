@@ -38,9 +38,6 @@ TIME_ZONE = "America/Chicago"
 ROOT_URLCONF = "tests.urls"
 BASE_DIR = os.path.dirname(__file__)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, "templates"),
-)
 VERSION_TXT = os.path.join(BASE_DIR, "version.txt")
 
 LANGUAGES = (
@@ -49,3 +46,4 @@ LANGUAGES = (
 )
 
 from wq.db.default_settings import *  # NOQA
+TEMPLATES[0]['DIRS'] += (os.path.join(BASE_DIR, "templates"),)

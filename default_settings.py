@@ -1,10 +1,6 @@
 # Django settings
-TEMPLATE_LOADERS = (
-    'wq.db.rest.template.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.csrf',  # Django 1.7/1.8
+context_processors = (
+    'django.template.context_processors.csrf',
     'django.contrib.auth.context_processors.auth',
     'wq.db.rest.auth.context_processors.is_authenticated',
     'wq.db.rest.auth.context_processors.social_auth',
@@ -12,6 +8,25 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'wq.db.rest.context_processors.router_info',
     'wq.db.rest.context_processors.wq_config',
 )
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django_mustache.Mustache',
+        'DIRS': tuple(),
+        'OPTIONS': {
+            'context_processors': context_processors,
+        }
+    },
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': context_processors,
+        }
+    }
+]
+
+
 SESSION_COOKIE_HTTPONLY = False
 
 # Django Rest Framework settings
