@@ -53,7 +53,6 @@ class ModelRouter(DefaultRouter):
             from django.db.models import get_model
             model = get_model(*model.split('.'))
         self._models.add(model)
-        ct = get_ct(model)
 
         if viewset:
             self.register_viewset(model, viewset)
@@ -63,7 +62,7 @@ class ModelRouter(DefaultRouter):
             self.register_filter(model, filter)
 
         if 'name' not in kwargs:
-            kwargs['name'] = ct.identifier
+            kwargs['name'] = model._meta.model_name
         if 'url' not in kwargs:
             url = force_text(model._meta.verbose_name_plural)
             kwargs['url'] = url.replace(' ', '')
