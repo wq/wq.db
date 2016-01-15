@@ -32,39 +32,6 @@ class RelatedModelManager(models.Manager):
         return data
 
 
-class RelatedModel(models.Model):
-    relationships = GenericRelation(
-        'Relationship',
-        content_type_field='from_content_type',
-        object_id_field='from_object_id',
-    )
-    inverserelationships = GenericRelation(
-        'InverseRelationship',
-        content_type_field='to_content_type',
-        object_id_field='to_object_id',
-    )
-    objects = RelatedModelManager()
-
-    def all_relationships(self):
-        for rel in self.relationships.all():
-            yield rel
-        for rel in self.inverserelationships.all():
-            yield rel
-
-    def create_relationship(self, to_obj, name,
-                            inverse_name=None, computed=False):
-        return Relationship.objects.create_relationship(
-            from_obj=self,
-            to_obj=to_obj,
-            name=name,
-            inverse_name=inverse_name,
-            computed=computed
-        )
-
-    class Meta:
-        abstract = True
-
-
 class RelationshipManager(models.Manager):
     def create_relationship(self, from_obj, to_obj, name,
                             inverse_name=None, computed=False):
@@ -214,6 +181,39 @@ class InverseRelationship(Relationship):
     class Meta:
         proxy = INSTALLED
         abstract = not INSTALLED
+
+
+class RelatedModel(models.Model):
+    relationships = GenericRelation(
+        Relationship,
+        content_type_field='from_content_type',
+        object_id_field='from_object_id',
+    )
+    inverserelationships = GenericRelation(
+        InverseRelationship,
+        content_type_field='to_content_type',
+        object_id_field='to_object_id',
+    )
+    objects = RelatedModelManager()
+
+    def all_relationships(self):
+        for rel in self.relationships.all():
+            yield rel
+        for rel in self.inverserelationships.all():
+            yield rel
+
+    def create_relationship(self, to_obj, name,
+                            inverse_name=None, computed=False):
+        return Relationship.objects.create_relationship(
+            from_obj=self,
+            to_obj=to_obj,
+            name=name,
+            inverse_name=inverse_name,
+            computed=computed
+        )
+
+    class Meta:
+        abstract = True
 
 
 class RelationshipTypeManager(models.Manager):

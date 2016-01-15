@@ -80,7 +80,8 @@ class SearchRestTestCase(BaseSearchTestCase):
         result = self.run_search("Test 2", auto=True)
         self.assertEqual(result.status_code, status.HTTP_302_FOUND)
         self.assertEqual(
-            result['Location'], 'http://testserver/identifiedmodels/test-2'
+            result['Location'].replace('http://testserver', ''),
+            '/identifiedmodels/test-2'
         )
 
     def test_search_rest_disambiguate(self):
@@ -90,7 +91,8 @@ class SearchRestTestCase(BaseSearchTestCase):
         result = self.client.get('/search/test-2')
         self.assertEqual(result.status_code, status.HTTP_302_FOUND)
         self.assertEqual(
-            result['Location'], 'http://testserver/identifiedmodels/test-2'
+            result['Location'].replace('http://testserver', ''),
+            '/identifiedmodels/test-2'
         )
 
     def test_search_rest_disambiguate_fail(self):
