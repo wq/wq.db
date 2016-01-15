@@ -133,8 +133,8 @@ class Relationship(models.Model):
         self._reset_dict_cache()
 
     def __str__(self):
-        if (self.from_content_type_id and self.type_id
-                and self.to_content_type_id):
+        if (self.from_content_type_id and self.type_id and
+                self.to_content_type_id):
             return '%s %s %s' % (self.left, self.reltype, self.right)
         else:
             return 'Undefined'

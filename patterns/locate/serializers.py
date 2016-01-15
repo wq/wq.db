@@ -63,8 +63,8 @@ class LocationSerializer(base.AttachmentSerializer):
 
     def to_representation(self, loc):
         has_parent = (
-            self.parent and self.parent.parent
-            and hasattr(self.parent.parent.Meta, 'model')
+            self.parent and self.parent.parent and
+            hasattr(self.parent.parent.Meta, 'model')
         )
         if self.as_geometry and has_parent:
             return json.loads(loc.geometry.geojson)
@@ -79,8 +79,8 @@ class LocationSerializer(base.AttachmentSerializer):
         return data
 
     def to_internal_value(self, data):
-        if (data.get('type', None) == 'Feature'
-                and 'properties' in data and 'geometry' in data):
+        if (data.get('type', None) == 'Feature' and
+                'properties' in data and 'geometry' in data):
             obj = data['properties']
             obj['geometry'] = data['geometry']
             if 'id' in data:

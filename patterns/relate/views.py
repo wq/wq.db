@@ -31,8 +31,8 @@ class RelatedModelViewSet(ModelViewSet):
 
             routes.append(Route(
                 (
-                    '^' + purlbase + r'(?P<related_' + pct.identifier
-                    + '>[^\/\?]+)/{prefix}{trailing_slash}$'
+                    '^' + purlbase + r'(?P<related_' + pct.identifier +
+                    '>[^\/\?]+)/{prefix}{trailing_slash}$'
                 ),
                 mapping={'get': 'list'},
                 name="{basename}-for-related-%s" % pct.identifier,

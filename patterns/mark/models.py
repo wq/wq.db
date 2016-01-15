@@ -4,11 +4,11 @@ from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from django.utils.translation import get_language_from_request
+from django.conf import settings
 
 import swapper
 swapper.set_app_prefix('mark', 'WQ')
 
-from django.conf import settings
 INSTALLED = ('wq.db.patterns.mark' in settings.INSTALLED_APPS)
 
 

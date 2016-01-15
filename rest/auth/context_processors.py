@@ -8,9 +8,9 @@ def is_authenticated(request):
 
 
 def social_auth(request):
-    if (not request.user.is_authenticated()
-            or not hasattr(request.user, 'social_auth')
-            or request.user.social_auth.count() == 0):
+    if (not request.user.is_authenticated() or
+            not hasattr(request.user, 'social_auth') or
+            request.user.social_auth.count() == 0):
         return {}
 
     user = rest.router.serialize(request.user)

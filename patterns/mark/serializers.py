@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from wq.db.patterns.base import serializers as base
 import swapper
+
+from .models import Markdown
 MarkdownType = swapper.load_model(
     'mark', 'MarkdownType', required=False
 )
-from .models import Markdown
 
 
 def active_markdown(qs, request):

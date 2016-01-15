@@ -35,5 +35,3 @@ def get_by_identifier(queryset, ident):
         else:
             lookup = 'pk'
         return queryset.get(**{lookup: ident})
-
-

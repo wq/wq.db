@@ -52,8 +52,8 @@ class TypedAttachmentSerializer(AttachmentSerializer):
         data = super(TypedAttachmentSerializer, self).to_representation(obj)
 
         has_parent = (
-            self.parent and self.parent.parent
-            and hasattr(self.parent.parent.Meta, 'model')
+            self.parent and self.parent.parent and
+            hasattr(self.parent.parent.Meta, 'model')
         )
         if has_parent:
             # This is being serialized with its parent object, don't need to

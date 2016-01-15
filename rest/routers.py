@@ -461,8 +461,8 @@ class ModelRouter(DefaultRouter):
                 purlbase = pct.urlbase + '/'
             routes.append(Route(
                 url=(
-                    '^' + purlbase + r'(?P<' + fields[0]
-                    + '>[^\/\?]+)/{prefix}{trailing_slash}$'
+                    '^' + purlbase + r'(?P<' + fields[0] +
+                    '>[^\/\?]+)/{prefix}{trailing_slash}$'
                 ),
                 mapping={'get': 'list'},
                 name="{basename}-for-%s" % fields[0],

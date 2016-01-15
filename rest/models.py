@@ -6,6 +6,9 @@ from django.utils.encoding import force_text
 from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
+__all__ = ['ContentType', 'get_ct', 'get_object_id', 'get_by_identifier']
+
+
 class ContentTypeManager(DjangoContentTypeManager):
     def get_by_identifier(self, identifier):
         return self.get(model=identifier)
@@ -81,46 +84,3 @@ class ContentType(DjangoContentType):
 
     class Meta:
         proxy = True
-
-
-class MultiQuerySet(object):
-    querysets = []
-
-    def __init__(self, *args, **kwargs):
-        self.querysets = args
-
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            multi = True
-        else:
-            multi = False
-            index = slice(index, index + 1)
-
-        result = []
-        for qs in self.querysets:
-            if index.start < qs.count():
-                result.extend(qs[index])
-            index = slice(index.start - qs.count(),
-                          index.stop - qs.count())
-            if index.start < 0:
-                if index.stop < 0:
-                    break
-                index = slice(0, index.stop)
-        if multi:
-            return (item for item in result)
-        else:
-            return result[0]
-
-    def __iter__(self):
-        for qs in self.querysets:
-            for item in qs:
-                yield item
-
-    def count(self):
-        result = 0
-        for qs in self.querysets:
-            result += qs.count()
-        return result
-
-    def __len__(self):
-        return self.count()

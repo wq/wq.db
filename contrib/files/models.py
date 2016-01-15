@@ -17,8 +17,8 @@ class FileField(models.ImageField):
 
     # Only update_dimension_fields for images
     def update_dimension_fields(self, instance, force=False, *args, **kwargs):
-        if (getattr(instance, 'mimetype', None) is not None
-                and 'image' in instance.mimetype):
+        if (getattr(instance, 'mimetype', None) is not None and
+                'image' in instance.mimetype):
             super(FileField, self).update_dimension_fields(instance, force,
                                                            *args, **kwargs)
         else:
