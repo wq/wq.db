@@ -1,2 +1,7 @@
-from .identify.views import *  # NOQA
-from .relate.views import *  # NOQA
+from .identify.views import IdentifiedModelViewSet
+from .relate.views import RelatedModelViewSet
+
+
+class IdentifiedRelatedModelViewSet(
+        IdentifiedModelViewSet, RelatedModelViewSet):
+    pass
