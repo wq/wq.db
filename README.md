@@ -13,15 +13,16 @@
 
 [![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
-[![Django Support](https://img.shields.io/badge/Django-1.7%2C%201.8-blue.svg)](https://pypi.python.org/pypi/wq.db)
+[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.9-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
 #### Support Matrix
 
-The latest version of wq.db is only compatible with Django REST Framework 3.  The following library versions are supported:
+The following library versions are supported:
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
-**wq.db 0.8.3** | 2.7 & 3.4 | 1.7 & 1.8 | 3.3
+**wq.db master (1.0.0-dev)** | 2.7 & 3.4 | 1.8 & 1.9 | 3.3
+**wq.db 0.8.5** | 2.7 & 3.4 | 1.7 & 1.8 | 3.3
 **wq.db 0.7.2** | 2.7 & 3.4 | 1.6 & 1.7 | 2.4
 
 ## Getting Started
@@ -45,7 +46,7 @@ Extends the excellent [Django REST Framework] with a collection of views, serial
 A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
 
 ### [wq.db.contrib]
-Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library, including a [file manager], a [search] API, and a [chart] backend.
+Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library, including a [file manager] and a [search] API.
 
 [wq]: https://wq.io
 [Django]: https://www.djangoproject.com/
@@ -65,4 +66,3 @@ Like Django itself, wq.db includes a [contrib] module that provides additional f
 [contrib]: https://wq.io/chapters/contrib/docs
 [file manager]: https://wq.io/docs/files
 [search]: https://wq.io/docs/search
-[chart]: https://wq.io/docs/chart
