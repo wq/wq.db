@@ -12,7 +12,6 @@ class Command(BaseCommand):
         ),)
 
     def handle(self, *args, **options):
-        rest.autodiscover()
         text = json.dumps(
             rest.router.get_config(),
             indent=4,
