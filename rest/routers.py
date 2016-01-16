@@ -122,20 +122,26 @@ class ModelRouter(DefaultRouter):
     def get_default_serializer_class(self, model_class):
         return self.default_serializer_class
 
-    def get_serializer_for_model(self, model_class, serializer_depth=None):
-        if model_class in self._serializers:
-            serializer = self._serializers[model_class]
+    def get_class(self, classes, model_class, default):
+        if model_class in classes:
+            return classes[model_class]
         else:
             # Make sure we're not dealing with a proxy
-            real_model = get_ct(model_class, True).model_class()
-            if real_model in self._serializers:
-                serializer = self._serializers[real_model]
+            real_model = model_class._meta.concrete_model
+            if real_model in classes:
+                return classes[real_model]
             else:
                 if real_model not in self._config:
                     raise ImproperlyConfigured(
-                        "No serializer configured for %s" % real_model
+                        "%s is not registered!" % real_model
                     )
-                serializer = self.get_default_serializer_class(real_model)
+                return default(real_model)
+
+    def get_serializer_for_model(self, model_class, serializer_depth=None):
+        serializer = self.get_class(
+            self._serializers, model_class,
+            self.get_default_serializer_class
+        )
 
         meta = getattr(serializer, 'Meta', object)
         if not getattr(meta, 'model', None):
@@ -190,15 +196,9 @@ class ModelRouter(DefaultRouter):
         return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
-        if model_class in self._viewsets:
-            viewset = self._viewsets[model_class]
-        else:
-            # Make sure we're not dealing with a proxy
-            real_model = get_ct(model_class, True).model_class()
-            if real_model in self._viewsets:
-                viewset = self._viewsets[real_model]
-            else:
-                viewset = ModelViewSet
+        viewset = self.get_class(
+            self._viewsets, model_class, lambda d: ModelViewSet
+        )
         lookup = self.get_lookup_for_model(model_class)
 
         per_page = self.get_paginate_by_for_model(model_class)
@@ -232,7 +232,14 @@ class ModelRouter(DefaultRouter):
             conf, view = self.get_page(page)
             pages[page] = conf
         for model in self._models:
-            ct = get_ct(model)
+            try:
+                ct = get_ct(model)
+                string_ct = False
+            except RuntimeError:
+                # This can happen before contenttypes is migrated
+                ct = str(model._meta)
+                string_ct = True
+
             if not has_perm(user, ct, 'view'):
                 continue
             info = self._config[model].copy()
@@ -241,29 +248,31 @@ class ModelRouter(DefaultRouter):
                 if has_perm(user, ct, perm):
                     info['can_' + perm] = True
 
-            if 'parents' not in info:
-                parents = {}
-                as_dict = False
-                for pct, fields in ct.get_foreign_keys().items():
-                    if pct.is_registered():
-                        if has_perm(user, pct, 'view'):
-                            if len(fields) > 1 or fields[0] != pct.identifier:
-                                as_dict = True
-                            parents[pct.identifier] = fields
-                if as_dict:
-                    info['parents'] = parents
-                else:
-                    info['parents'] = list(parents.keys())
+            if not string_ct:
+                if 'parents' not in info and not string_ct:
+                    parents = {}
+                    as_dict = False
+                    for pct, fields in ct.get_foreign_keys().items():
+                        if pct.is_registered():
+                            if has_perm(user, pct, 'view'):
+                                if (len(fields) > 1 or
+                                        fields[0] != pct.identifier):
+                                    as_dict = True
+                                parents[pct.identifier] = fields
+                    if as_dict:
+                        info['parents'] = parents
+                    else:
+                        info['parents'] = list(parents.keys())
 
-            if 'children' not in info:
-                info['children'] = []
-                for cct in ct.get_children():
-                    if cct.is_registered():
-                        if has_perm(user, cct, 'view'):
-                            info['children'].append(cct.identifier)
+                if 'children' not in info and not string_ct:
+                    info['children'] = []
+                    for cct in ct.get_children():
+                        if cct.is_registered():
+                            if has_perm(user, cct, 'view'):
+                                info['children'].append(cct.identifier)
 
-            if ct.has_geo_fields and 'map' not in info:
-                info['map'] = True
+                if ct.has_geo_fields and 'map' not in info:
+                    info['map'] = True
 
             for field in model._meta.fields:
                 if field.choices:
@@ -446,7 +455,11 @@ class ModelRouter(DefaultRouter):
         # model by parent models (e.g. foreign keys)
 
         # /[parentmodel_url]/[foreignkey_value]/[model_url]
-        ct = get_ct(model)
+        try:
+            ct = get_ct(model)
+        except RuntimeError:
+            # This can happen before contenttypes is migrated
+            return routes
         for pct, fields in ct.get_foreign_keys().items():
             if not pct.is_registered():
                 continue

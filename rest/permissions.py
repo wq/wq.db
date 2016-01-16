@@ -23,10 +23,10 @@ class ModelPermissions(BasePermission):
 
 
 def has_perm(user, ct, perm):
+    if perm == 'view':
+        return True
     if isinstance(ct, string_types):
         perm = '%s_%s' % (ct, perm)
-    elif perm == 'view':
-        return True
     else:
         perm = '%s.%s_%s' % (ct.app_label, perm, ct.model)
 
