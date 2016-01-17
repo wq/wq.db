@@ -142,11 +142,12 @@ class ModelSerializer(serializers.ModelSerializer):
                 fields.pop(name, None)
                 continue
 
-            id_field, id_field_kwargs = self.build_relational_field(
-                name, field
-            )
-            id_field_kwargs['source'] = name
-            fields[name + '_id'] = id_field(**id_field_kwargs)
+            if name + '_id' not in fields:
+                id_field, id_field_kwargs = self.build_relational_field(
+                    name, field
+                )
+                id_field_kwargs['source'] = name
+                fields[name + '_id'] = id_field(**id_field_kwargs)
 
             if name in fields:
                 # Update/remove DRF default foreign key field (w/o _id)
