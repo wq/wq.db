@@ -1,11 +1,14 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey, GenericRelation
+)
 from django import forms
-from django.conf import settings
-from wq.db.patterns.models import AnnotatedModel
-
 from wq.io.util import guess_type
+
+
+from django.conf import settings
+INSTALLED = 'wq.db.patterns.file' in settings.INSTALLED_APPS
 
 
 # Custom FileField handles both images and files
@@ -40,6 +43,7 @@ class FileType(models.Model):
 
     class Meta:
         db_table = 'wq_filetype'
+        abstract = not INSTALLED
 
 
 class FileManager(models.Manager):
@@ -51,13 +55,17 @@ class FileManager(models.Manager):
             return qs
 
 
-class BaseFile(models.Model):
+class File(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
     type = models.ForeignKey(FileType, null=True, blank=True)
     file = FileField(upload_to='.', width_field='width', height_field='height')
     size = models.IntegerField(null=True, blank=True)
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
+
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField(db_index=True)
+    content_object = GenericForeignKey()
 
     type_name = "File"
 
@@ -92,7 +100,7 @@ class BaseFile(models.Model):
             self.size = self.file.size
         if self.name is None or self.name == '':
             self.name = self.file.name
-        super(BaseFile, self).save(*args, **kwargs)
+        super(File, self).save(*args, **kwargs)
 
     def __str__(self):
         if self.name is not None:
@@ -101,26 +109,13 @@ class BaseFile(models.Model):
             return 'File %s' % self.id
 
     class Meta:
-        abstract = True
-
-
-class File(BaseFile, AnnotatedModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
-
-    class Meta:
         db_table = 'wq_file'
         ordering = ("name",)
+        abstract = not INSTALLED
 
 
-class BaseFileAttachment(BaseFile):
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField(db_index=True)
-    content_object = GenericForeignKey()
+class FiledModel(models.Model):
+    files = GenericRelation(File)
 
-    class Meta:
-        abstract = True
-
-
-class FileAttachedModel(models.Model):
     class Meta:
         abstract = True

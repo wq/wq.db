@@ -1,13 +1,13 @@
-from wq.db.contrib.files.serializers import (
-    FileAttachmentSerializer, FileAttachedModelSerializer
+from wq.db.patterns.file.serializers import (
+    FileSerializer, FiledModelSerializer
 )
 from .models import Photo
 
 
-class PhotoSerializer(FileAttachmentSerializer):
-    class Meta(FileAttachmentSerializer.Meta):
+class PhotoSerializer(FileSerializer):
+    class Meta(FileSerializer.Meta):
         model = Photo
 
 
-class PhotoAttachedModelSerializer(FileAttachedModelSerializer):
-    photos = PhotoSerializer(many=True)
+class PhotoAttachedModelSerializer(FiledModelSerializer):
+    files = PhotoSerializer(many=True)

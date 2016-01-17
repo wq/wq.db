@@ -1,5 +1,6 @@
 from .base.serializers import *  # NOQA
 from .annotate.serializers import *  # NOQA
+from .file.serializers import *  # NOQA
 from .identify.serializers import *  # NOQA
 from .locate.serializers import *  # NOQA
 from .mark.serializers import *  # NOQA
