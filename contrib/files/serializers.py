@@ -35,9 +35,6 @@ class FileAttachmentListSerializer(base.TypedAttachmentListSerializer):
 
 
 class FileAttachmentSerializer(base.TypedAttachmentSerializer, FileSerializer):
-    attachment_fields = ['id', 'name', 'file']
-    type_model = FileType
-
     class Meta(base.TypedAttachmentSerializer.Meta):
         list_serializer_class = FileAttachmentListSerializer
 
