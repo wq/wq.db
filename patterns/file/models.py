@@ -4,7 +4,6 @@ from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from django import forms
-from wq.io.util import guess_type
 
 
 from django.conf import settings
@@ -81,6 +80,7 @@ class File(models.Model):
             return self.type.mimetype
 
         if self.file.name not in (None, ""):
+            from wq.io.util import guess_type
             mimetype = guess_type(self.file.name, self.file.read(1024))
             return mimetype
         else:
