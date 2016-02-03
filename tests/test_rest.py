@@ -19,8 +19,8 @@ class RestTestCase(APITestCase):
             cls.objects.create(
                 root=instance,
             )
-        user = User.objects.create(username="testuser")
-        UserManagedModel.objects.create(id=1, user=user)
+        self.user = User.objects.create(username="testuser")
+        UserManagedModel.objects.create(id=1, user=self.user)
         parent = Parent.objects.create(name="Test", pk=1)
         parent.child_set.create(name="Test 1")
         parent.child_set.create(name="Test 2")
@@ -52,6 +52,13 @@ class RestTestCase(APITestCase):
 
         # Extra config
         self.assertIn("debug", result)
+
+    def test_rest_index_json(self):
+        from wq.db.rest import router
+        result = router.get_index(self.user)
+        self.assertIn("pages", result)
+        self.assertIn("list", result["pages"][0])
+        self.assertNotIn("list", result["pages"][-1])
 
     def test_rest_config_json_rels(self):
         response = self.client.get('/config.json')

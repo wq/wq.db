@@ -359,6 +359,24 @@ class ModelRouter(DefaultRouter):
                 return Response(self.get_config(request.user))
         return ConfigView
 
+    def get_index(self, user):
+        config = self.get_config(user)
+
+        def page_sort(page):
+            is_list = page.get('list', False)
+            return (not is_list, page['name'])
+
+        pages = sorted(config['pages'].values(), key=page_sort)
+        return {
+            'pages': pages
+        }
+
+    def get_index_view(self):
+        class IndexView(SimpleViewSet):
+            def list(this, request, *args, **kwargs):
+                return Response(self.get_index(request.user))
+        return IndexView
+
     def get_multi_view(self):
         class MultipleListView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
@@ -412,6 +430,10 @@ class ModelRouter(DefaultRouter):
         if self.include_multi_view:
             # /multi.json
             self.register('multi', self.get_multi_view(), 'multi')
+
+        if not root:
+            # default index
+            self.register('', self.get_index_view(), 'index')
 
         urls = super(ModelRouter, self).get_urls()
 
