@@ -61,11 +61,13 @@ class GeoJSONRenderer(JSONRenderer):
             del obj['longitude']
             simple = True
 
-        elif 'geometry' in obj:
-            feature['geometry'] = obj['geometry']
-            del obj['geometry']
+        else:
+            for key, val in obj.items():
+                if isinstance(val, dict) and 'type' in val:
+                    feature['geometry'] = val
+                    del obj[key]
 
-        elif 'features' in obj:
+        if 'features' in obj:
             feature['features'] = obj['features']
             feature['type'] = 'FeatureCollection'
             del obj['features']

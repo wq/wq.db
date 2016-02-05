@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import (
     ContentTypeManager as DjangoContentTypeManager
 )
 from django.utils.encoding import force_text
+from django.contrib.gis.db.models.fields import GeometryField
 from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
@@ -35,8 +36,10 @@ class ContentType(DjangoContentType):
     @property
     def has_geo_fields(self):
         cls = self.model_class()
-        for fld in ('latitude', 'longitude', 'geometry'):
-            if fld in cls._meta.get_all_field_names():
+        for fld in cls._meta.get_fields():
+            if fld.name in ('latitude', 'longitude'):
+                return True
+            if isinstance(fld, GeometryField):
                 return True
         return False
 
