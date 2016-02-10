@@ -68,7 +68,7 @@ class TypedAttachmentSerializer(AttachmentSerializer):
             # get_object_id insted of obj.object_id, in case the the content
             # object is an IdentifiedModel
 
-            parent_obj = getattr(obj, self.object_field)
+            parent_obj = getattr(obj, self.Meta.object_field)
             idname = get_ct(parent_obj).identifier
             data[idname + '_id'] = get_object_id(parent_obj)
 
