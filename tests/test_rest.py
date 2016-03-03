@@ -22,10 +22,10 @@ class RestTestCase(APITestCase):
         self.user = User.objects.create(username="testuser")
         UserManagedModel.objects.create(id=1, user=self.user)
         parent = Parent.objects.create(name="Test", pk=1)
-        parent.child_set.create(name="Test 1")
-        parent.child_set.create(name="Test 2")
+        parent.children.create(name="Test 1")
+        parent.children.create(name="Test 2")
         parent2 = Parent.objects.create(name="Test 2", pk=2)
-        parent2.child_set.create(name="Test 1")
+        parent2.children.create(name="Test 1")
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
@@ -44,6 +44,18 @@ class RestTestCase(APITestCase):
             choice="two",
         )
 
+    def get_config(self, result, page_name):
+        self.assertIn('pages', result)
+        self.assertIn(page_name, result['pages'])
+        return result['pages'][page_name]
+
+    def get_field(self, page_config, field_name):
+        self.assertIn('form', page_config)
+        for field in page_config['form']:
+            if field['name'] == field_name:
+                return field
+        self.fail("Could not find %s" % field_name)
+
     # Test existence and content of config.json
     def test_rest_config_json(self):
         response = self.client.get('/config.json')
@@ -60,17 +72,90 @@ class RestTestCase(APITestCase):
         self.assertIn("list", result["pages"][0])
         self.assertNotIn("list", result["pages"][-1])
 
+    def test_rest_config_json_fields(self):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content.decode('utf-8'))
+
+        self.assertEqual([
+            {
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'wq:length': 10,
+                'bind': {'required': True},
+            },
+            {
+                'name': 'date',
+                'label': 'Date',
+                'type': 'dateTime',
+                'bind': {'required': True},
+            },
+            {
+                'name': 'empty_date',
+                'label': 'Empty Date',
+                'type': 'dateTime',
+            },
+        ], self.get_config(result, 'datemodel')['form'])
+
+    def test_rest_config_json_choices(self):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content.decode('utf-8'))
+        conf = self.get_config(result, 'choicemodel')
+        self.assertEqual([
+            {
+                'name': 'name',
+                'label': 'Name',
+                'hint': 'Enter Name',
+                'type': 'string',
+                'wq:length': 10,
+                'bind': {'required': True},
+            },
+            {
+                'name': 'choice',
+                'label': 'Choice',
+                'hint': 'Pick One',
+                'type': 'select1',
+                'bind': {'required': True},
+                'choices': [{
+                    'name': 'one',
+                    'label': 'Choice One',
+                }, {
+                    'name': 'two',
+                    'label': 'Choice Two',
+                }, {
+                    'name': 'three',
+                    'label': 'Choice Three',
+                }]
+            }
+        ], conf['form'])
+
     def test_rest_config_json_rels(self):
         response = self.client.get('/config.json')
         result = json.loads(response.content.decode('utf-8'))
-        self.assertIn("pages", result)
-        pages = result['pages']
-        self.assertIn("parent", pages)
-        self.assertIn("children", pages["parent"])
-        self.assertEqual(pages['parent']['children'], ["child"])
-        self.assertIn("child", pages)
-        self.assertIn("parents", pages["child"])
-        self.assertEqual(pages['child']['parents'], ["parent"])
+
+        pconf = self.get_config(result, 'parent')
+        self.assertEqual({
+            'name': 'children',
+            'label': 'Children',
+            'type': 'repeat',
+            'bind': {'required': True},
+            'children': [{
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'wq:length': 10,
+                'bind': {'required': True},
+            }]
+        }, self.get_field(pconf, 'children'))
+
+        cconf = self.get_config(result, 'child')
+        self.assertEqual({
+            'name': 'parent',
+            'label': 'Parent',
+            'type': 'string',
+            'wq:ForeignKey': 'parent',
+            'bind': {'required': True},
+        }, self.get_field(cconf, 'parent'))
 
     # Test url="" use case
     def test_rest_list_at_root(self):
@@ -105,7 +190,7 @@ class RestTestCase(APITestCase):
         self.assertNotIn("foreignkeymodels", response.data)
 
     def test_rest_filter_by_parent(self):
-        response = self.client.get('/parents/1/childs.json')
+        response = self.client.get('/parents/1/children.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
 
@@ -114,11 +199,11 @@ class RestTestCase(APITestCase):
         self.assertEqual(len(response.data['list']), 2)
 
     def test_rest_target_to_children(self):
-        response = self.client.get('/childs-by-parents.json')
+        response = self.client.get('/children-by-parents.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
         self.assertIn("target", response.data)
-        self.assertEqual(response.data['target'], 'childs')
+        self.assertEqual(response.data['target'], 'children')
 
     def test_rest_detail_user_serializer(self):
         response = self.client.get('/usermanagedmodels/1.json')
@@ -127,7 +212,7 @@ class RestTestCase(APITestCase):
         self.assertNotIn('password', response.data['user'])
 
     def test_rest_multi(self):
-        lists = ['usermanagedmodels', 'items', 'childs']
+        lists = ['usermanagedmodels', 'items', 'children']
         response = self.client.get(
             "/multi.json?lists=" + ",".join(lists)
         )
@@ -147,12 +232,12 @@ class RestTestCase(APITestCase):
         self.assertEqual(response.data['per_page'], 50)
 
     def test_rest_custom_per_page(self):
-        response = self.client.get('/childs.json')
+        response = self.client.get('/children.json')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 100)
 
     def test_rest_limit(self):
-        response = self.client.get('/childs.json?limit=10')
+        response = self.client.get('/children.json?limit=10')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
 

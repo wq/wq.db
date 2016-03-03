@@ -21,8 +21,8 @@ class TemplateTestCase(APITestCase):
         self.client.force_authenticate(user)
         UserManagedModel.objects.create(id=1, user=user)
         parent = Parent.objects.create(name="Test", pk=1)
-        parent.child_set.create(name="Test 1")
-        parent.child_set.create(name="Test 2")
+        parent.children.create(name="Test 1")
+        parent.children.create(name="Test 2")
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
@@ -71,13 +71,13 @@ class TemplateTestCase(APITestCase):
         ))
 
     def test_template_filter_by_parent(self):
-        childs = Parent.objects.get(pk=1).child_set.order_by('pk')
-        self.check_html('/parents/1/childs', """
+        childs = Parent.objects.get(pk=1).children.order_by('pk')
+        self.check_html('/parents/1/children', """
             <p>2 Records</p>
             <h3>Childs for <a href="/parents/1">Test</a></h3>
             <ul>
-              <li><a href="/childs/{c1_pk}">Test 1</a></li>
-              <li><a href="/childs/{c2_pk}">Test 2</a></li>
+              <li><a href="/children/{c1_pk}">Test 1</a></li>
+              <li><a href="/children/{c2_pk}">Test 2</a></li>
             </ul>
         """.format(
             c1_pk=childs[0].pk,
@@ -140,14 +140,14 @@ class TemplateTestCase(APITestCase):
                 parent_id=1,
             )
 
-        self.check_html("/childs/?page=2", """
+        self.check_html("/children/?page=2", """
            <p>101 Records</p>
            <div>
-             <a href="http://testserver/childs/">Prev 100</a>
+             <a href="http://testserver/children/">Prev 100</a>
              <h3>Page 2 of 2</h3>
            </div>
            <ul>
-             <li><a href="/childs/{pk}">Test 101</a></li>
+             <li><a href="/children/{pk}">Test 101</a></li>
            </ul>
         """.format(pk=child.pk))
 
@@ -161,18 +161,18 @@ class TemplateTestCase(APITestCase):
             <p>100 Records</p>
             <div>
               <h3>Page 1 of 10</h3>
-              <a href="http://testserver/childs/?limit=10&page=2">Next 10</a>
+              <a href="http://testserver/children/?limit=10&page=2">Next 10</a>
             </div>
             <ul>
         """
         for child in Child.objects.all()[:10]:
             html += """
-                <li><a href="/childs/{pk}">{label}</a></li>
+                <li><a href="/children/{pk}">{label}</a></li>
             """.format(pk=child.pk, label=child.name)
         html += """
            </ul>
         """
-        self.check_html("/childs/?limit=10", html)
+        self.check_html("/children/?limit=10", html)
 
     def test_template_context_processors(self):
         resp = self.client.get('/rest_context')

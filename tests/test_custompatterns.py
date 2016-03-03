@@ -20,6 +20,40 @@ class CustomPatternTestCase(APITestCase):
             name="Test 2",
         )
 
+    def test_customtypedpattern_config(self):
+        response = self.client.get('/config.json')
+        self.assertEqual([
+            {
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'bind': {'required': True},
+                'wq:length': 10,
+            }, {
+                'name': 'attachments',
+                'label': 'Attachments',
+                'type': 'repeat',
+                'bind': {'required': True},
+                'children': [{
+                    'name': 'name',
+                    'label': 'Name',
+                    'type': 'string',
+                    'bind': {'required': True},
+                    'wq:length': 10,
+                }, {
+                    'name': 'type',
+                    'label': 'Type',
+                    'type': 'string',
+                    'wq:ForeignKey': 'customtype',
+                    'bind': {'required': True},
+                }],
+                'initial': {
+                    'type_field': 'type',
+                    'filter': {}
+                }
+            },
+        ], response.data['pages']['customtypedpatternmodel']['form'])
+
     def test_custompattern_post(self):
         form = {
             'name': 'Test 3',

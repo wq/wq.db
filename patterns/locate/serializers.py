@@ -117,6 +117,5 @@ class LocatedModelSerializer(base.AttachedModelSerializer):
 
     class Meta:
         wq_config = {
-            'located': True,
             'map': True,
         }

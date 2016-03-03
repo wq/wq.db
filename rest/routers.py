@@ -122,7 +122,7 @@ class ModelRouter(DefaultRouter):
     def get_default_serializer_class(self, model_class):
         return self.default_serializer_class
 
-    def get_class(self, classes, model_class, default):
+    def get_class(self, classes, model_class, default=lambda model: None):
         if model_class in classes:
             return classes[model_class]
         else:
@@ -150,6 +150,18 @@ class ModelRouter(DefaultRouter):
         if serializer_depth is not None:
             if serializer_depth != getattr(meta, 'depth', None):
                 serializer = serializer.for_depth(serializer_depth)
+
+        meta = getattr(serializer, 'Meta', object)
+        conf = self._config.get(model_class, None)
+        if not conf:
+            conf = self._config.get(model_class._meta.concrete_model, None)
+
+        if conf:
+            wq_conf = getattr(meta, 'wq_config', {}).copy()
+            wq_conf.update(conf)
+            meta.wq_config = wq_conf
+            serializer.Meta = meta
+
         return serializer
 
     def serialize(self, obj, many=False, depth=None):
@@ -234,11 +246,9 @@ class ModelRouter(DefaultRouter):
         for model in self._models:
             try:
                 ct = get_ct(model)
-                string_ct = False
             except RuntimeError:
                 # This can happen before contenttypes is migrated
                 ct = str(model._meta)
-                string_ct = True
 
             if not has_perm(user, ct, 'view'):
                 continue
@@ -248,46 +258,16 @@ class ModelRouter(DefaultRouter):
                 if has_perm(user, ct, perm):
                     info['can_' + perm] = True
 
-            if not string_ct:
-                if 'parents' not in info and not string_ct:
-                    parents = {}
-                    as_dict = False
-                    for pct, fields in ct.get_foreign_keys().items():
-                        if pct.is_registered():
-                            if has_perm(user, pct, 'view'):
-                                if (len(fields) > 1 or
-                                        fields[0] != pct.identifier):
-                                    as_dict = True
-                                parents[pct.identifier] = fields
-                    if as_dict:
-                        info['parents'] = parents
-                    else:
-                        info['parents'] = list(parents.keys())
+            if ct.has_geo_fields and 'map' not in info:
+                info['map'] = True
 
-                if 'children' not in info and not string_ct:
-                    info['children'] = []
-                    for cct in ct.get_children():
-                        if cct.is_registered():
-                            if has_perm(user, cct, 'view'):
-                                info['children'].append(cct.identifier)
-
-                if ct.has_geo_fields and 'map' not in info:
-                    info['map'] = True
-
-            for field in model._meta.fields:
-                if field.choices:
-                    info.setdefault('choices', {})
-                    info['choices'][field.name] = [{
-                        'value': val,
-                        'label': str(label)
-                    } for val, label in field.choices]
-
-            serializer = self._serializers.get(model, None)
-            if serializer and hasattr(serializer, 'Meta'):
-                config = getattr(serializer.Meta, 'wq_config', {})
-                for key in config:
-                    if key not in info:
-                        info[key] = config[key]
+            serializer = self.get_serializer_for_model(model)
+            if not hasattr(serializer, 'get_wq_config'):
+                raise Exception(model)
+            conf = serializer(context={'router': self}).get_wq_config()
+            for key in conf:
+                if key not in info:
+                    info[key] = conf[key]
 
             pages[info['name']] = info
 

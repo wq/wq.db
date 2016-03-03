@@ -51,7 +51,7 @@ class Parent(models.Model):
 
 class Child(models.Model):
     name = models.CharField(max_length=10)
-    parent = models.ForeignKey(Parent)
+    parent = models.ForeignKey(Parent, related_name="children")
 
     def __str__(self):
         return self.name
@@ -105,8 +105,15 @@ class ChoiceModel(models.Model):
         ('two', 'Choice Two'),
         ('three', 'Choice Three'),
     ]
-    name = models.CharField(max_length=10)
-    choice = models.CharField(max_length=10, choices=CHOICE_CHOICES)
+    name = models.CharField(
+        max_length=10,
+        help_text='Enter Name',
+    )
+    choice = models.CharField(
+        max_length=10,
+        help_text='Pick One',
+        choices=CHOICE_CHOICES,
+    )
 
     def __str__(self):
         return "%s: %s" % (self.name, self.choice)

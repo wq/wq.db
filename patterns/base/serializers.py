@@ -1,4 +1,4 @@
-from wq.db.rest.serializers import ModelSerializer
+from wq.db.rest.serializers import ModelSerializer, BaseModelSerializer
 from rest_framework import serializers
 from rest_framework.utils import model_meta
 from wq.db.rest.models import get_ct, get_object_id
@@ -80,6 +80,14 @@ class TypedAttachmentSerializer(AttachmentSerializer):
                     data[idname] = rest.router.serialize(parent_obj)
         return data
 
+    def get_wq_config(self):
+        config = super().get_wq_config()
+        config['initial'] = {
+            'type_field': self.Meta.type_field.replace('_id', ''),
+            'filter': self.Meta.type_filter,
+        }
+        return config
+
     class Meta:
         # Don't validate these fields (items are saved with their parent)
         exclude = ("content_type", "object_id",)
@@ -87,6 +95,7 @@ class TypedAttachmentSerializer(AttachmentSerializer):
 
         # patterns-specific meta
         type_field = 'type_id'
+        type_filter = {}
         object_field = 'content_object'
 
 
@@ -181,7 +190,7 @@ class NaturalKeyValidator(serializers.UniqueTogetherValidator):
         )
 
 
-class NaturalKeySerializer(serializers.ModelSerializer):
+class NaturalKeySerializer(BaseModelSerializer):
     """
     Self-nesting Serializer for NaturalKeyModels
     """

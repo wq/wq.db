@@ -131,12 +131,14 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         conf = ct.get_config()
 
         # CharField choices
-        for field, choices in conf.get('choices', {}).items():
-            context[field + '_choices'] = [{
-                'value': choice['value'],
+        for field in conf['form']:
+            if 'choices' not in field:
+                continue
+            context[field['name'] + '_choices'] = [{
+                'name': choice['name'],
                 'label': choice['label'],
-                'selected': choice['value'] == context.get(field, ''),
-            } for choice in choices]
+                'selected': choice['name'] == context.get(field['name'], ''),
+            } for choice in field['choices']]
 
         # ForeignKey lookups
         for pct, fields in ct.get_foreign_keys().items():

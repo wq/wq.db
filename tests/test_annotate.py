@@ -52,6 +52,38 @@ class AnnotateRestTestCase(APITestCase):
         }
         self.client.force_authenticate(user=self.user)
 
+    def test_annotate_config(self):
+        response = self.client.get('/config.json')
+        self.assertEqual([
+            {
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'bind': {'required': True},
+                'wq:length': 255,
+            }, {
+                'name': 'annotations',
+                'label': 'Annotations',
+                'type': 'repeat',
+                'bind': {'required': True},
+                'children': [{
+                    'name': 'value',
+                    'label': 'Value',
+                    'type': 'string',
+                }, {
+                    'name': 'type',
+                    'label': 'Type',
+                    'type': 'string',
+                    'wq:ForeignKey': 'annotationtype',
+                    'bind': {'required': True},
+                }],
+                'initial': {
+                    'type_field': 'type',
+                    'filter': {}
+                }
+            },
+        ], response.data['pages']['annotatedmodel']['form'])
+
     def test_annotate_post(self):
         form = {
             'name': 'Test 2',

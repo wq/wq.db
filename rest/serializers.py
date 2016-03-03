@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from django.conf import settings
 
-from .model_tools import get_ct, get_object_id, get_by_identifier
+from .model_tools import get_object_id, get_by_identifier
 
 from rest_framework.utils import model_meta
 from . import compat as html
@@ -60,7 +60,95 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
-class ModelSerializer(serializers.ModelSerializer):
+class BaseModelSerializer(serializers.ModelSerializer):
+    xlsform_types = {
+        serializers.FileField: 'binary',
+        serializers.DateField: 'date',
+        serializers.DateTimeField: 'dateTime',
+        serializers.FloatField: 'decimal',
+        GeometryField: 'geoshape',
+        serializers.IntegerField: 'int',
+        serializers.CharField: 'string',
+        serializers.ChoiceField: 'select1',
+        serializers.TimeField: 'time',
+    }
+
+    def get_fields_for_config(self):
+        fields = self.get_fields()
+        for name, field in list(fields.items()):
+            if name == 'id' or field.read_only:
+                fields.pop(name)
+        return fields
+
+    def get_wq_config(self):
+        fields = []
+        nested_fields = []
+        for name, field in self.get_fields_for_config().items():
+            info = {
+                'name': name,
+                'label': field.label or name.replace('_', ' ').title(),
+            }
+            if field.required:
+                info.setdefault('bind', {})
+                info['bind']['required'] = True
+
+            if field.help_text:
+                info['hint'] = field.help_text
+
+            if isinstance(field, serializers.ChoiceField):
+                info['choices'] = [{
+                    'name': name,
+                    'label': label,
+                } for name, label in field.choices.items()]
+            elif getattr(field, 'max_length', None):
+                info['wq:length'] = field.max_length
+
+            if isinstance(field, serializers.ListSerializer):
+                # Nested model with a foreign key to this one
+                field.child.context['router'] = self.router
+                child_config = field.child.get_wq_config()
+                info['type'] = 'repeat'
+                info['children'] = child_config['form']
+                if 'initial' in child_config:
+                    info['initial'] = child_config['initial']
+
+            elif isinstance(field, serializers.RelatedField):
+                # Foreign key to a parent model
+                info['type'] = 'string'
+                info['name'] = info['name'].replace('_id', '')
+                info['label'] = info['label'].replace(' Id', '')
+                if self.router and field.queryset:
+                    model = field.queryset.model
+                    if self.router.model_is_registered(model):
+                        serializer = self.router.get_serializer_for_model(
+                            model
+                        )
+                        model_conf = serializer().get_wq_config()
+                        info['wq:ForeignKey'] = model_conf['name']
+
+            if 'type' not in info:
+                info['type'] = 'string'
+                for field_type, xlsform_type in self.xlsform_types.items():
+                    if isinstance(field, field_type):
+                        info['type'] = xlsform_type
+                        break
+
+            if info['type'] == 'repeat':
+                nested_fields.append(info)
+            else:
+                fields.append(info)
+
+        config = getattr(self.Meta, 'wq_config', {}).copy()
+        config['form'] = fields + nested_fields
+        if 'name' not in config:
+            config['name'] = self.Meta.model._meta.model_name
+        return config
+
+    class Meta:
+        wq_config = {}
+
+
+class ModelSerializer(BaseModelSerializer):
     serializer_related_field = IDRelatedField
     add_label_fields = True
 
@@ -126,8 +214,7 @@ class ModelSerializer(serializers.ModelSerializer):
 
     def update_id_fields(self, fields):
         if 'id' not in self.fields:
-            conf = get_ct(self.Meta.model).get_config() or {}
-            lookup = conf.get('lookup', None)
+            lookup = getattr(self.Meta, 'wq_config', {}).get('lookup', None)
             if lookup and lookup != 'id':
                 fields['id'] = serializers.ReadOnlyField(source=lookup)
 

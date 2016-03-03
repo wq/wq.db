@@ -8,7 +8,7 @@ from .models import (
     IdentifiedAnnotatedModel,
     IdentifiedRelatedModel, IdentifiedMarkedModel,
     NaturalKeyChild, ModelWithNaturalKey,
-    CustomPatternModel, CustomTypedPatternModel,
+    CustomPatternModel, CustomTypedPatternModel, CustomType,
 )
 from .serializers import (
     CustomPatternSerializer, CustomTypedPatternSerializer,
@@ -68,3 +68,4 @@ rest.router.register_model(
     CustomTypedPatternModel,
     serializer=CustomTypedPatternSerializer,
 )
+rest.router.register_model(CustomType)

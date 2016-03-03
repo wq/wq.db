@@ -61,5 +61,4 @@ class IdentifiedModelSerializer(base.AttachedModelSerializer):
     class Meta:
         wq_config = {
             'lookup': 'slug',
-            'identified': True,
         }

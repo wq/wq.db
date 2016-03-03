@@ -99,6 +99,52 @@ class IdentifyRestTestCase(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
 
+    def test_identify_config(self):
+        response = self.client.get('/config.json')
+        self.maxDiff = None
+        self.assertEqual([
+            {
+                'name': 'slug',
+                'label': 'Slug',
+                'type': 'string',
+            }, {
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'wq:length': 255,
+            }, {
+                'name': 'identifiers',
+                'label': 'Identifiers',
+                'type': 'repeat',
+                'bind': {'required': True},
+                'children': [{
+                    'name': 'name',
+                    'label': 'Name',
+                    'type': 'string',
+                    'bind': {'required': True},
+                    'wq:length': 255,
+                }, {
+                    'name': 'slug',
+                    'label': 'Slug',
+                    'type': 'string',
+                    'wq:length': 50,
+                }, {
+                    'name': 'is_primary',
+                    'label': 'Is Primary',
+                    'type': 'string',
+                }, {
+                    'name': 'authority',
+                    'label': 'Authority',
+                    'type': 'string',
+                    'wq:ForeignKey': 'authority',
+                }],
+                'initial': {
+                    'type_field': 'authority',
+                    'filter': {},
+                }
+            },
+        ], response.data['pages']['identifiedmodel']['form'])
+
     def test_identify_detail_nested_identifiers(self):
         response = self.client.get('/identifiedmodels/test-1.json')
         self.assertIn('identifiers', response.data)
