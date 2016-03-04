@@ -99,6 +99,7 @@ setup(
         'Django>=1.8',
         'djangorestframework>=3.1',
         'django-mustache',
+        'html-json-forms',
         'swapper>=0.2',
         'Markdown',
     ],

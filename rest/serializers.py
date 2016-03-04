@@ -8,7 +8,7 @@ from django.conf import settings
 from .model_tools import get_object_id, get_by_identifier
 
 from rest_framework.utils import model_meta
-from . import compat as html
+from html_json_forms.serializers import JSONFormSerializer
 
 
 class GeometryField(serializers.Field):
@@ -60,7 +60,7 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
-class BaseModelSerializer(serializers.ModelSerializer):
+class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
     xlsform_types = {
         serializers.FileField: 'binary',
         serializers.DateField: 'date',
@@ -318,8 +318,3 @@ class ModelSerializer(BaseModelSerializer):
                 relation_info.related_model, nested_depth
             )
         return field_class, field_kwargs
-
-    def to_internal_value(self, data):
-        if html.is_html_input(data):
-            data = html.parse_json_form(data)
-        return super(ModelSerializer, self).to_internal_value(data)
