@@ -252,14 +252,12 @@ class ModelRouter(DefaultRouter):
 
             if not has_perm(user, ct, 'view'):
                 continue
+
             info = self._config[model].copy()
             info['list'] = True
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
                     info['can_' + perm] = True
-
-            if ct.has_geo_fields and 'map' not in info:
-                info['map'] = True
 
             serializer = self.get_serializer_for_model(model)
             if not hasattr(serializer, 'get_wq_config'):

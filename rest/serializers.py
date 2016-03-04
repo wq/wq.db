@@ -83,6 +83,7 @@ class BaseModelSerializer(serializers.ModelSerializer):
     def get_wq_config(self):
         fields = []
         nested_fields = []
+        has_geo_fields = False
         for name, field in self.get_fields_for_config().items():
             info = {
                 'name': name,
@@ -133,6 +134,9 @@ class BaseModelSerializer(serializers.ModelSerializer):
                         info['type'] = xlsform_type
                         break
 
+            if info['type'].startswith('geo') or info['name'] == 'latitude':
+                has_geo_fields = True
+
             if info['type'] == 'repeat':
                 nested_fields.append(info)
             else:
@@ -142,6 +146,8 @@ class BaseModelSerializer(serializers.ModelSerializer):
         config['form'] = fields + nested_fields
         if 'name' not in config:
             config['name'] = self.Meta.model._meta.model_name
+        if has_geo_fields and 'map' not in config:
+            config['map'] = True
         return config
 
     class Meta:

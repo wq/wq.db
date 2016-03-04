@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import (
     ContentTypeManager as DjangoContentTypeManager
 )
 from django.utils.encoding import force_text
-from django.contrib.gis.db.models.fields import GeometryField
 from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
@@ -32,16 +31,6 @@ class ContentType(DjangoContentType):
             return config['url']
         urlbase = force_text(cls._meta.verbose_name_plural)
         return urlbase.replace(' ', '')
-
-    @property
-    def has_geo_fields(self):
-        cls = self.model_class()
-        for fld in cls._meta.get_fields():
-            if fld.name in ('latitude', 'longitude'):
-                return True
-            if isinstance(fld, GeometryField):
-                return True
-        return False
 
     # Get foreign keys for this content type
     def get_foreign_keys(self):
