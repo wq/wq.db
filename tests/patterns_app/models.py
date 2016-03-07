@@ -50,27 +50,6 @@ class IdentifiedMarkedModel(patterns.IdentifiedMarkedModel):
     pass
 
 
-class NaturalKeyParent(patterns.NaturalKeyModel):
-    code = models.CharField(max_length=10)
-    group = models.CharField(max_length=10)
-
-    class Meta:
-        unique_together = ['code', 'group']
-
-
-class NaturalKeyChild(patterns.NaturalKeyModel):
-    parent = models.ForeignKey(NaturalKeyParent)
-    mode = models.CharField(max_length=10)
-
-    class Meta:
-        unique_together = ['parent', 'mode']
-
-
-class ModelWithNaturalKey(models.Model):
-    key = models.ForeignKey(NaturalKeyChild)
-    value = models.CharField(max_length=10)
-
-
 class CustomPatternModel(models.Model):
     name = models.CharField(max_length=10)
 

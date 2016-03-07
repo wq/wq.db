@@ -7,7 +7,6 @@ from .models import (
     RelatedModel, AnotherRelatedModel,
     IdentifiedAnnotatedModel,
     IdentifiedRelatedModel, IdentifiedMarkedModel,
-    NaturalKeyChild, ModelWithNaturalKey,
     CustomPatternModel, CustomTypedPatternModel, CustomType,
 )
 from .serializers import (
@@ -51,14 +50,6 @@ rest.router.register_model(
 rest.router.register_model(
     IdentifiedMarkedModel,
     serializer=patterns.IdentifiedMarkedModelSerializer,
-)
-rest.router.register_model(
-    NaturalKeyChild,
-    serializer=patterns.NaturalKeySerializer,
-)
-rest.router.register_model(
-    ModelWithNaturalKey,
-    serializer=patterns.NaturalKeyModelSerializer,
 )
 rest.router.register_model(
     CustomPatternModel,

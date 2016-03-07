@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
-from wq.db.patterns.base.models import NaturalKeyModel
+from natural_keys import NaturalKeyModel
 from collections import OrderedDict
 
 from django.conf import settings

@@ -3,7 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
-from wq.db.patterns.base.models import NaturalKeyModelManager, NaturalKeyModel
+from natural_keys.models import NaturalKeyModelManager, NaturalKeyModel
 from django.template.defaultfilters import slugify
 from django.conf import settings
 INSTALLED = ('wq.db.patterns.identify' in settings.INSTALLED_APPS)

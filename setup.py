@@ -100,6 +100,7 @@ setup(
         'djangorestframework>=3.1',
         'django-mustache',
         'html-json-forms',
+        'natural-keys',
         'swapper>=0.2',
         'Markdown',
     ],

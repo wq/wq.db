@@ -1,4 +1,3 @@
-from .base.models import *  # NOQA
 from .annotate.models import *  # NOQA
 from .file.models import *  # NOQA
 from .identify.models import *  # NOQA
