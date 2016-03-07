@@ -26,6 +26,9 @@ class FileSerializer(base.TypedAttachmentSerializer):
     class Meta(base.TypedAttachmentSerializer.Meta):
         list_serializer_class = FileListSerializer
         model = File
+        wq_config = {
+            'initial': None,
+        }
 
 
 class FiledModelSerializer(base.AttachedModelSerializer):

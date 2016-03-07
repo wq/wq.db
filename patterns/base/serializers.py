@@ -81,10 +81,11 @@ class TypedAttachmentSerializer(AttachmentSerializer):
 
     def get_wq_config(self):
         config = super(TypedAttachmentSerializer, self).get_wq_config()
-        config['initial'] = {
-            'type_field': self.Meta.type_field.replace('_id', ''),
-            'filter': self.Meta.type_filter,
-        }
+        if 'initial' not in config:
+            config['initial'] = {
+                'type_field': self.Meta.type_field.replace('_id', ''),
+                'filter': self.Meta.type_filter,
+            }
         return config
 
     class Meta:
