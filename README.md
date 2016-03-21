@@ -35,9 +35,6 @@ Extends the excellent [Django REST Framework] with a collection of views, serial
 ### [wq.db.patterns]
 A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
 
-### [wq.db.contrib]
-Like Django itself, wq.db includes a [contrib] module that provides additional functionality not considered to be part of the "core" library, including a [file manager] and a [search] API.
-
 [wq]: https://wq.io
 [Django]: https://www.djangoproject.com/
 [the documentation]: https://wq.io/docs/
@@ -52,7 +49,3 @@ Like Django itself, wq.db includes a [contrib] module that provides additional f
 [design patterns]: https://wq.io/docs/about-patterns
 [identify]: https://wq.io/docs/identify
 [relate]: https://wq.io/docs/relate
-[wq.db.contrib]: https://wq.io/chapters/contrib/docs
-[contrib]: https://wq.io/chapters/contrib/docs
-[file manager]: https://wq.io/docs/files
-[search]: https://wq.io/docs/search
