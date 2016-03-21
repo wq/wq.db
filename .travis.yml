@@ -3,23 +3,20 @@ sudo: false
 python:
  - "2.7"
  - "3.4"
+ - "3.5"
 env:
   global:
-   - DRF="https://github.com/tomchristie/django-rest-framework/archive/master.zip"
-   - DRP="rest-pandas==0.4.0"
-   - MATPLOTLIB="matplotlib>=1.4"
+   - DRF="djangorestframework==3.3.3"
   matrix:
-   - DJANGO="django==1.8.8"
-   - DJANGO="django==1.9.1"
-   - DJANGO="django==1.9.1" LINT=1
+   - DJANGO="django==1.8.11"
+   - DJANGO="django==1.9.4"
+   - DJANGO="django==1.9.4" LINT=1
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
  - pip install $DJANGO
  - pip install $DRF
- - pip install $DRP
- - pip install $MATPLOTLIB
  - pip install flake8
 script:
  - ./runtests.sh

@@ -15,16 +15,6 @@
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
 [![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.9-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
-#### Support Matrix
-
-The following library versions are supported:
-
-&nbsp;      | Python | Django | Django REST Framework
-------------|--------|--------|-----------------------
-**wq.db master (1.0.0-dev)** | 2.7 & 3.4 | 1.8 & 1.9 | 3.3
-**wq.db 0.8.5** | 2.7 & 3.4 | 1.7 & 1.8 | 3.3
-**wq.db 0.7.2** | 2.7 & 3.4 | 1.6 & 1.7 | 2.4
-
 ## Getting Started
 
 ```bash

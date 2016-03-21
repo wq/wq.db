@@ -97,7 +97,7 @@ setup(
     long_description=parse_markdown_readme(),
     install_requires=[
         'Django>=1.8',
-        'djangorestframework>=3.1',
+        'djangorestframework>=3.3.3',
         'django-mustache',
         'html-json-forms',
         'natural-keys',
@@ -105,7 +105,6 @@ setup(
         'Markdown',
     ],
     extras_require={
-        'chart': ['rest_pandas>=0.4.0'],
         'files': ['wq.io>=0.5.1', 'Pillow'],
         'social': ['python-social-auth'],
     },
@@ -119,6 +118,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Text Processing :: Markup :: HTML',
         'Topic :: Scientific/Engineering :: GIS',
