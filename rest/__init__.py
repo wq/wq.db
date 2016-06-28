@@ -1,5 +1,13 @@
 from django.utils.module_loading import autodiscover_modules
-from .routers import ModelRouter, router  # NOQA
+from .routers import ModelRouter, router
+
+
+__all__ = (
+    "ModelRouter",
+    "router",
+    "autodiscover",
+    "default_app_config",
+)
 
 
 def autodiscover():

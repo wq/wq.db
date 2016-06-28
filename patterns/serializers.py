@@ -1,10 +1,24 @@
-from .base.serializers import *  # NOQA
-from .annotate.serializers import *  # NOQA
-from .file.serializers import *  # NOQA
-from .identify.serializers import *  # NOQA
-from .locate.serializers import *  # NOQA
-from .mark.serializers import *  # NOQA
-from .relate.serializers import *  # NOQA
+from .annotate.serializers import AnnotatedModelSerializer
+from .file.serializers import FiledModelSerializer
+from .identify.serializers import IdentifiedModelSerializer
+from .locate.serializers import LocatedModelSerializer
+from .mark.serializers import MarkedModelSerializer
+from .relate.serializers import RelatedModelSerializer
+
+
+__all__ = (
+    'AnnotatedModelSerializer',
+    'FiledModelSerializer',
+    'IdentifiedModelSerializer',
+    'LocatedModelSerializer',
+    'MarkedModelSerializer',
+    'RelatedModelSerializer',
+
+    'IdentifiedAnnotatedModelSerializer',
+    'IdentifiedLocatedModelSerializer',
+    'IdentifiedMarkedModelSerializer',
+    'IdentifiedRelatedModelSerializer',
+)
 
 
 class IdentifiedAnnotatedModelSerializer(

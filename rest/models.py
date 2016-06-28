@@ -6,7 +6,12 @@ from django.utils.encoding import force_text
 from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
-__all__ = ['ContentType', 'get_ct', 'get_object_id', 'get_by_identifier']
+__all__ = (
+    'ContentType',
+    'get_ct',
+    'get_object_id',
+    'get_by_identifier',
+)
 
 
 class ContentTypeManager(DjangoContentTypeManager):

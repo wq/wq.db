@@ -1,5 +1,11 @@
 import os
 
+from wq.db.default_settings import (  # NOQA
+    TEMPLATES,
+    REST_FRAMEWORK,
+    SRID,
+)
+
 SECRET_KEY = '1234'
 
 MIDDLEWARE_CLASSES = (
@@ -45,5 +51,4 @@ LANGUAGES = (
     ('ko', 'Korean'),
 )
 
-from wq.db.default_settings import *  # NOQA
 TEMPLATES[0]['DIRS'] += (os.path.join(BASE_DIR, "templates"),)
