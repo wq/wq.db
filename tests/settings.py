@@ -4,6 +4,7 @@ from wq.db.default_settings import (  # NOQA
     TEMPLATES,
     REST_FRAMEWORK,
     SRID,
+    DISAMBIGUATE,
 )
 
 SECRET_KEY = '1234'

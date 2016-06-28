@@ -4,7 +4,9 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import RelatedModel, AnotherRelatedModel
 from wq.db.patterns.models import RelationshipType, Relationship
-from wq.db.patterns.models import get_related_parents, get_related_children
+from wq.db.patterns.relate.models import (
+    get_related_parents, get_related_children
+)
 
 
 def create_reltype():
