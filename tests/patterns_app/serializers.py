@@ -1,27 +1,27 @@
-from wq.db.patterns.base import serializers as base
+from wq.db.patterns import serializers as patterns
 
 from .models import CustomAttachment, CustomTypedAttachment
 
 
-class CustomAttachmentSerializer(base.AttachmentSerializer):
-    class Meta(base.AttachmentSerializer.Meta):
+class CustomAttachmentSerializer(patterns.AttachmentSerializer):
+    class Meta(patterns.AttachmentSerializer.Meta):
         model = CustomAttachment
         exclude = ['parent']
 
         object_field = 'parent'
 
 
-class CustomPatternSerializer(base.AttachedModelSerializer):
+class CustomPatternSerializer(patterns.AttachedModelSerializer):
     attachments = CustomAttachmentSerializer(many=True)
 
 
-class CustomTypedAttachmentSerializer(base.TypedAttachmentSerializer):
-    class Meta(base.TypedAttachmentSerializer.Meta):
+class CustomTypedAttachmentSerializer(patterns.TypedAttachmentSerializer):
+    class Meta(patterns.TypedAttachmentSerializer.Meta):
         model = CustomTypedAttachment
         exclude = ['parent']
 
         object_field = 'parent'
 
 
-class CustomTypedPatternSerializer(base.AttachedModelSerializer):
+class CustomTypedPatternSerializer(patterns.AttachedModelSerializer):
     attachments = CustomTypedAttachmentSerializer(many=True)

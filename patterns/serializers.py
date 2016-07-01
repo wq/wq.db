@@ -1,3 +1,9 @@
+from .base.serializers import (
+    AttachmentSerializer,
+    TypedAttachmentSerializer,
+    AttachedModelSerializer,
+)
+
 from .annotate.serializers import AnnotatedModelSerializer
 from .file.serializers import FiledModelSerializer
 from .identify.serializers import IdentifiedModelSerializer
@@ -7,6 +13,10 @@ from .relate.serializers import RelatedModelSerializer
 
 
 __all__ = (
+    'AttachmentSerializer',
+    'TypedAttachmentSerializer',
+    'AttachedModelSerializer',
+
     'AnnotatedModelSerializer',
     'FiledModelSerializer',
     'IdentifiedModelSerializer',
