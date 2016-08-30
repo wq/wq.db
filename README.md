@@ -13,7 +13,7 @@
 
 [![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
-[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.9-blue.svg)](https://pypi.python.org/pypi/wq.db)
+[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.9%2C%201.10-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ See [the documentation] for more information.
 wq.db provides the following modules:
 
 ### [wq.db.rest]
-Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a CRS-aware GeoJSON serializer/renderer.
+Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a GeoJSON serializer/renderer.
 
 ### [wq.db.patterns]
 A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
