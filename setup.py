@@ -85,7 +85,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='1.0.0-dev',
+    version='1.0.0b1',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='http://wq.io/wq.db',
@@ -101,16 +101,16 @@ setup(
         'django-mustache',
         'html-json-forms',
         'natural-keys',
-        'swapper>=0.2',
+        'swapper',
         'Markdown',
     ],
     extras_require={
-        'files': ['wq.io>=0.5.1', 'Pillow'],
+        'files': ['wq.io', 'Pillow'],
         'social': ['python-social-auth'],
     },
     classifiers=[
         'Framework :: Django',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -127,7 +127,7 @@ setup(
     test_suite='tests',
     tests_require=[
         'psycopg2',
-        'wq.io>=0.5.1',
+        'wq.io',
         'Pillow',
         'python-social-auth',
     ],
