@@ -175,9 +175,11 @@ class TemplateTestCase(APITestCase):
         self.check_html("/children/?limit=10", html)
 
     def test_template_context_processors(self):
-        resp = self.client.get('/rest_context')
-        token = resp.cookies['csrftoken'].value
-        self.check_html("/rest_context", """
+        response = self.client.get('/rest_context')
+        html = response.content.decode('utf-8')
+        token = html.split('value="')[1].split('"')[0]
+        self.assertTrue(len(token) >= 32)
+        self.assertHTMLEqual("""
             <p>/rest_context</p>
             <p>0.0.0</p>
             <p>
@@ -185,7 +187,7 @@ class TemplateTestCase(APITestCase):
             </p>
             <p>rest_context</p>
             <p>Can Edit Items</p>
-        """.format(csrf=token))
+        """.format(csrf=token), html)
 
     def test_template_page_config(self):
         item = Item.objects.get(name="Test 1")

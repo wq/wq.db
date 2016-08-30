@@ -3,8 +3,31 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
+from django.db.models.query_utils import PathInfo
 from django.conf import settings
+
 INSTALLED = ('wq.db.patterns.relate' in settings.INSTALLED_APPS)
+
+
+class GenericRelation(GenericRelation):
+    def get_path_info(self):
+        """
+        Django 1.10 will try to resolve InverseRelationship to Relationship;
+        that check is not needed in this case.
+        """
+        if not hasattr(self, 'remote_field'):
+            return super(GenericRelation, self).get_path_info()
+
+        opts = self.remote_field.model._meta
+        target = opts.pk
+        return [PathInfo(
+            self.model._meta,
+            opts,
+            (target,),
+            self.remote_field,
+            True,
+            False
+        )]
 
 
 class RelatedModelManager(models.Manager):

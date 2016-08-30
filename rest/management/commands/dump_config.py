@@ -1,17 +1,16 @@
 from django.core.management.base import BaseCommand
 from wq.db import rest
 import json
-from optparse import make_option
 
 
 class Command(BaseCommand):
-    def __init__(self, *args, **kwargs):
-        super(Command, self).__init__(*args, **kwargs)
-        self.option_list += (make_option(
-            '--format', default='json'
-        ),)
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--format',
+            default='json',
+        )
 
-    def handle(self, *args, **options):
+    def handle(self, **options):
         text = json.dumps(
             rest.router.get_config(),
             indent=4,

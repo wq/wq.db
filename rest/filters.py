@@ -17,7 +17,7 @@ class FilterBackend(BaseFilterBackend):
         for key, val in list(kwargs.items()):
             field_name = key.split('__')[0]
             try:
-                field = model._meta.get_field_by_name(field_name)[0]
+                field = model._meta.get_field(field_name)
             except FieldDoesNotExist:
                 del kwargs[key]
                 continue
