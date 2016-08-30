@@ -85,10 +85,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='1.0.0b1',
+    version='1.0.0-dev',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
-    url='http://wq.io/wq.db',
+    url='https://wq.io/wq.db',
     license='MIT',
     packages=packages,
     package_dir=package_dir,
