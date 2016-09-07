@@ -93,6 +93,7 @@ setup(
     packages=packages,
     package_dir=package_dir,
     namespace_packages=['wq'],
+    entry_points={'wq': 'wq.db=wq.db'},
     description=LONG_DESCRIPTION.strip(),
     long_description=parse_markdown_readme(),
     install_requires=[
