@@ -75,9 +75,6 @@ class RestTestCase(APITestCase):
         self.assertNotIn("list", result["pages"][-1])
 
     def test_rest_config_json_fields(self):
-        response = self.client.get('/config.json')
-        result = json.loads(response.content.decode('utf-8'))
-
         self.assertEqual([
             {
                 'name': 'name',
