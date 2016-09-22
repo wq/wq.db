@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from wq.db import rest
+from rest_framework.utils import encoders
 import json
 
 
@@ -13,6 +14,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         text = json.dumps(
             rest.router.get_config(),
+            cls=encoders.JSONEncoder,
             indent=4,
         )
         if options['format'] == "amd":

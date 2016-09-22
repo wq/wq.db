@@ -1,7 +1,7 @@
 from wq.db import rest
 from .models import (
     RootModel, UserManagedModel, Parent, Child, ItemType, Item, GeometryModel,
-    SlugModel, DateModel, ChoiceModel,
+    SlugModel, DateModel, ChoiceModel, TranslatedModel,
 )
 from .serializers import RootModelSerializer, ParentSerializer
 
@@ -20,6 +20,7 @@ rest.router.register_model(GeometryModel)
 rest.router.register_model(SlugModel, lookup="code")
 rest.router.register_model(DateModel)
 rest.router.register_model(ChoiceModel)
+rest.router.register_model(TranslatedModel)
 rest.router.set_extra_config(debug=True)
 
 rest.router.add_page("rest_context", {})

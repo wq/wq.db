@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.gis.db.models import GeometryField, GeoManager
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 
 class RootModel(models.Model):
@@ -117,3 +118,10 @@ class ChoiceModel(models.Model):
 
     def __str__(self):
         return "%s: %s" % (self.name, self.choice)
+
+
+class TranslatedModel(models.Model):
+    name = models.CharField(
+        verbose_name=_('translated model name'),
+        max_length=255,
+    )
