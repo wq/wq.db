@@ -84,6 +84,9 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         fields = []
         nested_fields = []
         has_geo_fields = False
+
+        overrides = getattr(self.Meta, 'wq_field_config', {})
+
         for name, field in self.get_fields_for_config().items():
             info = {
                 'name': name,
@@ -137,6 +140,9 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             if info['type'].startswith('geo') or info['name'] == 'latitude':
                 has_geo_fields = True
 
+            if info['name'] in overrides:
+                info.update(overrides[info['name']])
+
             if info['type'] == 'repeat':
                 nested_fields.append(info)
             else:
@@ -152,6 +158,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
     class Meta:
         wq_config = {}
+        wq_field_config = {}
 
 
 class ModelSerializer(BaseModelSerializer):

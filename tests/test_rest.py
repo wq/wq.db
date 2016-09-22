@@ -44,7 +44,9 @@ class RestTestCase(APITestCase):
             choice="two",
         )
 
-    def get_config(self, result, page_name):
+    def get_config(self, page_name):
+        response = self.client.get('/config.json')
+        result = json.loads(response.content.decode('utf-8'))
         self.assertIn('pages', result)
         self.assertIn(page_name, result['pages'])
         return result['pages'][page_name]
@@ -95,12 +97,10 @@ class RestTestCase(APITestCase):
                 'label': 'Empty Date',
                 'type': 'dateTime',
             },
-        ], self.get_config(result, 'datemodel')['form'])
+        ], self.get_config('datemodel')['form'])
 
     def test_rest_config_json_choices(self):
-        response = self.client.get('/config.json')
-        result = json.loads(response.content.decode('utf-8'))
-        conf = self.get_config(result, 'choicemodel')
+        conf = self.get_config('choicemodel')
         self.assertEqual([
             {
                 'name': 'name',
@@ -130,10 +130,7 @@ class RestTestCase(APITestCase):
         ], conf['form'])
 
     def test_rest_config_json_rels(self):
-        response = self.client.get('/config.json')
-        result = json.loads(response.content.decode('utf-8'))
-
-        pconf = self.get_config(result, 'parent')
+        pconf = self.get_config('parent')
         self.assertEqual({
             'name': 'children',
             'label': 'Children',
@@ -148,7 +145,7 @@ class RestTestCase(APITestCase):
             }]
         }, self.get_field(pconf, 'children'))
 
-        cconf = self.get_config(result, 'child')
+        cconf = self.get_config('child')
         self.assertEqual({
             'name': 'parent',
             'label': 'Parent',
@@ -156,6 +153,17 @@ class RestTestCase(APITestCase):
             'wq:ForeignKey': 'parent',
             'bind': {'required': True},
         }, self.get_field(cconf, 'parent'))
+
+    def test_rest_config_json_override(self):
+        iconf = self.get_config('item')
+        self.assertEqual({
+            'name': 'type',
+            'label': 'Type',
+            'type': 'string',
+            'wq:ForeignKey': 'itemtype',
+            'filter': {'active': True},
+            'bind': {'required': True},
+        }, self.get_field(iconf, 'type'))
 
     # Test url="" use case
     def test_rest_list_at_root(self):

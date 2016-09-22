@@ -60,6 +60,7 @@ class Child(models.Model):
 
 class ItemType(models.Model):
     name = models.CharField(max_length=10)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

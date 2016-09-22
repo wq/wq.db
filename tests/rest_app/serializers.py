@@ -15,3 +15,14 @@ class ChildSerializer(ModelSerializer):
 
 class ParentSerializer(ModelSerializer):
     children = ChildSerializer(many=True)
+
+
+class ItemSerializer(ModelSerializer):
+    class Meta:
+        wq_field_config = {
+            'type': {
+                 'filter': {
+                     'active': True
+                 }
+            }
+        }
