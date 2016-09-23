@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, Child, ItemType, Item, SlugModel,
+    Parent, Child, ItemType, Item, SlugModel, ChoiceModel,
 )
 from django.contrib.auth.models import User
 
@@ -34,6 +34,11 @@ class TemplateTestCase(APITestCase):
             name="Inactive",
             pk=2,
             active=False
+        )
+        ChoiceModel.objects.create(
+            name="Test",
+            pk=1,
+            choice="two"
         )
 
     def check_html(self, url, expected_html):
@@ -202,7 +207,7 @@ class TemplateTestCase(APITestCase):
             <a href="/items/{pk}/edit">Edit</a>
         """.format(pk=item.pk))
 
-    def test_template_edit(self):
+    def test_template_fk_edit(self):
         item = Item.objects.get(name="Test 1")
         self.check_html('/items/%s/edit' % item.pk, """
             <form>
@@ -216,7 +221,7 @@ class TemplateTestCase(APITestCase):
             </form>
         """)
 
-    def test_template_new(self):
+    def test_template_fk_new(self):
         self.check_html('/items/new', """
             <form>
               <input name="name" required value="">
@@ -228,7 +233,7 @@ class TemplateTestCase(APITestCase):
             </form>
         """)
 
-    def test_template_new_defaults(self):
+    def test_template_fk_new_defaults(self):
         self.check_html('/items/new?type_id=1', """
             <form>
               <input name="name" required value="">
@@ -236,6 +241,66 @@ class TemplateTestCase(APITestCase):
                 <option value="">Select one...</option>
                 <option value="1" selected>Test</option>
               </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_choice_edit(self):
+        self.check_html('/choicemodels/1/edit', """
+            <form>
+              <input name="name" required value="Test">
+              <fieldset>
+                <legend>Choice</legend>
+                <input type="radio" id="choicemodel-choice-one"
+                       name="choice" value="one">
+                <label for="choicemodel-choice-one">Choice One</label>
+                <input type="radio" id="choicemodel-choice-two"
+                       name="choice" value="two" checked>
+                <label for="choicemodel-choice-two">Choice Two</label>
+                <input type="radio" id="choicemodel-choice-three"
+                       name="choice" value="three">
+                <label for="choicemodel-choice-three">Choice Three</label>
+              </fieldset>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_choice_new(self):
+        self.check_html('/choicemodels/new', """
+            <form>
+              <input name="name" required value="">
+              <fieldset>
+                <legend>Choice</legend>
+                <input type="radio" id="choicemodel-choice-one"
+                       name="choice" value="one">
+                <label for="choicemodel-choice-one">Choice One</label>
+                <input type="radio" id="choicemodel-choice-two"
+                       name="choice" value="two">
+                <label for="choicemodel-choice-two">Choice Two</label>
+                <input type="radio" id="choicemodel-choice-three"
+                       name="choice" value="three">
+                <label for="choicemodel-choice-three">Choice Three</label>
+              </fieldset>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_choice_new_defaults(self):
+        self.check_html('/choicemodels/new?choice=three', """
+            <form>
+              <input name="name" required value="">
+              <fieldset>
+                <legend>Choice</legend>
+                <input type="radio" id="choicemodel-choice-one"
+                       name="choice" value="one">
+                <label for="choicemodel-choice-one">Choice One</label>
+                <input type="radio" id="choicemodel-choice-two"
+                       name="choice" value="two">
+                <label for="choicemodel-choice-two">Choice Two</label>
+                <input type="radio" id="choicemodel-choice-three"
+                       name="choice" value="three" checked>
+                <label for="choicemodel-choice-three">Choice Three</label>
+              </fieldset>
               <button>Submit</button>
             </form>
         """)

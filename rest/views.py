@@ -145,14 +145,10 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                     ),
                 } for choice in field['choices']]
 
-            elif 'wq:ForeignKey' not in field:
-                continue
-
-            choices = self.get_lookup_choices(field, context)
-            if not choices:
-                continue
-
-            context[field['name'] + '_list'] = choices
+            elif 'wq:ForeignKey' in field:
+                choices = self.get_lookup_choices(field, context)
+                if choices:
+                    context[field['name'] + '_list'] = choices
 
     def get_lookup_choices(self, field, context):
         model = self.router._page_models.get(field['wq:ForeignKey'], None)
