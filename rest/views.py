@@ -163,15 +163,19 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         return choices
 
     def compute_filter(self, filter, context):
-        import pystache
+        def render(value):
+            import pystache
+            result = pystache.render(value, context)
+            if result.isdigit():
+                result = int(result)
+            return result
+
         computed_filter = {}
         for key, values in filter.items():
             if not isinstance(values, list):
                 values = [values]
             values = [
-                pystache.render(value, context)
-                if '{{' in value
-                else value
+                render(value) if '{{' in value else value
                 for value in values
             ]
             if len(values) > 1:
