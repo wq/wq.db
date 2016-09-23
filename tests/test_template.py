@@ -30,6 +30,11 @@ class TemplateTestCase(APITestCase):
             code="test",
             name="Test",
         )
+        ItemType.objects.create(
+            name="Inactive",
+            pk=2,
+            active=False
+        )
 
     def check_html(self, url, expected_html):
         response = self.client.get(url)
@@ -205,6 +210,7 @@ class TemplateTestCase(APITestCase):
               <select name="type_id" required>
                 <option value="">Select one...</option>
                 <option value="1" selected>Test</option>
+                <option value="2">Inactive</option>
               </select>
               <button>Submit</button>
             </form>

@@ -127,47 +127,74 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
     def add_lookups(self, context):
         # Mimic _addLookups in wq.app/app.js
         context['edit'] = True
+
+        if not self.router:
+            return
+
         ct = get_ct(self.model)
         conf = ct.get_config()
 
-        # CharField choices
         for field in conf['form']:
-            if 'choices' not in field:
-                continue
-            context[field['name'] + '_choices'] = [{
-                'name': choice['name'],
-                'label': choice['label'],
-                'selected': choice['name'] == context.get(field['name'], ''),
-            } for choice in field['choices']]
+            if 'choices' in field:
+                # CharField choices
+                context[field['name'] + '_choices'] = [{
+                    'name': choice['name'],
+                    'label': choice['label'],
+                    'selected': (
+                        choice['name'] == context.get(field['name'], '')
+                    ),
+                } for choice in field['choices']]
 
-        # ForeignKey lookups
-        for pct, fields in ct.get_foreign_keys().items():
-            if not pct.is_registered():
+            elif 'wq:ForeignKey' not in field:
                 continue
-            for field in fields:
-                choices = self.get_lookup_choices(pct, context, field)
-                if not choices:
-                    continue
-                self.set_selected(choices, context.get(field + '_id', ''))
-                if field == pct.model:
-                    context[pct.urlbase] = choices
-                context[field + '_list'] = choices
+
+            choices = self.get_lookup_choices(field, context)
+            if not choices:
+                continue
+
+            context[field['name'] + '_list'] = choices
+
+    def get_lookup_choices(self, field, context):
+        model = self.router._page_models.get(field['wq:ForeignKey'], None)
+        if not model:
+            return
+
+        qs = self.router.get_queryset_for_model(model)
+        if field['filter']:
+            qs = qs.filter(**self.compute_filter(field['filter'], context))
+        choices = self.serialize_choices(qs, field)
+        self.set_selected(choices, context.get(field['name'] + '_id', ''))
+        return choices
+
+    def compute_filter(self, filter, context):
+        import pystache
+        computed_filter = {}
+        for key, values in filter.items():
+            if not isinstance(values, list):
+                values = [values]
+            values = [
+                pystache.render(value, context)
+                if '{{' in value
+                else value
+                for value in values
+            ]
+            if len(values) > 1:
+                computed_filter[key + '__in'] = values
+            else:
+                computed_filter[key] = values[0]
+
+        return computed_filter
+
+    def serialize_choices(self, qs, field):
+        return [{
+            'id': get_object_id(obj),
+            'label': str(obj)
+        } for obj in qs]
 
     def set_selected(self, choices, value):
         for choice in choices:
             if choice['id'] == value:
                 choice['selected'] = True
-
-    def get_lookup_choices(self, ct, context, field_name=None):
-        from wq.db import rest
-        parent_model = ct.model_class()
-        if not field_name:
-            field_name = ct.model
-        qs = rest.router.get_queryset_for_model(parent_model)
-        fn = getattr(self, 'get_%s_choices' % field_name, None)
-        if fn:
-            qs = fn(qs, context)
-        return rest.router.serialize(qs, many=True)
 
     def list(self, request, *args, **kwargs):
         response = super(ModelViewSet, self).list(

@@ -22,7 +22,12 @@ class ItemSerializer(ModelSerializer):
         wq_field_config = {
             'type': {
                  'filter': {
-                     'active': True
+                     'active': [
+                         '1',
+
+                         # Allow inactive types when editing existing items
+                         '{{#id}}0{{/id}}{{^id}}1{{/id}}',
+                     ]
                  }
             }
         }

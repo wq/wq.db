@@ -158,7 +158,7 @@ class RestTestCase(APITestCase):
             'label': 'Type',
             'type': 'string',
             'wq:ForeignKey': 'itemtype',
-            'filter': {'active': True},
+            'filter': {'active':  ['1', '{{#id}}0{{/id}}{{^id}}1{{/id}}']},
             'bind': {'required': True},
         }, self.get_field(iconf, 'type'))
 
