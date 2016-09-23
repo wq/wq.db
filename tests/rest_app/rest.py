@@ -1,9 +1,13 @@
 from wq.db import rest
 from .models import (
     RootModel, UserManagedModel, Parent, Child, ItemType, Item, GeometryModel,
-    SlugModel, DateModel, ChoiceModel, TranslatedModel,
+    SlugModel, SlugRefParent, SlugRefChild,
+    DateModel, ChoiceModel, TranslatedModel,
 )
-from .serializers import RootModelSerializer, ParentSerializer, ItemSerializer
+from .serializers import (
+    RootModelSerializer, ParentSerializer, ItemSerializer,
+    SlugRefChildSerializer,
+)
 
 rest.router.register_model(
     RootModel,
@@ -18,6 +22,12 @@ rest.router.register_model(ItemType)
 rest.router.register_model(Item, serializer=ItemSerializer)
 rest.router.register_model(GeometryModel)
 rest.router.register_model(SlugModel, lookup="code")
+rest.router.register_model(SlugRefParent)
+rest.router.register_model(
+    SlugRefChild,
+    url="slugrefchildren",
+    serializer=SlugRefChildSerializer,
+)
 rest.router.register_model(DateModel)
 rest.router.register_model(ChoiceModel)
 rest.router.register_model(TranslatedModel)

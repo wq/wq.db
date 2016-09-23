@@ -151,24 +151,41 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                     context[field['name'] + '_list'] = choices
 
     def get_lookup_choices(self, field, context):
-        model = self.router._page_models.get(field['wq:ForeignKey'], None)
-        if not model:
+        model_name = field['wq:ForeignKey']
+        model_conf = self.router.get_model_config(field['wq:ForeignKey'])
+        if not model_conf:
             return
 
-        qs = self.router.get_queryset_for_model(model)
+        qs = self.router.get_queryset_for_model(model_name)
         if field.get('filter', None):
-            qs = qs.filter(**self.compute_filter(field['filter'], context))
+            qs = qs.filter(**self.compute_filter(
+                field['filter'],
+                model_conf,
+                context
+            ))
         choices = self.serialize_choices(qs, field)
         self.set_selected(choices, context.get(field['name'] + '_id', ''))
         return choices
 
-    def compute_filter(self, filter, context):
+    def compute_filter(self, filter, model_conf, context):
         def render(value):
             import pystache
             result = pystache.render(value, context)
             if result.isdigit():
                 result = int(result)
             return result
+
+        fk_lookups = {}
+        for field in model_conf['form']:
+            if 'wq:ForeignKey' not in field:
+                continue
+            lookup = self.router.get_lookup_for_model(
+                field['wq:ForeignKey']
+            )
+            if lookup and lookup != 'pk':
+                fk_lookups['%s_id' % field['name']] = '%s__%s' % (
+                    field['name'], lookup
+                )
 
         computed_filter = {}
         for key, values in filter.items():
@@ -178,6 +195,10 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 render(value) if '{{' in value else value
                 for value in values
             ]
+
+            if key in fk_lookups:
+                key = fk_lookups[key]
+
             if len(values) > 1:
                 computed_filter[key + '__in'] = values
             else:

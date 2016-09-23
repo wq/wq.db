@@ -31,3 +31,14 @@ class ItemSerializer(ModelSerializer):
                  }
             }
         }
+
+
+class SlugRefChildSerializer(ModelSerializer):
+    class Meta:
+        wq_field_config = {
+            'parent': {
+                 'filter': {
+                     'ref_id': 'test'
+                 }
+            }
+        }

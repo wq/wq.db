@@ -6,4 +6,4 @@ from django.core.management import call_command
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', "tests.settings")
 setup_test_environment()
 django.setup()
-call_command('migrate', interactive=False)
+#call_command('migrate', interactive=False)

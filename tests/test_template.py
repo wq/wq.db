@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, Child, ItemType, Item, SlugModel, ChoiceModel,
+    Parent, Child, ItemType, Item, SlugModel, SlugRefParent, ChoiceModel,
 )
 from django.contrib.auth.models import User
 
@@ -26,9 +26,22 @@ class TemplateTestCase(APITestCase):
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         itype.item_set.create(name="Test 2")
-        SlugModel.objects.create(
+        slugref = SlugModel.objects.create(
             code="test",
             name="Test",
+        )
+        SlugRefParent.objects.create(
+            ref=slugref,
+            pk=1,
+            name="Test Slug Ref"
+        )
+        SlugRefParent.objects.create(
+            ref=SlugModel.objects.create(
+                code="other",
+                name="Other",
+            ),
+            pk=2,
+            name="Test Another Ref",
         )
         ItemType.objects.create(
             name="Inactive",
@@ -207,7 +220,7 @@ class TemplateTestCase(APITestCase):
             <a href="/items/{pk}/edit">Edit</a>
         """.format(pk=item.pk))
 
-    def test_template_fk_edit(self):
+    def test_template_edit_fk(self):
         item = Item.objects.get(name="Test 1")
         self.check_html('/items/%s/edit' % item.pk, """
             <form>
@@ -221,43 +234,7 @@ class TemplateTestCase(APITestCase):
             </form>
         """)
 
-    def test_template_fk_new(self):
-        self.check_html('/children/new', """
-            <form>
-              <input name="name" required value="">
-              <select name="parent_id" required>
-                <option value="">Select one...</option>
-                <option value="1">Test</option>
-              </select>
-              <button>Submit</button>
-            </form>
-        """)
-
-    def test_template_fk_new_filtered(self):
-        self.check_html('/items/new', """
-            <form>
-              <input name="name" required value="">
-              <select name="type_id" required>
-                <option value="">Select one...</option>
-                <option value="1">Test</option>
-              </select>
-              <button>Submit</button>
-            </form>
-        """)
-
-    def test_template_fk_new_defaults(self):
-        self.check_html('/items/new?type_id=1', """
-            <form>
-              <input name="name" required value="">
-              <select name="type_id" required>
-                <option value="">Select one...</option>
-                <option value="1" selected>Test</option>
-              </select>
-              <button>Submit</button>
-            </form>
-        """)
-
-    def test_template_choice_edit(self):
+    def test_template_edit_choice(self):
         self.check_html('/choicemodels/1/edit', """
             <form>
               <input name="name" required value="Test">
@@ -277,7 +254,68 @@ class TemplateTestCase(APITestCase):
             </form>
         """)
 
-    def test_template_choice_new(self):
+    def test_template_new_fk(self):
+        self.check_html('/children/new', """
+            <form>
+              <input name="name" required value="">
+              <select name="parent_id" required>
+                <option value="">Select one...</option>
+                <option value="1">Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_fk_filtered(self):
+        self.check_html('/items/new', """
+            <form>
+              <input name="name" required value="">
+              <select name="type_id" required>
+                <option value="">Select one...</option>
+                <option value="1">Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_fk_defaults(self):
+        self.check_html('/items/new?type_id=1', """
+            <form>
+              <input name="name" required value="">
+              <select name="type_id" required>
+                <option value="">Select one...</option>
+                <option value="1" selected>Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_fk_slug(self):
+        self.check_html('/slugrefparents/new?ref_id=test', """
+            <form>
+              <input name="name" required value="">
+              <select name="ref_id" required>
+                <option value="">Select one...</option>
+                <option value="test" selected>Test</option>
+                <option value="other">Other</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_fk_slug_filtered(self):
+        self.check_html('/slugrefchildren/new', """
+            <form>
+              <input name="name" required value="">
+              <select name="parent_id" required>
+                <option value="">Select one...</option>
+                <option value="1">Test Slug Ref (Test)</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_choice(self):
         self.check_html('/choicemodels/new', """
             <form>
               <input name="name" required value="">
@@ -297,7 +335,7 @@ class TemplateTestCase(APITestCase):
             </form>
         """)
 
-    def test_template_choice_new_defaults(self):
+    def test_template_new_choice_defaults(self):
         self.check_html('/choicemodels/new?choice=three', """
             <form>
               <input name="name" required value="">

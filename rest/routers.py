@@ -195,6 +195,8 @@ class ModelRouter(DefaultRouter):
         return view(request).data
 
     def get_queryset_for_model(self, model, request=None):
+        if model in self._page_models:
+            model = self._page_models[model]
         if model in self._querysets:
             qs = self._querysets[model]
         else:
@@ -208,6 +210,8 @@ class ModelRouter(DefaultRouter):
         return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
+        if model_class in self._page_models:
+            model_class = self._page_models[model_class]
         viewset = self.get_class(
             self._viewsets, model_class, lambda d: ModelViewSet
         )
@@ -317,6 +321,9 @@ class ModelRouter(DefaultRouter):
         return config['pages'].get(name, None)
 
     def get_model_config(self, model, user=None):
+        if model in self._page_models:
+            model = self._page_models[model]
+
         # First, check models registered with API
         if model in self._page_names:
             config = self.get_config(user)

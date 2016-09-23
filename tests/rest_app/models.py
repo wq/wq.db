@@ -92,6 +92,21 @@ class SlugModel(models.Model):
         return self.name
 
 
+class SlugRefParent(models.Model):
+    ref = models.ForeignKey(SlugModel)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        if self.ref_id:
+            return "%s (%s)" % (self.name, self.ref)
+        return self.name
+
+
+class SlugRefChild(models.Model):
+    parent = models.ForeignKey(SlugRefParent)
+    name = models.CharField(max_length=255)
+
+
 class DateModel(models.Model):
     name = models.CharField(max_length=10)
     date = models.DateTimeField()
