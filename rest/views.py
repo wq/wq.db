@@ -87,7 +87,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             init.pop(arg, None)
         for key in list(init.keys()):
             try:
-                field = self.model._meta.get_field_by_name(key)[0]
+                field = self.model._meta.get_field(key)
             except FieldDoesNotExist:
                 del init[key]
             else:

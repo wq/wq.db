@@ -196,3 +196,40 @@ class TemplateTestCase(APITestCase):
             <a href="/itemtypes/1">Test</a>
             <a href="/items/{pk}/edit">Edit</a>
         """.format(pk=item.pk))
+
+    def test_template_edit(self):
+        item = Item.objects.get(name="Test 1")
+        self.check_html('/items/%s/edit' % item.pk, """
+            <form>
+              <input name="name" required value="Test 1">
+              <select name="type_id" required>
+                <option value="">Select one...</option>
+                <option value="1" selected>Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new(self):
+        self.check_html('/items/new', """
+            <form>
+              <input name="name" required value="">
+              <select name="type_id" required>
+                <option value="">Select one...</option>
+                <option value="1">Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_new_defaults(self):
+        self.check_html('/items/new?type_id=1', """
+            <form>
+              <input name="name" required value="">
+              <select name="type_id" required>
+                <option value="">Select one...</option>
+                <option value="1" selected>Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)

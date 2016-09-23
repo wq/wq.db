@@ -1,0 +1,14 @@
+<form>
+  <input name='name' required value="{{name}}">
+  <select name='type_id' required>
+    <option value="">Select one...</option>
+    {{#type_list}}
+    <option value="{{id}}"{{#selected}} selected{{/selected}}>
+      {{label}}
+    </option>
+    {{/type_list}}
+  </select>
+  <button>
+    Submit
+  </button>
+</form>
