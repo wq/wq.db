@@ -156,7 +156,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return
 
         qs = self.router.get_queryset_for_model(model)
-        if field['filter']:
+        if field.get('filter', None):
             qs = qs.filter(**self.compute_filter(field['filter'], context))
         choices = self.serialize_choices(qs, field)
         self.set_selected(choices, context.get(field['name'] + '_id', ''))

@@ -222,6 +222,18 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_fk_new(self):
+        self.check_html('/children/new', """
+            <form>
+              <input name="name" required value="">
+              <select name="parent_id" required>
+                <option value="">Select one...</option>
+                <option value="1">Test</option>
+              </select>
+              <button>Submit</button>
+            </form>
+        """)
+
+    def test_template_fk_new_filtered(self):
         self.check_html('/items/new', """
             <form>
               <input name="name" required value="">
