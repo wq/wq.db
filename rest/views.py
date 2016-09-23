@@ -156,7 +156,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if not model_conf:
             return
 
-        qs = self.router.get_queryset_for_model(model_name)
+        qs = self.router.get_queryset_for_model(model_name, self.request)
         if field.get('filter', None):
             qs = qs.filter(**self.compute_filter(
                 field['filter'],
