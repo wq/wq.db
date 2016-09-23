@@ -1,0 +1,11 @@
+<form>
+  <input name='name' required value="{{name}}">
+  <fieldset>
+    <legend>Choice</legend>
+    {{#choice_choices}}
+    <input type='radio' id='choicemodel-choice-{{name}}' name='choice' value='{{name}}'{{#selected}} checked{{/selected}}>
+    <label for='choicemodel-choice-{{name}}'>{{label}}</label>
+    {{/choice_choices}}
+  </fieldset>
+  <button>Submit</button>
+</form>
