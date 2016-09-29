@@ -56,8 +56,10 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         basename = get_ct(self.model).identifier
         if self.action in ('retrieve', 'create', 'update', 'delete'):
             suffix = 'detail'
-        else:
+        elif self.action and self.action != 'metadata':
             suffix = self.action
+        else:
+            suffix = 'list'
         return "%s_%s.html" % (basename, suffix)
 
     @property

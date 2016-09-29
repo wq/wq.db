@@ -7,6 +7,7 @@ class ModelPermissions(BasePermission):
     METHOD_PERM = {
         'GET': 'view',
         'HEAD': 'view',
+        'OPTIONS': 'view',
         'POST': 'add',
         'PUT': 'change',
         'PATCH': 'change',
