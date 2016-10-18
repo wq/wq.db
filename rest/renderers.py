@@ -63,7 +63,9 @@ class GeoJSONRenderer(JSONRenderer):
 
         else:
             for key, val in list(obj.items()):
-                if isinstance(val, dict) and 'type' in val:
+                if isinstance(val, dict) and 'type' in val and (
+                        'coordinates' in val or 'geometries' in val
+                        ):
                     feature['geometry'] = val
                     del obj[key]
 
