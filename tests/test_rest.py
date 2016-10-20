@@ -162,6 +162,14 @@ class RestTestCase(APITestCase):
             'bind': {'required': True},
         }, self.get_field(iconf, 'type'))
 
+    def test_rest_config_json_label(self):
+        pconf = self.get_config('slugrefparent')
+        self.assertIn('label_template', pconf)
+        self.assertEqual(
+            "{{name}}{{#ref_id}} ({{ref}}){{/ref_id}}",
+            pconf['label_template'],
+        )
+
     # Test url="" use case
     def test_rest_list_at_root(self):
         response = self.client.get("/.json")

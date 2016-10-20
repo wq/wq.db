@@ -154,6 +154,12 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             config['name'] = self.Meta.model._meta.model_name
         if has_geo_fields and 'map' not in config:
             config['map'] = True
+        if 'label_template' not in config:
+            label_template = getattr(
+                self.Meta.model, 'wq_label_template', None
+            )
+            if label_template:
+                config['label_template'] = label_template
         return config
 
     class Meta:
