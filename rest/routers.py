@@ -2,6 +2,7 @@ from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
 from django.core.exceptions import ImproperlyConfigured
+from django.db.utils import ProgrammingError
 
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
@@ -250,7 +251,7 @@ class ModelRouter(DefaultRouter):
         for model in self._models:
             try:
                 ct = get_ct(model)
-            except RuntimeError:
+            except (RuntimeError, ProgrammingError):
                 # This can happen before contenttypes is migrated
                 ct = str(model._meta)
 
@@ -464,7 +465,7 @@ class ModelRouter(DefaultRouter):
         # /[parentmodel_url]/[foreignkey_value]/[model_url]
         try:
             ct = get_ct(model)
-        except RuntimeError:
+        except (RuntimeError, ProgrammingError):
             # This can happen before contenttypes is migrated
             return routes
         for pct, fields in ct.get_foreign_keys().items():
