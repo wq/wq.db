@@ -243,6 +243,8 @@ class ModelSerializer(BaseModelSerializer):
         # [fieldname]_id.
         for name, field in info.forward_relations.items():
             include = getattr(self.Meta, "fields", [])
+            if include == "__all__":
+                include = []
             exclude = getattr(self.Meta, "exclude", [])
             if name in exclude or (include and name not in include):
                 fields.pop(name, None)
@@ -306,10 +308,12 @@ class ModelSerializer(BaseModelSerializer):
         return fields
 
     @classmethod
-    def for_model(cls, model_class):
+    def for_model(cls, model_class, include_fields=None):
         class Serializer(cls):
             class Meta(getattr(cls, 'Meta', object)):
                 model = model_class
+                if include_fields:
+                    fields = include_fields
         return Serializer
 
     @classmethod

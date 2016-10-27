@@ -19,6 +19,7 @@ from .serializers import ModelSerializer
 class ModelRouter(DefaultRouter):
     _models = set()
     _serializers = {}
+    _fields = {}
     _querysets = {}
     _filters = {}
     _viewsets = {}
@@ -48,7 +49,7 @@ class ModelRouter(DefaultRouter):
         ))
         super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
 
-    def register_model(self, model, viewset=None, serializer=None,
+    def register_model(self, model, viewset=None, serializer=None, fields=None,
                        queryset=None, filter=None, **kwargs):
         if isinstance(model, string_types) and '.' in model:
             from django.db.models import get_model
@@ -89,6 +90,9 @@ class ModelRouter(DefaultRouter):
         if serializer:
             self.register_serializer(model, serializer)
 
+        if fields:
+            self.register_fields(model, fields)
+
         self._page_names[model] = kwargs['name']
         self._page_models[kwargs['name']] = model
         self._url_models[kwargs['url']] = model
@@ -99,6 +103,9 @@ class ModelRouter(DefaultRouter):
     def register_serializer(self, model, serializer):
         self._serializers[model] = serializer
         self._base_config = None
+
+    def register_fields(self, model, fields):
+        self._fields[model] = fields
 
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
@@ -146,7 +153,17 @@ class ModelRouter(DefaultRouter):
 
         meta = getattr(serializer, 'Meta', object)
         if not getattr(meta, 'model', None):
-            serializer = serializer.for_model(model_class)
+            if getattr(meta, 'fields', None) or getattr(meta, 'exclude', None):
+                include_fields = None
+            else:
+                include_fields = self._fields.get(model_class, None)
+                if not include_fields:
+                    raise ImproperlyConfigured(
+                        "No serializer fields defined for %s" % model_class
+                    )
+            serializer = serializer.for_model(
+                model_class, include_fields=include_fields
+            )
 
         if serializer_depth is not None:
             if serializer_depth != getattr(meta, 'depth', None):
@@ -172,7 +189,7 @@ class ModelRouter(DefaultRouter):
             if depth is None:
                 depth = 0
         else:
-            model = obj
+            model = type(obj)
             if depth is None:
                 depth = 1
         serializer = self.get_serializer_for_model(model, depth)

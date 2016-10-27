@@ -340,3 +340,6 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if self.router:
             response.data['parent'] = self.router.serialize(parent)
         return parent
+
+    def head(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)

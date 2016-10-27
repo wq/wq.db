@@ -4,5 +4,7 @@ from .serializers import RelationshipTypeSerializer
 
 
 rest.router.register_model(
-    RelationshipType, serializer=RelationshipTypeSerializer
+    RelationshipType,
+    serializer=RelationshipTypeSerializer,
+    fields="__all__",
 )

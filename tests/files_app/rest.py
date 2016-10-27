@@ -5,4 +5,5 @@ from .models import PhotoAttachedModel
 rest.router.register_model(
     PhotoAttachedModel,
     serializer=PhotoAttachedModelSerializer,
+    fields="__all__",
 )

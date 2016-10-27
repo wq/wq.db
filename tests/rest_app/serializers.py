@@ -3,8 +3,12 @@ from .models import OneToOneModel, ExtraModel, Child
 
 
 class RootModelSerializer(ModelSerializer):
-    extramodels = ModelSerializer.for_model(ExtraModel)(many=True)
-    onetoonemodel = ModelSerializer.for_model(OneToOneModel)()
+    extramodels = ModelSerializer.for_model(
+        ExtraModel, include_fields="__all__"
+    )(many=True)
+    onetoonemodel = ModelSerializer.for_model(
+        OneToOneModel, include_fields="__all__"
+    )()
 
 
 class ChildSerializer(ModelSerializer):

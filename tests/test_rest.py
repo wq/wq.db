@@ -274,7 +274,7 @@ class RestRouterTestCase(APITestCase):
 
         # Register model with same name as existing model
         with self.assertRaises(ImproperlyConfigured) as e:
-            rest.router.register_model(Item)
+            rest.router.register_model(Item, fields="__all__")
         self.assertEqual(
             e.exception.args[0],
             "Could not register <class 'tests.conflict_app.models.Item'>: "
@@ -284,7 +284,9 @@ class RestRouterTestCase(APITestCase):
 
         # Register model with different name, but same URL as existing model
         with self.assertRaises(ImproperlyConfigured) as e:
-            rest.router.register_model(Item, name="conflictitem")
+            rest.router.register_model(
+                Item, name="conflictitem", fields="__all__"
+            )
         self.assertEqual(
             e.exception.args[0],
             "Could not register <class 'tests.conflict_app.models.Item'>: "
@@ -294,7 +296,7 @@ class RestRouterTestCase(APITestCase):
 
         # Register model with different name and URL
         rest.router.register_model(
-            Item, name="conflictitem", url="conflictitems"
+            Item, name="conflictitem", url="conflictitems", fields="__all__"
         )
         self.assertIn("conflictitem", rest.router.get_config()['pages'])
 

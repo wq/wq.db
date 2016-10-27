@@ -14,23 +14,63 @@ rest.router.register_model(
     url="",
     lookup="slug",
     serializer=RootModelSerializer,
+    fields="__all__",
 )
-rest.router.register_model(UserManagedModel)
-rest.router.register_model(Parent, serializer=ParentSerializer)
-rest.router.register_model(Child, per_page=100, url="children")
-rest.router.register_model(ItemType)
-rest.router.register_model(Item, serializer=ItemSerializer)
-rest.router.register_model(GeometryModel)
-rest.router.register_model(SlugModel, lookup="code")
-rest.router.register_model(SlugRefParent)
+rest.router.register_model(
+    UserManagedModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    Parent,
+    serializer=ParentSerializer,
+    fields="__all__",
+)
+rest.router.register_model(
+    Child,
+    per_page=100,
+    url="children",
+    fields="__all__",
+)
+rest.router.register_model(
+    ItemType,
+    fields="__all__",
+)
+rest.router.register_model(
+    Item,
+    serializer=ItemSerializer,
+    fields="__all__",
+)
+rest.router.register_model(
+    GeometryModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    SlugModel,
+    lookup="code",
+    fields="__all__",
+)
+rest.router.register_model(
+    SlugRefParent,
+    fields="__all__",
+)
 rest.router.register_model(
     SlugRefChild,
     url="slugrefchildren",
     serializer=SlugRefChildSerializer,
+    fields="__all__",
 )
-rest.router.register_model(DateModel)
-rest.router.register_model(ChoiceModel)
-rest.router.register_model(TranslatedModel)
+rest.router.register_model(
+    DateModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    ChoiceModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    TranslatedModel,
+    fields="__all__",
+)
 rest.router.set_extra_config(debug=True)
 
 rest.router.add_page("rest_context", {})
