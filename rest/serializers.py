@@ -88,54 +88,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         overrides = getattr(self.Meta, 'wq_field_config', {})
 
         for name, field in self.get_fields_for_config().items():
-            info = {
-                'name': name,
-                'label': field.label or name.replace('_', ' ').title(),
-            }
-            if field.required:
-                info.setdefault('bind', {})
-                info['bind']['required'] = True
-
-            if field.help_text:
-                info['hint'] = field.help_text
-
-            if isinstance(field, serializers.ChoiceField):
-                info['choices'] = [{
-                    'name': name,
-                    'label': label,
-                } for name, label in field.choices.items()]
-            elif getattr(field, 'max_length', None):
-                info['wq:length'] = field.max_length
-
-            if isinstance(field, serializers.ListSerializer):
-                # Nested model with a foreign key to this one
-                field.child.context['router'] = self.router
-                child_config = field.child.get_wq_config()
-                info['type'] = 'repeat'
-                info['children'] = child_config['form']
-                if 'initial' in child_config:
-                    info['initial'] = child_config['initial']
-
-            elif isinstance(field, serializers.RelatedField):
-                # Foreign key to a parent model
-                info['type'] = 'string'
-                info['name'] = info['name'].replace('_id', '')
-                info['label'] = info['label'].replace(' Id', '')
-                if self.router and field.queryset:
-                    model = field.queryset.model
-                    if self.router.model_is_registered(model):
-                        serializer = self.router.get_serializer_for_model(
-                            model
-                        )
-                        model_conf = serializer().get_wq_config()
-                        info['wq:ForeignKey'] = model_conf['name']
-
-            if 'type' not in info:
-                info['type'] = 'string'
-                for field_type, xlsform_type in self.xlsform_types.items():
-                    if isinstance(field, field_type):
-                        info['type'] = xlsform_type
-                        break
+            info = self.get_wq_field_info(name, field)
 
             if info['type'].startswith('geo') or info['name'] == 'latitude':
                 has_geo_fields = True
@@ -161,6 +114,63 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             if label_template:
                 config['label_template'] = label_template
         return config
+
+    def get_wq_field_info(self, name, field):
+        info = {
+            'name': name,
+            'label': field.label or name.replace('_', ' ').title(),
+        }
+        if field.required:
+            info.setdefault('bind', {})
+            info['bind']['required'] = True
+
+        if field.help_text:
+            info['hint'] = field.help_text
+
+        if isinstance(field, serializers.ChoiceField):
+            info['choices'] = [{
+                'name': name,
+                'label': label,
+            } for name, label in field.choices.items()]
+        elif getattr(field, 'max_length', None):
+            info['wq:length'] = field.max_length
+
+        if isinstance(field, serializers.ListSerializer):
+            # Nested model with a foreign key to this one
+            field.child.context['router'] = self.router
+            child_config = field.child.get_wq_config()
+            info['type'] = 'repeat'
+            info['children'] = child_config['form']
+            if 'initial' in child_config:
+                info['initial'] = child_config['initial']
+
+        elif isinstance(field, serializers.RelatedField):
+            # Foreign key to a parent model
+            info['type'] = 'string'
+            info['name'] = info['name'].replace('_id', '')
+            info['label'] = info['label'].replace(' Id', '')
+            if field.queryset:
+                fk = self.get_wq_foreignkey_info(field.queryset.model)
+                if fk:
+                    info['wq:ForeignKey'] = fk
+
+        if 'type' not in info:
+            info['type'] = 'string'
+            for field_type, xlsform_type in self.xlsform_types.items():
+                if isinstance(field, field_type):
+                    info['type'] = xlsform_type
+                    break
+        return info
+
+    def get_wq_foreignkey_info(self, model):
+        if not self.router or not self.router.model_is_registered(model):
+            return None
+        else:
+            serializer = self.router.get_serializer_for_model(
+                model
+            )
+            model_conf = serializer().get_wq_config()
+            return model_conf['name']
 
     class Meta:
         wq_config = {}

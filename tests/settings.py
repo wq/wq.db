@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'tests.conflict_app',
     'tests.patterns_app',
     'tests.files_app',
+    'tests.naturalkey_app',
 )
 
 DATABASES = {

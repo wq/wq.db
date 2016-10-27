@@ -2,6 +2,8 @@ from .base.serializers import (
     AttachmentSerializer,
     TypedAttachmentSerializer,
     AttachedModelSerializer,
+    NaturalKeyModelSerializer,
+    NaturalKeyAttachedModelSerializer,
 )
 
 from .annotate.serializers import AnnotatedModelSerializer
@@ -16,6 +18,8 @@ __all__ = (
     'AttachmentSerializer',
     'TypedAttachmentSerializer',
     'AttachedModelSerializer',
+    'NaturalKeyModelSerializer',
+    'NaturalKeyAttachedModelSerializer',
 
     'AnnotatedModelSerializer',
     'FiledModelSerializer',

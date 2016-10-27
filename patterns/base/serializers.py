@@ -1,6 +1,7 @@
 from wq.db.rest.serializers import ModelSerializer
 from rest_framework import serializers
 from wq.db.rest.models import get_ct, get_object_id
+from natural_keys import NaturalKeySerializer, NaturalKeyModelSerializer
 
 
 class AttachmentListSerializer(serializers.ListSerializer):
@@ -156,3 +157,49 @@ class AttachedModelSerializer(ModelSerializer):
     def create_attachment(self, model, attachment, name):
         field = self.get_fields()[name]
         field.child.create(attachment)
+
+
+class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
+    def get_fields(self):
+        fields = ModelSerializer.get_fields(self)
+        fields.update(self.build_natural_key_fields())
+        return fields
+
+    def get_wq_field_info(self, name, field):
+        if isinstance(field, NaturalKeySerializer):
+            children = [
+                self.get_wq_field_info(name, f)
+                for name, f in field.get_fields().items()
+            ]
+            if len(children) == 1:
+                info = children[0]
+                info['name'] = name + '[%s]' % info['name']
+
+                fk = self.get_wq_foreignkey_info(field.Meta.model)
+                if fk:
+                    info['wq:ForeignKey'] = fk
+            else:
+                info = {
+                    'name': name,
+                    'type': 'group',
+                    'bind': {'required': True},
+                    'children': children
+                }
+            info['label'] = field.label or name.replace('_', ' ').title()
+            return info
+        else:
+            return super(NaturalKeyModelSerializer, self).get_wq_field_info(
+                name, field
+            )
+
+
+class NaturalKeyAttachedModelSerializer(NaturalKeyModelSerializer,
+                                        AttachedModelSerializer):
+
+    def create(self, validated_data):
+        self.convert_natural_keys(
+            validated_data
+        )
+        return AttachedModelSerializer.create(
+            self, validated_data
+        )
