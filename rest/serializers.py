@@ -129,9 +129,9 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
         if isinstance(field, serializers.ChoiceField):
             info['choices'] = [{
-                'name': name,
+                'name': cname,
                 'label': label,
-            } for name, label in field.choices.items()]
+            } for cname, label in field.choices.items()]
         elif getattr(field, 'max_length', None):
             info['wq:length'] = field.max_length
 
