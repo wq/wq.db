@@ -168,8 +168,8 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
     def get_wq_field_info(self, name, field):
         if isinstance(field, NaturalKeySerializer):
             children = [
-                self.get_wq_field_info(name, f)
-                for name, f in field.get_fields().items()
+                self.get_wq_field_info(n, f)
+                for n, f in field.get_fields().items()
             ]
             if len(children) == 1:
                 info = children[0]

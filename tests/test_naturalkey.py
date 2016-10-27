@@ -12,7 +12,6 @@ class NaturalKeyTestCase(APITestCase):
 
     def test_naturalkey_config(self):
         response = self.client.get('/config.json')
-        self.maxDiff = None
         self.assertEqual([
             {
                 'name': 'note',
