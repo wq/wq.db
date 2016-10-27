@@ -189,7 +189,7 @@ class ModelRouter(DefaultRouter):
             if depth is None:
                 depth = 0
         else:
-            model = type(obj)
+            model = obj.__class__
             if depth is None:
                 depth = 1
         serializer = self.get_serializer_for_model(model, depth)
