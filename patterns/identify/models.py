@@ -36,25 +36,6 @@ def find_unique_slug(name, queryset):
 
 
 class IdentifierManager(models.Manager):
-    _cache = {}
-
-    @classmethod
-    def update_cache(cls, ident):
-        key = '%s-%s' % (ident.content_type_id, ident.object_id)
-        cls._cache[key] = ident
-
-    def get_for_object(self, obj):
-        ct = ContentType.objects.get_for_model(obj)
-        key = '%s-%s' % (ct.pk, obj.pk)
-        cache = type(self)._cache
-        if key in cache:
-            return cache[key]
-        ids = self.filter(content_type=ct, object_id=obj.pk, is_primary=True)
-        if ids.count() > 0:
-            cache[key] = ids[0]
-            return cache[key]
-        return None
-
     def filter_by_identifier(self, identifier):
         return self.filter(
             models.Q(slug=identifier) | models.Q(name=identifier)
@@ -127,7 +108,6 @@ class Identifier(models.Model):
         super(Identifier, self).save(*args, **kwargs)
 
         if self.is_primary:
-            IdentifierManager.update_cache(self)
             obj = self.content_object
             if self.name != obj.name or self.slug != obj.slug:
                 obj.name = self.name
@@ -207,7 +187,7 @@ class IdentifiedModel(NaturalKeyModel, LabelModel):
 
     @property
     def primary_identifier(self):
-        return Identifier.objects.get_for_object(self)
+        return self.identifiers.filter(is_primary=True).first()
 
     @classmethod
     def get_natural_key_def(cls):

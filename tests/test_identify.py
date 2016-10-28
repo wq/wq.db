@@ -67,12 +67,16 @@ class IdentifyTestCase(APITestCase):
         self.assertEqual(idents[2].authority, auth2)
 
     def test_identify_update(self):
+        """
+        Updating identifier slug should update object and vice-versa
+        """
         instance = IdentifiedModel.objects.create(name="Test 4")
-        self.assertIsNotNone(instance.primary_identifier)
-        self.assertEqual(instance.primary_identifier.slug, 'test-4')
-        instance.primary_identifier.slug = 'test-4-update'
-        instance.primary_identifier.name = 'Test 4 Update'
-        instance.primary_identifier.save()
+        ident = instance.primary_identifier
+        self.assertIsNotNone(ident)
+        self.assertEqual(ident.slug, 'test-4')
+        ident.slug = 'test-4-update'
+        ident.name = 'Test 4 Update'
+        ident.save()
         instance = IdentifiedModel.objects.get(pk=instance.pk)
         self.assertEqual(instance.slug, 'test-4-update')
         self.assertEqual(instance.name, 'Test 4 Update')
@@ -81,6 +85,21 @@ class IdentifyTestCase(APITestCase):
         instance.save()
         self.assertEqual(instance.primary_identifier.slug, 'test-4-update-2')
         self.assertEqual(instance.primary_identifier.name, 'Test 4 Update 2')
+
+    def test_identify_autocreate(self):
+        """
+        Deleting identifier and re-saving should create a new one.
+        """
+        instance = IdentifiedModel.objects.create(
+            name="Test 1",
+        )
+
+        instance.identifiers.all().delete()
+        self.assertIsNone(instance.primary_identifier)
+        instance.save()
+        self.assertIsNotNone(instance.primary_identifier)
+
+        self.assertEqual(instance.primary_identifier.slug, "test-1")
 
 
 class IdentifyRestTestCase(APITestCase):
