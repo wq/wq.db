@@ -2,39 +2,29 @@ from django.db import models
 from django.contrib.gis.db.models import GeometryField, GeoManager
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-import pystache
+from wq.db.patterns.models import LabelModel
 
 
-class LabeledModel(models.Model):
-    wq_label_template = ""
-
-    def __str__(self):
-        return pystache.render(self.wq_label_template, self)
-
-    class Meta:
-        abstract = True
-
-
-class RootModel(LabeledModel):
+class RootModel(LabelModel):
     slug = models.SlugField()
     description = models.TextField()
 
     wq_label_template = "{{slug}}"
 
 
-class OneToOneModel(LabeledModel):
+class OneToOneModel(LabelModel):
     root = models.OneToOneField(RootModel)
 
     wq_label_template = "onetoonemodel for {{root}}"
 
 
-class ForeignKeyModel(LabeledModel):
+class ForeignKeyModel(LabelModel):
     root = models.ForeignKey(RootModel)
 
     wq_label_template = "foreignkeymodel for {{root}}"
 
 
-class ExtraModel(LabeledModel):
+class ExtraModel(LabelModel):
     root = models.ForeignKey(RootModel, related_name="extramodels")
     alt_root = models.ForeignKey(
         RootModel,
@@ -50,50 +40,38 @@ class UserManagedModel(models.Model):
     user = models.ForeignKey("auth.User")
 
 
-class Parent(LabeledModel):
+class Parent(LabelModel):
     name = models.CharField(max_length=10)
 
-    wq_label_template = "{{name}}"
 
-
-class Child(LabeledModel):
+class Child(LabelModel):
     name = models.CharField(max_length=10)
     parent = models.ForeignKey(Parent, related_name="children")
 
-    wq_label_template = "{{name}}"
 
-
-class ItemType(LabeledModel):
+class ItemType(LabelModel):
     name = models.CharField(max_length=10)
     active = models.BooleanField(default=True)
 
-    wq_label_template = "{{name}}"
 
-
-class Item(LabeledModel):
+class Item(LabelModel):
     name = models.CharField(max_length=10)
     type = models.ForeignKey(ItemType)
 
-    wq_label_template = "{{name}}"
 
-
-class GeometryModel(LabeledModel):
+class GeometryModel(LabelModel):
     name = models.CharField(max_length=255)
     geometry = GeometryField(srid=settings.SRID)
 
     objects = GeoManager()
 
-    wq_label_template = "{{name}}"
 
-
-class SlugModel(LabeledModel):
+class SlugModel(LabelModel):
     code = models.SlugField()
     name = models.CharField(max_length=255)
 
-    wq_label_template = "{{name}}"
 
-
-class SlugRefParent(LabeledModel):
+class SlugRefParent(LabelModel):
     ref = models.ForeignKey(SlugModel)
     name = models.CharField(max_length=255)
 
@@ -114,7 +92,7 @@ class DateModel(models.Model):
         return "%s on %s" % (self.name, self.date.date())
 
 
-class ChoiceModel(LabeledModel):
+class ChoiceModel(LabelModel):
     CHOICE_CHOICES = [
         ('one', 'Choice One'),
         ('two', 'Choice Two'),

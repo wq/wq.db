@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
+from ..base.models import LabelModel
 from django.utils.translation import get_language_from_request
 from django.conf import settings
 
@@ -12,7 +13,7 @@ swapper.set_app_prefix('mark', 'WQ')
 INSTALLED = ('wq.db.patterns.mark' in settings.INSTALLED_APPS)
 
 
-class BaseMarkdownType(models.Model):
+class BaseMarkdownType(LabelModel):
     name = models.CharField(max_length=100)
 
     @classmethod
@@ -34,9 +35,6 @@ class BaseMarkdownType(models.Model):
         markdowns = cls.objects.all()
         if len(markdowns) > 0:
             return markdowns[0]
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         abstract = True

@@ -3,6 +3,9 @@ from .annotate.models import (
     AnnotationType,
     Annotation,
 )
+from .base.models import (
+    LabelModel,
+)
 from .file.models import (
     FiledModel,
     FileType,
@@ -36,6 +39,8 @@ __all__ = (
     'AnnotatedModel',
     'AnnotationType',
     'Annotation',
+
+    'LabelModel',
 
     'FiledModel',
     'FileType',

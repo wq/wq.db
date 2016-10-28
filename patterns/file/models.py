@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
+from ..base.models import LabelModel
 from django import forms
 
 
@@ -33,12 +34,11 @@ class FileField(models.ImageField):
         return super(FileField, self).generate_filename(instance, filename)
 
 
-class FileType(models.Model):
+class FileType(LabelModel):
     name = models.CharField(max_length=255)
     mimetype = models.CharField(max_length=255)
 
-    def __str__(self):
-        return '%s (%s)' % (self.name, self.mimetype)
+    wq_label_template = "{{name}} ({{mimetype}})"
 
     class Meta:
         db_table = 'wq_filetype'

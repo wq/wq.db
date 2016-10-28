@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from natural_keys.models import NaturalKeyModelManager, NaturalKeyModel
+from ..base.models import LabelModel
 from django.template.defaultfilters import slugify
 from django.conf import settings
 INSTALLED = ('wq.db.patterns.identify' in settings.INSTALLED_APPS)
@@ -177,7 +178,7 @@ class IdentifiedModelManager(NaturalKeyModelManager):
         return self.create(name=identifier)
 
 
-class IdentifiedModel(NaturalKeyModel):
+class IdentifiedModel(NaturalKeyModel, LabelModel):
     name = models.CharField(
         max_length=255, blank=True, db_index=True
     )
@@ -208,9 +209,6 @@ class IdentifiedModel(NaturalKeyModel):
     def primary_identifier(self):
         return Identifier.objects.get_for_object(self)
 
-    def __str__(self):
-        return self.name
-
     @classmethod
     def get_natural_key_def(cls):
         if cls._meta.unique_together:
@@ -225,13 +223,10 @@ class IdentifiedModel(NaturalKeyModel):
         abstract = True
 
 
-class Authority(models.Model):
+class Authority(LabelModel):
     name = models.CharField(max_length=255)
     homepage = models.URLField(null=True, blank=True)
     object_url = models.URLField(null=True, blank=True)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         verbose_name_plural = 'authorities'

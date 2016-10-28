@@ -4,17 +4,15 @@ from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
 from natural_keys import NaturalKeyModel
+from ..base.models import LabelModel
 from collections import OrderedDict
 
 from django.conf import settings
 INSTALLED = ('wq.db.patterns.annotate' in settings.INSTALLED_APPS)
 
 
-class AnnotationType(NaturalKeyModel):
+class AnnotationType(NaturalKeyModel, LabelModel):
     name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         unique_together = [['name']]

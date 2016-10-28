@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
 )
+from ..base.models import LabelModel
 from django.db.models.query_utils import PathInfo
 from django.conf import settings
 
@@ -251,7 +252,7 @@ class RelationshipTypeManager(models.Manager):
         return cache[key]
 
 
-class RelationshipType(models.Model):
+class RelationshipType(LabelModel):
     name = models.CharField(max_length=255)
     inverse_name = models.CharField(max_length=255, null=True, blank=True)
 
@@ -269,9 +270,6 @@ class RelationshipType(models.Model):
     @property
     def right(self):
         return self.to_type
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         db_table = 'wq_relationshiptype'
@@ -297,8 +295,7 @@ class InverseRelationshipType(RelationshipType):
     def right(self):
         return self.from_type
 
-    def __str__(self):
-        return self.inverse_name
+    wq_label_template = "{{inverse_name}}"
 
     class Meta:
         proxy = INSTALLED
