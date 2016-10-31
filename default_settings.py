@@ -13,6 +13,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django_mustache.Mustache',
         'DIRS': tuple(),
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': context_processors,
         }

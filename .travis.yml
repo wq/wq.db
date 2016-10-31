@@ -8,6 +8,7 @@ env:
   global:
    - DRF="https://github.com/tomchristie/django-rest-framework/archive/master.zip"
    - NKEY="https://github.com/wq/django-natural-keys/archive/master.zip"
+   - MUSTACHE="https://github.com/wq/django-mustache/archive/master.zip"
   matrix:
    - DJANGO="django==1.8.15"
    - DJANGO="django==1.9.10"
@@ -18,7 +19,7 @@ before_script:
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
  - pip install $DJANGO $DRF
- - pip install $NKEY
+ - pip install $NKEY $MUSTACHE
  - pip install flake8
 script:
  - ./runtests.sh
