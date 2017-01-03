@@ -257,6 +257,7 @@ class ModelSerializer(BaseModelSerializer):
             if lookup and lookup != 'id':
                 fields['id'] = serializers.ReadOnlyField(source=lookup)
 
+        id_fields = {}
         info = model_meta.get_field_info(self.Meta.model)
 
         # In list views, remove [fieldname] as an attribute in favor of
@@ -275,7 +276,7 @@ class ModelSerializer(BaseModelSerializer):
                     name, field
                 )
                 id_field_kwargs['source'] = name
-                fields[name + '_id'] = id_field(**id_field_kwargs)
+                id_fields[name] = id_field(**id_field_kwargs)
 
             if name in fields:
                 # Update/remove DRF default foreign key field (w/o _id)
@@ -287,7 +288,26 @@ class ModelSerializer(BaseModelSerializer):
                     # Otherwise we don't need this field
                     del fields[name]
 
-        return fields
+        if not id_fields:
+            return fields
+
+        # Ensure _id fields show up in the same order they appear on model
+        updated_fields = OrderedDict()
+        for field in self.Meta.model._meta.fields:
+            name = field.name
+            if name in fields:
+                updated_fields[name] = fields.pop(name)
+            if name in id_fields:
+                updated_fields[name + '_id'] = id_fields.pop(name)
+
+        if fields:
+            updated_fields.update(fields)
+
+        if id_fields:
+            for name in id_fields:
+                updated_fields[name + '_id'] = id_fields[name]
+
+        return updated_fields
 
     def get_label_fields(self, default_fields):
         if not self.add_label_fields:

@@ -67,15 +67,15 @@ class AnnotateRestTestCase(APITestCase):
                 'type': 'repeat',
                 'bind': {'required': True},
                 'children': [{
-                    'name': 'value',
-                    'label': 'Value',
-                    'type': 'string',
-                }, {
                     'name': 'type',
                     'label': 'Type',
                     'type': 'string',
                     'wq:ForeignKey': 'annotationtype',
                     'bind': {'required': True},
+                }, {
+                    'name': 'value',
+                    'label': 'Value',
+                    'type': 'string',
                 }],
                 'initial': {
                     'type_field': 'type',

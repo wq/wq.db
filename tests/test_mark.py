@@ -40,6 +40,12 @@ class MarkTestCase(APITestCase):
                 'type': 'repeat',
                 'bind': {'required': True},
                 'children': [{
+                    'name': 'type',
+                    'label': 'Type',
+                    'type': 'string',
+                    'wq:ForeignKey': 'markdowntype',
+                    'bind': {'required': True},
+                }, {
                     'name': 'summary',
                     'label': 'Summary',
                     'type': 'string',
@@ -48,12 +54,6 @@ class MarkTestCase(APITestCase):
                     'name': 'markdown',
                     'label': 'Markdown',
                     'type': 'string',
-                }, {
-                    'name': 'type',
-                    'label': 'Type',
-                    'type': 'string',
-                    'wq:ForeignKey': 'markdowntype',
-                    'bind': {'required': True},
                 }],
                 'initial': {'type_field': 'type', 'filter': {}},
             }

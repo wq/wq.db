@@ -187,6 +187,11 @@ class RestTestCase(APITestCase):
         field = self.get_field(conf, 'image')
         self.assertEqual(field['type'], 'image')
 
+    def test_rest_config_field_order(self):
+        conf = self.get_config('slugrefparent')
+        self.assertEqual(conf['form'][0]['name'], 'ref')
+        self.assertEqual(conf['form'][1]['name'], 'name')
+
     # Test url="" use case
     def test_rest_list_at_root(self):
         response = self.client.get("/.json")
