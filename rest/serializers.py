@@ -117,7 +117,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 config['label_template'] = label_template
         return config
 
-    def get_wq_field_info(self, name, field):
+    def get_wq_field_info(self, name, field, model=None):
         info = {
             'name': name,
             'label': field.label or name.replace('_', ' ').title(),
@@ -158,17 +158,27 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
         if 'type' not in info:
             info['type'] = 'string'
+
             for field_type, xlsform_type in self.xlsform_types.items():
                 if isinstance(field, field_type):
                     info['type'] = xlsform_type
                     break
+
             if info['type'] == 'geoshape':
-                source = self.Meta.model._meta.get_field(name)
-                geom_type = getattr(source, 'geom_type', None)
-                if geom_type == 'POINT':
-                    info['type'] = 'geopoint'
-                elif geom_type == 'LINESTRING':
-                    info['type'] = 'geotrace'
+                model = model or self.Meta.model
+                source = model._meta.get_field(name)
+                if info['type'] == 'geoshape':
+                    geom_type = getattr(source, 'geom_type', None)
+                    if geom_type == 'POINT':
+                        info['type'] = 'geopoint'
+                    elif geom_type == 'LINESTRING':
+                        info['type'] = 'geotrace'
+
+            if info['type'] == 'string':
+                model = model or self.Meta.model
+                source = model._meta.get_field(name)
+                if source.get_internal_type() == "TextField":
+                    info['type'] = "text"
 
         return info
 

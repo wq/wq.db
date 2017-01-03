@@ -75,7 +75,7 @@ class AnnotateRestTestCase(APITestCase):
                 }, {
                     'name': 'value',
                     'label': 'Value',
-                    'type': 'string',
+                    'type': 'text',
                 }],
                 'initial': {
                     'type_field': 'type',

@@ -173,19 +173,27 @@ class RestTestCase(APITestCase):
     def test_rest_config_subtype(self):
         conf = self.get_config('geometrymodel')
         field = self.get_field(conf, 'geometry')
-        self.assertEqual(field['type'], 'geoshape')
+        self.assertEqual('geoshape', field['type'])
 
         conf = self.get_config('pointmodel')
         field = self.get_field(conf, 'geometry')
-        self.assertEqual(field['type'], 'geopoint')
+        self.assertEqual('geopoint', field['type'])
 
         conf = self.get_config('filemodel')
         field = self.get_field(conf, 'file')
-        self.assertEqual(field['type'], 'binary')
+        self.assertEqual('binary', field['type'])
 
         conf = self.get_config('imagemodel')
         field = self.get_field(conf, 'image')
-        self.assertEqual(field['type'], 'image')
+        self.assertEqual('image', field['type'])
+
+        conf = self.get_config('item')
+        field = self.get_field(conf, 'name')
+        self.assertEqual('string', field['type'])
+
+        conf = self.get_config('rootmodel')
+        field = self.get_field(conf, 'description')
+        self.assertEqual('text', field['type'])
 
     def test_rest_config_field_order(self):
         conf = self.get_config('slugrefparent')

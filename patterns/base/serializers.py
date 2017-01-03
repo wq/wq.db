@@ -165,10 +165,10 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
         fields.update(self.build_natural_key_fields())
         return fields
 
-    def get_wq_field_info(self, name, field):
+    def get_wq_field_info(self, name, field, model=None):
         if isinstance(field, NaturalKeySerializer):
             children = [
-                self.get_wq_field_info(n, f)
+                self.get_wq_field_info(n, f, model=field.Meta.model)
                 for n, f in field.get_fields().items()
             ]
             if len(children) == 1:
@@ -189,7 +189,7 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
             return info
         else:
             return super(NaturalKeyModelSerializer, self).get_wq_field_info(
-                name, field
+                name, field, model
             )
 
 

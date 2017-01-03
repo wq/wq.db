@@ -16,7 +16,7 @@ class NaturalKeyTestCase(APITestCase):
             {
                 'name': 'note',
                 'label': 'Note',
-                'type': 'string',
+                'type': 'text',
                 'bind': {'required': True},
             },
             {

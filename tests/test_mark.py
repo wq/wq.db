@@ -53,7 +53,7 @@ class MarkTestCase(APITestCase):
                 }, {
                     'name': 'markdown',
                     'label': 'Markdown',
-                    'type': 'string',
+                    'type': 'text',
                 }],
                 'initial': {'type_field': 'type', 'filter': {}},
             }
