@@ -1,6 +1,7 @@
 from wq.db import rest
 from .models import (
-    RootModel, UserManagedModel, Parent, Child, ItemType, Item, GeometryModel,
+    RootModel, UserManagedModel, Parent, Child, ItemType, Item,
+    GeometryModel, PointModel, FileModel, ImageModel,
     SlugModel, SlugRefParent, SlugRefChild,
     DateModel, ChoiceModel, TranslatedModel,
 )
@@ -42,6 +43,18 @@ rest.router.register_model(
 )
 rest.router.register_model(
     GeometryModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    PointModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    FileModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    ImageModel,
     fields="__all__",
 )
 rest.router.register_model(

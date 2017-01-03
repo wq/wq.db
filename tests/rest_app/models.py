@@ -1,5 +1,4 @@
-from django.db import models
-from django.contrib.gis.db.models import GeometryField, GeoManager
+from django.contrib.gis.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from wq.db.patterns.models import LabelModel
@@ -61,9 +60,26 @@ class Item(LabelModel):
 
 class GeometryModel(LabelModel):
     name = models.CharField(max_length=255)
-    geometry = GeometryField(srid=settings.SRID)
+    geometry = models.GeometryField(srid=settings.SRID)
 
-    objects = GeoManager()
+    objects = models.GeoManager()
+
+
+class PointModel(LabelModel):
+    name = models.CharField(max_length=255)
+    geometry = models.PointField(srid=settings.SRID)
+
+    objects = models.GeoManager()
+
+
+class FileModel(LabelModel):
+    name = models.CharField(max_length=255)
+    file = models.FileField(upload_to='files')
+
+
+class ImageModel(LabelModel):
+    name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='files')
 
 
 class SlugModel(LabelModel):

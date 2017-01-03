@@ -170,6 +170,23 @@ class RestTestCase(APITestCase):
             pconf['label_template'],
         )
 
+    def test_rest_config_subtype(self):
+        conf = self.get_config('geometrymodel')
+        field = self.get_field(conf, 'geometry')
+        self.assertEqual(field['type'], 'geoshape')
+
+        conf = self.get_config('pointmodel')
+        field = self.get_field(conf, 'geometry')
+        self.assertEqual(field['type'], 'geopoint')
+
+        conf = self.get_config('filemodel')
+        field = self.get_field(conf, 'file')
+        self.assertEqual(field['type'], 'binary')
+
+        conf = self.get_config('imagemodel')
+        field = self.get_field(conf, 'image')
+        self.assertEqual(field['type'], 'image')
+
     # Test url="" use case
     def test_rest_list_at_root(self):
         response = self.client.get("/.json")

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.gis.db import models as model_fields
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
+from collections import OrderedDict
 
 from django.conf import settings
 
@@ -61,17 +62,18 @@ class LocalDateTimeField(serializers.ReadOnlyField):
 
 
 class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
-    xlsform_types = {
-        serializers.FileField: 'binary',
-        serializers.DateField: 'date',
-        serializers.DateTimeField: 'dateTime',
-        serializers.FloatField: 'decimal',
-        GeometryField: 'geoshape',
-        serializers.IntegerField: 'int',
-        serializers.CharField: 'string',
-        serializers.ChoiceField: 'select1',
-        serializers.TimeField: 'time',
-    }
+    xlsform_types = OrderedDict((
+        (serializers.ImageField, 'image'),
+        (serializers.FileField, 'binary'),
+        (serializers.DateField, 'date'),
+        (serializers.DateTimeField, 'dateTime'),
+        (serializers.FloatField, 'decimal'),
+        (GeometryField, 'geoshape'),
+        (serializers.IntegerField, 'int'),
+        (serializers.CharField, 'string'),
+        (serializers.ChoiceField, 'select1'),
+        (serializers.TimeField, 'time'),
+    ))
 
     def get_fields_for_config(self):
         fields = self.get_fields()
@@ -160,6 +162,14 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 if isinstance(field, field_type):
                     info['type'] = xlsform_type
                     break
+            if info['type'] == 'geoshape':
+                source = self.Meta.model._meta.get_field(name)
+                geom_type = getattr(source, 'geom_type', None)
+                if geom_type == 'POINT':
+                    info['type'] = 'geopoint'
+                elif geom_type == 'LINESTRING':
+                    info['type'] = 'geotrace'
+
         return info
 
     def get_wq_foreignkey_info(self, model):

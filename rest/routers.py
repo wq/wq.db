@@ -534,5 +534,6 @@ class ModelRouter(DefaultRouter):
                 vfile.close()
         return self._version
 
+
 # Default router instance, c.f. django.contrib.admin.sites.site
 router = ModelRouter()
