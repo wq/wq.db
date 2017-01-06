@@ -177,8 +177,10 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             if info['type'] == 'string':
                 model = model or self.Meta.model
                 source = model._meta.get_field(name)
-                if source.get_internal_type() == "TextField":
-                    info['type'] = "text"
+                # hasattr check not needed in Django 1.9+
+                if hasattr(source, 'get_internal_type'):
+                    if source.get_internal_type() == "TextField":
+                        info['type'] = "text"
 
         return info
 
