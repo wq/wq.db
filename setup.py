@@ -133,6 +133,6 @@ setup(
         'psycopg2',
         'wq.io',
         'Pillow',
-        'python-social-auth',
+        'python-social-auth<0.3.0',
     ],
 )
