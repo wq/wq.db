@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.gis.db import models as model_fields
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
+from django.core.exceptions import FieldDoesNotExist
 from collections import OrderedDict
 
 from django.conf import settings
@@ -176,11 +177,15 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
             if info['type'] == 'string':
                 model = model or self.Meta.model
-                source = model._meta.get_field(name)
-                # hasattr check not needed in Django 1.9+
-                if hasattr(source, 'get_internal_type'):
-                    if source.get_internal_type() == "TextField":
-                        info['type'] = "text"
+                try:
+                    source = model._meta.get_field(name)
+                except FieldDoesNotExist:
+                    pass
+                else:
+                    # hasattr check not needed in Django 1.9+
+                    if hasattr(source, 'get_internal_type'):
+                        if source.get_internal_type() == "TextField":
+                            info['type'] = "text"
 
         return info
 
