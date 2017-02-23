@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from django.conf import settings
 
-from .models import ContentType, get_ct, get_object_id, get_by_identifier
+from .models import ContentType, get_ct
 
 from rest_framework.utils import model_meta
 from . import compat as html
@@ -37,18 +37,17 @@ class GeometryField(serializers.Field):
         return geom
 
 
-class LabelRelatedField(serializers.RelatedField):
-    def to_representation(self, obj):
-        return str(obj)
+class LookupRelatedField(serializers.SlugRelatedField):
+    def __init__(self, router, model, **kwargs):
+        self.router = router
+        self.model = model
+        super(serializers.SlugRelatedField, self).__init__(**kwargs)
 
-
-# TODO: investigate use of SlugRelatedField and/or PrimaryKeyRelatedField
-class IDRelatedField(serializers.RelatedField):
-    def to_representation(self, obj):
-        return get_object_id(obj)
-
-    def to_internal_value(self, data):
-        return get_by_identifier(self.queryset, data)
+    @property
+    def slug_field(self):
+        if not self.router:
+            return 'pk'
+        return self.router.get_lookup_for_model(self.model)
 
 
 class ContentTypeField(serializers.SlugRelatedField):
@@ -69,7 +68,6 @@ class LocalDateTimeField(serializers.ReadOnlyField):
 
 
 class ModelSerializer(serializers.ModelSerializer):
-    serializer_related_field = IDRelatedField
     add_label_fields = True
 
     def __init__(self, *args, **kwargs):
@@ -186,11 +184,12 @@ class ModelSerializer(serializers.ModelSerializer):
             )
             label_field_kwargs = {
                 'source': name,
-                'read_only': True,
             }
             if field_kwargs.get('many', None):
                 label_field_kwargs['many'] = field_kwargs['many']
-            fields[name + '_label'] = LabelRelatedField(**label_field_kwargs)
+            fields[name + '_label'] = serializers.StringRelatedField(
+                **label_field_kwargs
+            )
 
         return fields
 
@@ -207,6 +206,16 @@ class ModelSerializer(serializers.ModelSerializer):
             class Meta(getattr(cls, 'Meta', object)):
                 depth = serializer_depth
         return Serializer
+
+    def build_relational_field(self, field_name, relation_info):
+        field_class, field_kwargs = super(
+            ModelSerializer, self
+        ).build_relational_field(field_name, relation_info)
+        if field_class == self.serializer_related_field:
+            field_class = LookupRelatedField
+            field_kwargs['router'] = self.router
+            field_kwargs['model'] = relation_info.related_model
+        return field_class, field_kwargs
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         field_class, field_kwargs = super(

@@ -267,3 +267,30 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
+
+    def test_rest_custom_lookup_fk(self):
+        RootModel.objects.create(
+            slug='test1',
+            description='Test #1',
+        )
+        response = self.client.post('/foreignkeymodels.json', {
+            'root_id': 'test1',
+        })
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        rid = response.data.get('id')
+        self.assertEqual(response.data, {
+            'id': rid,
+            'label': 'foreignkeymodel for test1',
+            'root_id': 'test1',
+            'root_label': 'test1',
+        })
+
+        response = self.client.post('/foreignkeymodels.json', {
+            'root_id': 'test_invalid',
+        })
+        self.assertTrue(
+            status.is_client_error(response.status_code), response.data
+        )
+        self.assertEqual(response.data, {
+            'root_id': ['Object with slug=test_invalid does not exist.']
+        })
