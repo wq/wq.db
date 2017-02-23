@@ -414,6 +414,36 @@ class RestPostTestCase(APITestCase):
             response.status_code, status.HTTP_201_CREATED, response.data
         )
 
+    def test_rest_custom_lookup_fk(self):
+        SlugModel.objects.create(
+            code='test1',
+            name='Test #1',
+        )
+        response = self.client.post('/slugrefparents.json', {
+            'ref_id': 'test1',
+            'name': "Test FK",
+        })
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        rid = response.data.get('id')
+        self.assertEqual(response.data, {
+            'id': rid,
+            'label': 'Test FK (Test #1)',
+            'name': 'Test FK',
+            'ref_id': 'test1',
+            'ref_label': 'Test #1',
+        })
+
+        response = self.client.post('/slugrefparents.json', {
+            'ref_id': 'test_invalid',
+            'name': "Test FK",
+        })
+        self.assertTrue(
+            status.is_client_error(response.status_code), response.data
+        )
+        self.assertEqual(response.data, {
+            'ref_id': ['Object with code=test_invalid does not exist.']
+        })
+
     def test_rest_head(self):
         response = self.client.head('/')
         self.assertEqual(
