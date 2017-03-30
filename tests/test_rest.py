@@ -111,7 +111,7 @@ class RestTestCase(APITestCase):
                 'name': 'choice',
                 'label': 'Choice',
                 'hint': 'Pick One',
-                'type': 'select1',
+                'type': 'select one',
                 'bind': {'required': True},
                 'choices': [{
                     'name': 'one',

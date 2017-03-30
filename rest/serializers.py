@@ -69,7 +69,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         (GeometryField, 'geoshape'),
         (serializers.IntegerField, 'int'),
         (serializers.CharField, 'string'),
-        (serializers.ChoiceField, 'select1'),
+        (serializers.ChoiceField, 'select one'),
         (serializers.TimeField, 'time'),
     ))
 
