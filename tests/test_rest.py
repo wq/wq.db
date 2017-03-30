@@ -284,6 +284,82 @@ class RestTestCase(APITestCase):
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
 
+    def test_rest_cache_all(self):
+        for num in range(2, 101):
+            ItemType.objects.create(
+                pk=num,
+                name='Type #%s' % num
+            )
+
+        tests = [
+             (100, '/itemtypes.json'),
+             (50, '/itemtypes/'),
+             (50, '/itemtypes.json?page=1'),
+        ]
+        for expect_items, url in tests:
+            response = self.client.get(url)
+            self.assertTrue(
+                status.is_success(response.status_code), response.data
+            )
+            self.assertEqual(
+                len(response.data['list']), expect_items,
+                "%s should return %s items" % (url, expect_items)
+            )
+            self.assertEqual(response.data['pages'], 2)
+            self.assertEqual(response.data['per_page'], 50)
+            self.assertEqual(response.data['count'], 100)
+
+    def test_rest_cache_filter(self):
+        other_user = User.objects.create(username='otheruser')
+        UserManagedModel.objects.create(id=2, user=other_user)
+        UserManagedModel.objects.create(id=3, user=other_user)
+
+        for auth in False, True:
+            if auth:
+                self.client.force_authenticate(self.user)
+
+            tests = [
+                (3, 1 if auth else 0, '/usermanagedmodels.json'),
+                (3, 3, '/usermanagedmodels/'),
+                (3, 3, '/usermanagedmodels.json?page=1'),
+                (1, 1, '/usermanagedmodels.json?user_id=%s' % self.user.pk),
+                (2, 2, '/usermanagedmodels.json?user_id=%s' % other_user.pk),
+            ]
+            for expect_count, expect_items, url in tests:
+                response = self.client.get(url)
+                self.assertTrue(
+                    status.is_success(response.status_code), response.data
+                )
+                self.assertEqual(
+                    len(response.data['list']), expect_items,
+                    "%s should return %s items for %s" % (
+                        url, expect_items,
+                        "authed user" if auth else "anonymous user"
+                    )
+                )
+                self.assertEqual(response.data['pages'], 1)
+                self.assertEqual(response.data['per_page'], 50)
+                self.assertEqual(response.data['count'], expect_count)
+
+    def test_rest_cache_none(self):
+        tests = [
+            (0, '/items.json'),
+            (2, '/items/'),
+            (2, '/items.json?page=1'),
+        ]
+        for expect_items, url in tests:
+            response = self.client.get(url)
+            self.assertTrue(
+                status.is_success(response.status_code), response.data
+            )
+            self.assertEqual(
+                len(response.data['list']), expect_items,
+                "%s should return %s items" % (url, expect_items)
+            )
+            self.assertEqual(response.data['pages'], 1)
+            self.assertEqual(response.data['per_page'], 50)
+            self.assertEqual(response.data['count'], 2)
+
     def test_rest_date_label(self):
         response = self.client.get("/datemodels/1.json")
         self.assertTrue(status.is_success(response.status_code), response.data)
@@ -329,6 +405,31 @@ class RestRouterTestCase(APITestCase):
             Item, name="conflictitem", url="conflictitems", fields="__all__"
         )
         self.assertIn("conflictitem", rest.router.get_config()['pages'])
+
+    def test_rest_old_config(self):
+        from wq.db import rest
+        from tests.conflict_app.models import TestModel
+
+        with self.assertRaises(ImproperlyConfigured):
+            rest.router.register_model(
+                TestModel,
+                partial=True,
+                fields="__all__"
+            )
+
+        with self.assertRaises(ImproperlyConfigured):
+            rest.router.register_model(
+                TestModel,
+                reversed=True,
+                fields="__all__"
+            )
+
+        with self.assertRaises(ImproperlyConfigured):
+            rest.router.register_model(
+                TestModel,
+                max_local_pages=0,
+                fields="__all__"
+            )
 
 
 class RestPostTestCase(APITestCase):

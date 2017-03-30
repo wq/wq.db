@@ -10,6 +10,14 @@ from .serializers import (
     SlugRefChildSerializer,
 )
 
+
+def cache_users_own_data(qs, req):
+    if req.user.is_authenticated():
+        return qs.filter(user=req.user)
+    else:
+        return qs.none()
+
+
 rest.router.register_model(
     RootModel,
     url="",
@@ -20,6 +28,7 @@ rest.router.register_model(
 rest.router.register_model(
     UserManagedModel,
     fields="__all__",
+    cache_filter=cache_users_own_data,
 )
 rest.router.register_model(
     Parent,
@@ -35,11 +44,13 @@ rest.router.register_model(
 rest.router.register_model(
     ItemType,
     fields="__all__",
+    cache="all",
 )
 rest.router.register_model(
     Item,
     serializer=ItemSerializer,
     fields="__all__",
+    cache="none",
 )
 rest.router.register_model(
     GeometryModel,

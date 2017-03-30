@@ -22,6 +22,7 @@ class ModelRouter(DefaultRouter):
     _fields = {}
     _querysets = {}
     _filters = {}
+    _cache_filters = {}
     _viewsets = {}
     _extra_pages = {}
     _config = {}
@@ -50,7 +51,8 @@ class ModelRouter(DefaultRouter):
         super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
 
     def register_model(self, model, viewset=None, serializer=None, fields=None,
-                       queryset=None, filter=None, **kwargs):
+                       queryset=None, filter=None, cache_filter=None,
+                       **kwargs):
         if isinstance(model, string_types) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
@@ -62,6 +64,9 @@ class ModelRouter(DefaultRouter):
             self.register_queryset(model, queryset)
         if filter:
             self.register_filter(model, filter)
+        if cache_filter:
+            self.register_cache_filter(model, cache_filter)
+            kwargs['cache'] = 'filter'
 
         if 'name' not in kwargs:
             kwargs['name'] = model._meta.model_name
@@ -110,16 +115,29 @@ class ModelRouter(DefaultRouter):
     def register_queryset(self, model, queryset):
         self._querysets[model] = queryset
 
-    def register_filter(self, model, queryset):
-        self._filters[model] = queryset
+    def register_filter(self, model, filter):
+        self._filters[model] = filter
+
+    def register_cache_filter(self, model, cache_filter):
+        self._cache_filters[model] = cache_filter
 
     def register_config(self, model, config):
+        for key in ('partial', 'reversed', 'max_local_pages'):
+            if key in config:
+                raise ImproperlyConfigured(
+                    '"%s" is deprecated in favor of "cache"' % key
+                )
         self._config[model] = config
         self._base_config = None
 
     def update_config(self, model, **kwargs):
         if model not in self._config:
             raise RuntimeError("%s must be registered first" % model)
+        for key in ('partial', 'reversed', 'max_local_pages'):
+            if key in kwargs:
+                raise ImproperlyConfigured(
+                    '"%s" is deprecated in favor of "cache"' % key
+                )
         self._config[model].update(kwargs)
         self._base_config = None
 
@@ -222,6 +240,9 @@ class ModelRouter(DefaultRouter):
         if request and model in self._filters:
             qs = self._filters[model](qs, request)
         return qs
+
+    def get_cache_filter_for_model(self, model):
+        return self._cache_filters.get(model, lambda qs, req: qs)
 
     def get_lookup_for_model(self, model_class):
         config = self.get_model_config(model_class) or {}
