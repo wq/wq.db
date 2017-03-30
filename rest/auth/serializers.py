@@ -39,5 +39,5 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         exclude = ('id', 'password', 'user_permissions', 'groups',)
-        readonly_fields = ('last_login', 'date_joined')
+        read_only_fields = ('last_login', 'date_joined')
         list_exclude = ('social_auth',)
