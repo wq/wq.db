@@ -9,6 +9,7 @@ from django.conf import settings
 
 from rest_framework.utils import model_meta
 from html_json_forms.serializers import JSONFormSerializer
+from .model_tools import get_object_id
 
 
 class GeometryField(serializers.Field):
@@ -413,3 +414,106 @@ class ModelSerializer(BaseModelSerializer):
                 relation_info.related_model, nested_depth
             )
         return field_class, field_kwargs
+
+    def add_lookups(self, context):
+        # Mimic _addLookups in wq.app/app.js
+        if not self.router:
+            return
+
+        conf = self.get_wq_config()
+        for field in conf['form']:
+            if 'choices' in field:
+                # CharField choices
+                context[field['name'] + '_choices'] = [{
+                    'name': choice['name'],
+                    'label': choice['label'],
+                    'selected': (
+                        choice['name'] == context.get(field['name'], '')
+                    ),
+                } for choice in field['choices']]
+
+            elif 'wq:ForeignKey' in field:
+                choices = self.get_lookup_choices(field, context)
+                if choices:
+                    context[field['name'] + '_list'] = choices
+
+            elif 'children' in field:
+                rows = context.get(field['name'])
+                if isinstance(rows, list) and len(rows) > 0:
+                    serializer = self.get_fields().get(field['name'])
+                    serializer.child.context.update(
+                        router=self.router,
+                        request=self.context.get('request')
+                    )
+                    if serializer and hasattr(serializer.child, 'add_lookups'):
+                        for row in rows:
+                            serializer.child.add_lookups(row)
+
+    def get_lookup_choices(self, field, context):
+        model_name = field['wq:ForeignKey']
+        model_conf = self.router.get_model_config(field['wq:ForeignKey'])
+        if not model_conf:
+            return
+
+        qs = self.router.get_queryset_for_model(
+            model_name, self.context.get('request')
+        )
+        if field.get('filter', None):
+            qs = qs.filter(**self.compute_filter(
+                field['filter'],
+                model_conf,
+                context
+            ))
+        choices = self.serialize_choices(qs, field)
+        self.set_selected(choices, context.get(field['name'] + '_id', ''))
+        return choices
+
+    def compute_filter(self, filter, model_conf, context):
+        def render(value):
+            import pystache
+            result = pystache.render(value, context)
+            if result.isdigit():
+                result = int(result)
+            return result
+
+        fk_lookups = {}
+        for field in model_conf['form']:
+            if 'wq:ForeignKey' not in field:
+                continue
+            lookup = self.router.get_lookup_for_model(
+                field['wq:ForeignKey']
+            )
+            if lookup and lookup != 'pk':
+                fk_lookups['%s_id' % field['name']] = '%s__%s' % (
+                    field['name'], lookup
+                )
+
+        computed_filter = {}
+        for key, values in filter.items():
+            if not isinstance(values, list):
+                values = [values]
+            values = [
+                render(value) if '{{' in value else value
+                for value in values
+            ]
+
+            if key in fk_lookups:
+                key = fk_lookups[key]
+
+            if len(values) > 1:
+                computed_filter[key + '__in'] = values
+            else:
+                computed_filter[key] = values[0]
+
+        return computed_filter
+
+    def serialize_choices(self, qs, field):
+        return [{
+            'id': get_object_id(obj),
+            'label': str(obj)
+        } for obj in qs]
+
+    def set_selected(self, choices, value):
+        for choice in choices:
+            if choice['id'] == value:
+                choice['selected'] = True

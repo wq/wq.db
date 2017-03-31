@@ -7,9 +7,23 @@ from natural_keys import NaturalKeySerializer, NaturalKeyModelSerializer
 class AttachmentListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         data = super(AttachmentListSerializer, self).to_representation(data)
-        if self.parent:
-            for i, row in enumerate(data):
-                row['@index'] = i
+        if not self.parent:
+            return
+
+        wq_config = self.child.get_wq_config()
+        initial = wq_config.get('initial', None)
+        if initial and not data and self.parent.is_detail:
+            if not self.parent.instance.pk:
+                data = self.default_attachments(initial)
+
+        for i, row in enumerate(data):
+            row['@index'] = i
+        return data
+
+    def default_attachments(self, initial):
+        data = []
+        for i in range(0, int(initial)):
+            data.append({'new_attachment': True})
         return data
 
 
@@ -32,6 +46,33 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
             if empty:
                 value[i] = None
         return value
+
+    def default_attachments(self, initial):
+        if not isinstance(initial, dict):
+            return super(
+                TypedAttachmentListSerializer, self
+            ).add_attachments(initial)
+
+        wq_config = self.child.get_wq_config()
+        type_field = None
+        for field in wq_config['form']:
+            if field['name'] == initial.get('type_field'):
+                type_field = field.copy()
+
+        if not type_field:
+            return []
+
+        if initial.get('filter'):
+            type_field['filter'] = initial['filter']
+        types = self.child.get_lookup_choices(type_field, {})
+
+        data = [{
+           'new_attachment': True,
+           type_field['name'] + '_id': row['id'],
+           type_field['name'] + '_label': row['label'],
+        } for row in types]
+
+        return data
 
 
 class AttachmentSerializer(ModelSerializer):

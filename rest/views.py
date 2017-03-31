@@ -75,7 +75,9 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         Generates a context appropriate for editing a form
         """
         response = self.retrieve(request, *args, **kwargs)
-        self.add_lookups(response.data)
+        obj = self.get_object()
+        serializer = self.get_serializer(obj)
+        serializer.add_lookups(response.data)
         return response
 
     def new(self, request):
@@ -105,7 +107,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         obj = self.model(**init)
         serializer = self.get_serializer(obj)
         data = serializer.data
-        self.add_lookups(data)
+        serializer.add_lookups(data)
         return Response(data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -125,99 +127,6 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             # Normal detail view
             return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
-
-    def add_lookups(self, context):
-        # Mimic _addLookups in wq.app/app.js
-        context['edit'] = True
-
-        if not self.router:
-            return
-
-        ct = get_ct(self.model)
-        conf = ct.get_config()
-
-        for field in conf['form']:
-            if 'choices' in field:
-                # CharField choices
-                context[field['name'] + '_choices'] = [{
-                    'name': choice['name'],
-                    'label': choice['label'],
-                    'selected': (
-                        choice['name'] == context.get(field['name'], '')
-                    ),
-                } for choice in field['choices']]
-
-            elif 'wq:ForeignKey' in field:
-                choices = self.get_lookup_choices(field, context)
-                if choices:
-                    context[field['name'] + '_list'] = choices
-
-    def get_lookup_choices(self, field, context):
-        model_name = field['wq:ForeignKey']
-        model_conf = self.router.get_model_config(field['wq:ForeignKey'])
-        if not model_conf:
-            return
-
-        qs = self.router.get_queryset_for_model(model_name, self.request)
-        if field.get('filter', None):
-            qs = qs.filter(**self.compute_filter(
-                field['filter'],
-                model_conf,
-                context
-            ))
-        choices = self.serialize_choices(qs, field)
-        self.set_selected(choices, context.get(field['name'] + '_id', ''))
-        return choices
-
-    def compute_filter(self, filter, model_conf, context):
-        def render(value):
-            import pystache
-            result = pystache.render(value, context)
-            if result.isdigit():
-                result = int(result)
-            return result
-
-        fk_lookups = {}
-        for field in model_conf['form']:
-            if 'wq:ForeignKey' not in field:
-                continue
-            lookup = self.router.get_lookup_for_model(
-                field['wq:ForeignKey']
-            )
-            if lookup and lookup != 'pk':
-                fk_lookups['%s_id' % field['name']] = '%s__%s' % (
-                    field['name'], lookup
-                )
-
-        computed_filter = {}
-        for key, values in filter.items():
-            if not isinstance(values, list):
-                values = [values]
-            values = [
-                render(value) if '{{' in value else value
-                for value in values
-            ]
-
-            if key in fk_lookups:
-                key = fk_lookups[key]
-
-            if len(values) > 1:
-                computed_filter[key + '__in'] = values
-            else:
-                computed_filter[key] = values[0]
-
-        return computed_filter
-
-    def serialize_choices(self, qs, field):
-        return [{
-            'id': get_object_id(obj),
-            'label': str(obj)
-        } for obj in qs]
-
-    def set_selected(self, choices, value):
-        for choice in choices:
-            if choice['id'] == value:
-                choice['selected'] = True
 
     def list(self, request, *args, **kwargs):
         response = super(ModelViewSet, self).list(
