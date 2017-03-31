@@ -246,7 +246,6 @@ class LocateRestTestCase(APITestCase):
             # NOTE: id/properties on FeatureCollection not part of GeoJSON spec
             'id': pk,
             'properties': {
-                'edit': True,
                 'name': 'Test 1',
                 'label': 'Test 1',
             }
