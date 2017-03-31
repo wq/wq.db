@@ -138,7 +138,10 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         if isinstance(field, serializers.ListSerializer):
             # Nested model with a foreign key to this one
             field.child.context['router'] = self.router
-            child_config = field.child.get_wq_config()
+            if hasattr(field.child, 'get_wq_config'):
+                child_config = field.child.get_wq_config()
+            else:
+                child_config = {'form': []}
             info['type'] = 'repeat'
             info['children'] = child_config['form']
             if 'initial' in child_config:
