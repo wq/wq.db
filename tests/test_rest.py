@@ -515,6 +515,55 @@ class RestPostTestCase(APITestCase):
             response.status_code, status.HTTP_201_CREATED, response.data
         )
 
+    def test_rest_empty_string(self):
+        def check_result(form, expected_output):
+            response = self.client.post("/charfieldmodels.json", form)
+            if not expected_output:
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_400_BAD_REQUEST,
+                    response.data
+                )
+                return
+
+            self.assertEqual(
+                response.status_code, status.HTTP_201_CREATED, response.data
+            )
+            for field, value in expected_output.items():
+                if value is None:
+                    self.assertIsNone(response.data[field])
+                else:
+                    self.assertEqual(response.data[field], value)
+
+        # No fields submitted
+        check_result({}, False)
+
+        # Required field submitted but left blank
+        check_result({'required_field': ''}, False)
+
+        # Required field submitted
+        check_result({
+            'required_field': 'test',
+        }, {
+            'required_field': 'test',
+            'nullable_field': None,
+            'blankable_field': '',
+            'nullableblankable_field': None,
+        })
+
+        # All fields submitted but left blank
+        check_result({
+            'required_field': 'test',
+            'nullable_field': '',
+            'blankable_field': '',
+            'nullableblankable_field': '',
+        }, {
+            'required_field': 'test',
+            'nullable_field': None,
+            'blankable_field': '',
+            'nullableblankable_field': '',
+        })
+
     def test_rest_custom_lookup_fk(self):
         SlugModel.objects.create(
             code='test1',

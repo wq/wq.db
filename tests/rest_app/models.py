@@ -132,3 +132,12 @@ class TranslatedModel(models.Model):
         verbose_name=_('translated model name'),
         max_length=255,
     )
+
+
+class CharFieldModel(models.Model):
+    required_field = models.CharField(max_length=20)
+    nullable_field = models.CharField(null=True, max_length=20)
+    blankable_field = models.CharField(blank=True, max_length=20)
+    nullableblankable_field = models.CharField(
+        null=True, blank=True, max_length=20
+    )

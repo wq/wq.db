@@ -59,6 +59,13 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
+class BlankCharField(serializers.CharField):
+    def run_validation(self, data=serializers.empty):
+        if self.allow_blank and data is None:
+            return ''
+        return super(BlankCharField, self).run_validation(data)
+
+
 class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
     xlsform_types = OrderedDict((
         (serializers.ImageField, 'image'),
@@ -208,12 +215,16 @@ class ModelSerializer(BaseModelSerializer):
     add_label_fields = True
 
     def __init__(self, *args, **kwargs):
+        mapping = self.serializer_field_mapping
+
+        for model_field, serializer_field in list(mapping.items()):
+            if serializer_field == serializers.CharField:
+                mapping[model_field] = BlankCharField
+
         for field in ('Geometry', 'GeometryCollection',
                       'Point', 'LineString', 'Polygon',
                       'MultiPoint', 'MultiLineString', 'MultiPolygon'):
-            self.serializer_field_mapping[
-                getattr(model_fields, field + 'Field')
-            ] = GeometryField
+            mapping[getattr(model_fields, field + 'Field')] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
     @property

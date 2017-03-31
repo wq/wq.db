@@ -4,6 +4,7 @@ from .models import (
     GeometryModel, PointModel, FileModel, ImageModel,
     SlugModel, SlugRefParent, SlugRefChild,
     DateModel, ChoiceModel, TranslatedModel,
+    CharFieldModel,
 )
 from .serializers import (
     RootModelSerializer, ParentSerializer, ItemSerializer,
@@ -93,6 +94,10 @@ rest.router.register_model(
 )
 rest.router.register_model(
     TranslatedModel,
+    fields="__all__",
+)
+rest.router.register_model(
+    CharFieldModel,
     fields="__all__",
 )
 rest.router.set_extra_config(debug=True)
