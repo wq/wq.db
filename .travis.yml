@@ -4,14 +4,15 @@ python:
  - "2.7"
  - "3.4"
  - "3.5"
+ - "3.6"
 env:
   global:
-   - DRF="djangorestframework==3.5.3"
+   - DRF="djangorestframework==3.6.2"
   matrix:
-   - DJANGO="django==1.8.16"
-   - DJANGO="django==1.9.11"
-   - DJANGO="django==1.10.3"
-   - DJANGO="django==1.10.3" LINT=1
+   - DJANGO="django==1.8.18"
+   - DJANGO="django==1.10.7"
+   - DJANGO="django==1.11"
+   - DJANGO="django==1.11" LINT=1
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"

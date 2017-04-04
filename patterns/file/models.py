@@ -13,6 +13,8 @@ INSTALLED = 'wq.db.patterns.file' in settings.INSTALLED_APPS
 
 # Custom FileField handles both images and files
 class FileField(models.ImageField):
+    default_validators = []
+
     # Use base forms.FileField to skip ImageField validation
     def formfield(self, **kwargs):
         kwargs['form_class'] = forms.FileField

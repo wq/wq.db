@@ -13,7 +13,7 @@
 
 [![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
-[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.9%2C%201.10-blue.svg)](https://pypi.python.org/pypi/wq.db)
+[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.10%2C%201.11-blue.svg)](https://pypi.python.org/pypi/wq.db)
 
 ## Getting Started
 
