@@ -18,9 +18,16 @@
 ## Getting Started
 
 ```bash
-pip3 install wq.db
-# Or, if using together with wq.app and/or wq.io
-pip3 install wq
+
+# Recommended: create virtual environment
+# python3 -m venv venv
+# . venv/bin/activate
+
+# Install entire wq suite (recommended)
+pip install wq
+
+# Install only wq.db
+pip install wq.db
 ```
 
 See [the documentation] for more information.
