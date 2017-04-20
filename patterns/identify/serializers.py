@@ -43,8 +43,9 @@ class IdentifiedModelValidator(UniqueTogetherValidator):
 
 
 class IdentifiedModelSerializer(base.AttachedModelSerializer):
-    identifiers = IdentifierSerializer(many=True)
+    name = serializers.CharField()
     slug = serializers.SlugField(required=False)
+    identifiers = IdentifierSerializer(many=True)
 
     def get_unique_together_validators(self):
         return [IdentifiedModelValidator(

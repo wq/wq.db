@@ -20,11 +20,18 @@ class IdentifierFilterBackend(BaseFilterBackend):
         if unresolved:
             options['extra'] = []
             for key, items in unresolved.items():
-                if len(items) > 0:
+                items = [
+                    item for item in items
+                    if self.can_filter(item.content_type.model)
+                ]
+                if len(items) > 1:
                     raise Exception(
                         "Could not resolve %s to a single item!" % key
                     )
-                options['extra'].append(key)
+                elif len(items) == 1:
+                    id_map[key] = items[0]
+                else:
+                    options['extra'].append(key)
 
         if id_map:
             for slug, ident in id_map.items():
@@ -45,9 +52,7 @@ class IdentifierFilterBackend(BaseFilterBackend):
             if name == "extra":
                 continue
             ids = [ident.object_id for ident in idents]
-            fn = getattr(self, 'filter_by_%s' % name, None)
-            if not fn:
-                fn = getattr(self.view, 'filter_by_%s' % name, None)
+            fn = self.get_filter_by(name)
             if fn:
                 queryset = fn(queryset, ids)
             else:
@@ -59,6 +64,15 @@ class IdentifierFilterBackend(BaseFilterBackend):
             queryset = fn(queryset, self.filter_options['extra'])
 
         return queryset
+
+    def get_filter_by(self, name):
+        fn = getattr(self, 'filter_by_%s' % name, None)
+        if not fn:
+            fn = getattr(self.view, 'filter_by_%s' % name, None)
+        return fn
+
+    def can_filter(self, name):
+        return self.get_filter_by(name) is not None
 
     def filter_by_extra(self, queryset, extra):
         if self.ignore_extra:

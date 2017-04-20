@@ -13,7 +13,7 @@ class AttachmentListSerializer(serializers.ListSerializer):
         wq_config = self.child.get_wq_config()
         initial = wq_config.get('initial', None)
         if initial and not data and self.parent.is_detail:
-            if not self.parent.instance.pk:
+            if self.parent.instance and not self.parent.instance.pk:
                 data = self.default_attachments(initial)
 
         for i, row in enumerate(data):
