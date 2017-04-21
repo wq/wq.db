@@ -43,7 +43,7 @@ class IdentifiedModelValidator(UniqueTogetherValidator):
 
 
 class IdentifiedModelSerializer(base.AttachedModelSerializer):
-    name = serializers.CharField()
+    name = serializers.CharField(max_length=255)
     slug = serializers.SlugField(required=False)
     identifiers = IdentifierSerializer(many=True)
 

@@ -123,14 +123,15 @@ class IdentifyRestTestCase(APITestCase):
         self.maxDiff = None
         self.assertEqual([
             {
-                'name': 'slug',
-                'label': 'Slug',
-                'type': 'string',
-            }, {
                 'name': 'name',
                 'label': 'Name',
                 'type': 'string',
                 'wq:length': 255,
+                'bind': {'required': True},
+            }, {
+                'name': 'slug',
+                'label': 'Slug',
+                'type': 'string',
             }, {
                 'name': 'identifiers',
                 'label': 'Identifiers',
