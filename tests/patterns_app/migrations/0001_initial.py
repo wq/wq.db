@@ -74,7 +74,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, db_index=True, max_length=255)),
-                ('slug', models.CharField(blank=True, max_length=255)),
+                ('slug', models.CharField(blank=True, max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, db_index=True, max_length=255)),
-                ('slug', models.CharField(blank=True, max_length=255)),
+                ('slug', models.CharField(blank=True, max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, db_index=True, max_length=255)),
-                ('slug', models.CharField(blank=True, max_length=255)),
+                ('slug', models.CharField(blank=True, max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -110,7 +110,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(blank=True, db_index=True, max_length=255)),
-                ('slug', models.CharField(blank=True, max_length=255)),
+                ('slug', models.CharField(blank=True, max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
@@ -146,22 +146,6 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-        ),
-        migrations.AlterUniqueTogether(
-            name='identifiedrelatedmodel',
-            unique_together=set([('slug',)]),
-        ),
-        migrations.AlterUniqueTogether(
-            name='identifiedmodel',
-            unique_together=set([('slug',)]),
-        ),
-        migrations.AlterUniqueTogether(
-            name='identifiedmarkedmodel',
-            unique_together=set([('slug',)]),
-        ),
-        migrations.AlterUniqueTogether(
-            name='identifiedannotatedmodel',
-            unique_together=set([('slug',)]),
         ),
         migrations.AddField(
             model_name='customtypedattachment',

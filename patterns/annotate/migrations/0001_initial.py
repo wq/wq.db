@@ -32,16 +32,12 @@ class Migration(migrations.Migration):
             name='AnnotationType',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
+                ('name', models.CharField(max_length=255, unique=True)),
             ],
             options={
                 'abstract': False,
                 'db_table': 'wq_annotationtype',
             },
-        ),
-        migrations.AlterUniqueTogether(
-            name='annotationtype',
-            unique_together=set([('name',)]),
         ),
         migrations.AddField(
             model_name='annotation',

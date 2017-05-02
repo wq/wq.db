@@ -12,10 +12,9 @@ INSTALLED = ('wq.db.patterns.annotate' in settings.INSTALLED_APPS)
 
 
 class AnnotationType(NaturalKeyModel, LabelModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
 
     class Meta:
-        unique_together = [['name']]
         db_table = 'wq_annotationtype'
         abstract = not INSTALLED
 

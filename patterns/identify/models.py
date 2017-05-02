@@ -162,7 +162,7 @@ class IdentifiedModel(NaturalKeyModel, LabelModel):
     name = models.CharField(
         max_length=255, blank=True, db_index=True
     )
-    slug = models.CharField(max_length=255, blank=True)
+    slug = models.CharField(max_length=255, blank=True, unique=True)
 
     identifiers = GenericRelation(Identifier)
     objects = IdentifiedModelManager()
@@ -189,16 +189,7 @@ class IdentifiedModel(NaturalKeyModel, LabelModel):
     def primary_identifier(self):
         return self.identifiers.filter(is_primary=True).first()
 
-    @classmethod
-    def get_natural_key_def(cls):
-        if cls._meta.unique_together:
-            return cls._meta.unique_together[0]
-        else:
-            # In case user neglects to extend IdentifiedModel.Meta
-            return ('slug',)
-
     class Meta:
-        unique_together = [['slug']]
         ordering = ['name']
         abstract = True
 
