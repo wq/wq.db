@@ -60,7 +60,7 @@ class ModelRouter(DefaultRouter):
 
         if viewset:
             self.register_viewset(model, viewset)
-        if queryset:
+        if queryset is not None:
             self.register_queryset(model, queryset)
         if filter:
             self.register_filter(model, filter)
