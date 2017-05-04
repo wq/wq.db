@@ -65,7 +65,7 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
         if initial.get('filter'):
             type_field['filter'] = initial['filter']
         types = self.child.get_lookup_choices(
-            type_field, 
+            type_field,
             self.context.get('request').GET.dict()
             )
 
