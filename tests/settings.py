@@ -36,7 +36,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'wqdb_test',
-        'USER': 'david',
+        'USER': 'postgres',
     }
 }
 
