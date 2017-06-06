@@ -1,10 +1,14 @@
+from wq.db import rest
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import (
-    CustomPatternModel, CustomTypedPatternModel, CustomType
-)
-
+    CustomPatternModel, CustomTypedPatternModel, CustomType,
+    Campaign, Attribute
+    )
+from tests.patterns_app.serilizers import (
+    EntitySerializerBase, EntitySerializerCampaignID,
+    )
 
 class CustomPatternTestCase(APITestCase):
     def setUp(self):
@@ -19,6 +23,32 @@ class CustomPatternTestCase(APITestCase):
         self.typeinstance = CustomTypedPatternModel.objects.create(
             name="Test 2",
         )
+        self.campaign1 = Campaign.objects.create()
+        self.campaign2 = Campaign.objects.create()
+        self.att1 = Attribute.objects.create(
+            name='Width',
+            is_active=True,
+            campaign=self.campaign1,
+            category='dimension'
+            )
+        self.att2 = Attribute.objects.create(
+            name='Height',
+            is_active=False,
+            campaign=self.campaign1,
+            category='dimension'
+            )
+        self.att3 = Attribute.objects.create(
+            name='Color',
+            is_active=True,
+            campaign=self.campaign2,
+            category='color'
+            )
+        self.att4 = Attribute.objects.create(
+            name='Size',
+            is_active=False,
+            campaign=self.campaign2,
+            category=''
+            )
 
     def test_customtypedpattern_config(self):
         response = self.client.get('/config.json')
@@ -129,3 +159,10 @@ class CustomPatternTestCase(APITestCase):
         self.assertEqual(
             self.typeinstance.attachments.first().type, self.type
         )
+
+    # def test_eavfilter_empty(self):
+    #     rest.router.register_serializer(EntitySerializerBase)
+    #     response = self.client.get('entities/new.json')
+    #     self.assertEqual(
+    #         [self.att1.id,self.att2.id,self.att3.id,self.att4.id],
+    #         list(response.data['values'].keys()))
