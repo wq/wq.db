@@ -77,17 +77,25 @@ class CustomTypedAttachment(models.Model):
         CustomTypedPatternModel, related_name='attachments'
     )
 
+
 class Campaign(models.Model):
     pass
 
+
 class Attribute(models.Model):
+    name = models.CharField(max_length=10)
     campaign = models.ForeignKey(Campaign)
     is_active = models.BooleanField()
-    category = models.CharField(max_length=10,blank=True)
+    category = models.CharField(max_length=10, blank=True)
+
 
 class Entity(models.Model):
     campaign = models.ForeignKey(Campaign)
 
+    class Meta:
+        verbose_name_plural = 'entities'
+
+
 class Value(models.Model):
     attribute = models.ForeignKey(Attribute)
-    entity = models.ForeignKey(Entity)
+    entity = models.ForeignKey(Entity, related_name='values')

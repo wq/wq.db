@@ -4,11 +4,15 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import (
     CustomPatternModel, CustomTypedPatternModel, CustomType,
-    Campaign, Attribute
+    Campaign, Attribute, Entity
     )
-from tests.patterns_app.serilizers import (
+from tests.patterns_app.serializers import (
     EntitySerializerBase, EntitySerializerCampaignID,
+    EntitySerializerIsActiveT, EntitySerializerIsActiveF,
+    EntitySerializerActiveTCampaignID, EntitySerializerCategoryDim,
+    EntitySerializerCategoryEmpty, EntitySerializerCategoryCtxt,
     )
+
 
 class CustomPatternTestCase(APITestCase):
     def setUp(self):
@@ -160,9 +164,93 @@ class CustomPatternTestCase(APITestCase):
             self.typeinstance.attachments.first().type, self.type
         )
 
-    # def test_eavfilter_empty(self):
-    #     rest.router.register_serializer(EntitySerializerBase)
-    #     response = self.client.get('entities/new.json')
-    #     self.assertEqual(
-    #         [self.att1.id,self.att2.id,self.att3.id,self.att4.id],
-    #         list(response.data['values'].keys()))
+    def test_eavfilter_empty(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerBase)
+
+        response = self.client.get('/entities/new.json')
+        self.assertEqual(
+            [self.att1.id, self.att2.id, self.att3.id, self.att4.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_cid(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerCampaignID)
+
+        response = self.client.get(
+            '/entities/new.json?campaign_id={}'.format(self.campaign2.id))
+        self.assertEqual(
+            [self.att3.id, self.att4.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_cid_miss(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerCampaignID)
+
+        response = self.client.get('/entities/new.json?foo=bar')
+        self.assertEqual(
+            [],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_isactive(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerIsActiveT)
+
+        response = self.client.get('/entities/new.json')
+        self.assertEqual(
+            [self.att1.id, self.att3.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerIsActiveF)
+
+        response = self.client.get('/entities/new.json')
+        self.assertEqual(
+            [self.att2.id, self.att4.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_isactivecid(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerActiveTCampaignID)
+
+        response = self.client.get(
+            '/entities/new.json?campaign_id={}'.format(self.campaign1.id))
+        self.assertEqual(
+            [self.att1.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_category(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerCategoryDim)
+
+        response = self.client.get('/entities/new.json')
+        self.assertEqual(
+            [self.att1.id, self.att2.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_category_empty(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerCategoryEmpty)
+
+        response = self.client.get('/entities/new.json')
+        self.assertEqual(
+            [self.att4.id],
+            [i['attribute_id'] for i in response.data['values']])
+
+    def test_eavfilter_category_ctxt_empty(self):
+        rest.router.register_serializer(
+            Entity,
+            EntitySerializerCategoryCtxt)
+
+        response = self.client.get('/entities/new.json?category=')
+        self.assertEqual(
+            [],
+            [i['attribute_id'] for i in response.data['values']])

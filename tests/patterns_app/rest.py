@@ -8,6 +8,7 @@ from .models import (
     IdentifiedAnnotatedModel,
     IdentifiedRelatedModel, IdentifiedMarkedModel,
     CustomPatternModel, CustomTypedPatternModel, CustomType,
+    Campaign, Attribute, Entity
 )
 from .serializers import (
     CustomPatternSerializer, CustomTypedPatternSerializer,
@@ -74,3 +75,12 @@ rest.router.register_model(
     CustomType,
     fields='__all__',
 )
+rest.router.register_model(
+    Campaign,
+    fields='__all__')
+rest.router.register_model(
+    Attribute,
+    fields='__all__')
+rest.router.register_model(
+    Entity,
+    fields='__all__')

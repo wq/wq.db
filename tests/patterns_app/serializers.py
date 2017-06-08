@@ -29,6 +29,7 @@ class CustomTypedAttachmentSerializer(patterns.TypedAttachmentSerializer):
 class CustomTypedPatternSerializer(patterns.AttachedModelSerializer):
     attachments = CustomTypedAttachmentSerializer(many=True)
 
+
 class ValueSerializerBase(patterns.TypedAttachmentSerializer):
     class Meta(patterns.TypedAttachmentSerializer.Meta):
         model = Value
@@ -37,86 +38,94 @@ class ValueSerializerBase(patterns.TypedAttachmentSerializer):
         type_field = 'attribute'
         type_filter = {}
 
+
 class ValueSerializerCampaignID(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'campaign_id':'{{campaign_id}}'}
+        type_filter = {'campaign_id': '{{campaign_id}}'}
+
 
 class ValueSerializerIsActiveT(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'is_active':'1'}
+        type_filter = {'is_active': '1'}
+
 
 class ValueSerializerIsActiveF(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'is_active':'0'}
+        type_filter = {'is_active': '0'}
+
 
 class ValueSerializerIsActiveTCampaignID(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'is_active':'1', 'campaign_id':'{{campaign_id}}'}
+        type_filter = {'is_active': '1', 'campaign_id': '{{campaign_id}}'}
+
 
 class ValueSerializerCategoryDim(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'category':'dimension'}
+        type_filter = {'category': 'dimension'}
+
 
 class ValueSerializerCategoryEmpty(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'category':''}
+        type_filter = {'category': ''}
+
 
 class ValueSerializerCategoryCtxt(ValueSerializerBase):
     class Meta(ValueSerializerBase.Meta):
-        type_filter = {'category':'{{category}}'}
+        type_filter = {'category': '{{category}}'}
+
 
 class EntitySerializerBase(patterns.AttachedModelSerializer):
-    results = ValueSerializerBase(many=True)
-
+    values = ValueSerializerBase(many=True)
 
     class Meta:
         model = Entity
         fields = '__all__'
 
+
 class EntitySerializerCampaignID(EntitySerializerBase):
-    results = ValueSerializerCampaignID(many=True)
+    values = ValueSerializerCampaignID(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
 
-class EntitySerializerCampaignID(EntitySerializerBase):
-    results = ValueSerializerCampaignID(many=True)
-
-    class Meta(EntitySerializerBase.Meta):
-        pass
 
 class EntitySerializerIsActiveT(EntitySerializerBase):
-    results = ValueSerializerIsActiveT(many=True)
+    values = ValueSerializerIsActiveT(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
+
 
 class EntitySerializerIsActiveF(EntitySerializerBase):
-    results = ValueSerializerIsActiveF(many=True)
+    values = ValueSerializerIsActiveF(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
+
 
 class EntitySerializerActiveTCampaignID(EntitySerializerBase):
-    results = ValueSerializerIsActiveTCampaignID(many=True)
+    values = ValueSerializerIsActiveTCampaignID(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
+
 
 class EntitySerializerCategoryDim(EntitySerializerBase):
-    results = ValueSerializerCategoryDim(many=True)
+    values = ValueSerializerCategoryDim(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
+
 
 class EntitySerializerCategoryEmpty(EntitySerializerBase):
-    results = ValueSerializerCategoryEmpty(many=True)
+    values = ValueSerializerCategoryEmpty(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
 
+
 class EntitySerializerCategoryCtxt(EntitySerializerBase):
-    results = ValueSerializerCategoryCtxt(many=True)
+    values = ValueSerializerCategoryCtxt(many=True)
 
     class Meta(EntitySerializerBase.Meta):
         pass
