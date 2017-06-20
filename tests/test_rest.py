@@ -387,6 +387,7 @@ class RestRouterTestCase(APITestCase):
             "the name 'item' was already registered for "
             "<class 'tests.rest_app.models.Item'>"
         )
+        self.assertNotIn(Item, rest.router._models)
 
         # Register model with different name, but same URL as existing model
         with self.assertRaises(ImproperlyConfigured) as e:
@@ -399,11 +400,13 @@ class RestRouterTestCase(APITestCase):
             "the url 'items' was already registered for "
             "<class 'tests.rest_app.models.Item'>"
         )
+        self.assertNotIn(Item, rest.router._models)
 
         # Register model with different name and URL
         rest.router.register_model(
             Item, name="conflictitem", url="conflictitems", fields="__all__"
         )
+        self.assertIn(Item, rest.router._models)
         self.assertIn("conflictitem", rest.router.get_config()['pages'])
 
     def test_rest_old_config(self):
@@ -417,6 +420,8 @@ class RestRouterTestCase(APITestCase):
                 fields="__all__"
             )
 
+        self.assertNotIn(TestModel, rest.router._models)
+
         with self.assertRaises(ImproperlyConfigured):
             rest.router.register_model(
                 TestModel,
@@ -424,12 +429,16 @@ class RestRouterTestCase(APITestCase):
                 fields="__all__"
             )
 
+        self.assertNotIn(TestModel, rest.router._models)
+
         with self.assertRaises(ImproperlyConfigured):
             rest.router.register_model(
                 TestModel,
                 max_local_pages=0,
                 fields="__all__"
             )
+
+        self.assertNotIn(TestModel, rest.router._models)
 
 
 class RestPostTestCase(APITestCase):

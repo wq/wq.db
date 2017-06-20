@@ -56,7 +56,6 @@ class ModelRouter(DefaultRouter):
         if isinstance(model, string_types) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
-        self._models.add(model)
 
         if viewset:
             self.register_viewset(model, viewset)
@@ -98,6 +97,7 @@ class ModelRouter(DefaultRouter):
         if fields:
             self.register_fields(model, fields)
 
+        self._models.add(model)
         self._page_names[model] = kwargs['name']
         self._page_models[kwargs['name']] = model
         self._url_models[kwargs['url']] = model
