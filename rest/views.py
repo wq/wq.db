@@ -37,6 +37,9 @@ class GenericAPIView(RestGenericAPIView):
             return self.router.get_serializer_for_model(self.model, self.depth)
         return super(GenericAPIView, self).get_serializer_class()
 
+    def head(self, request, *args, **kwargs):
+        return self.get(request, *args, **kwargs)
+
 
 class SimpleView(GenericAPIView):
     def get(self, request, *args, **kwargs):
@@ -249,6 +252,3 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         if self.router:
             response.data['parent'] = self.router.serialize(parent)
         return parent
-
-    def head(self, request, *args, **kwargs):
-        return self.get(request, *args, **kwargs)

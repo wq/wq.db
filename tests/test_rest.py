@@ -603,8 +603,14 @@ class RestPostTestCase(APITestCase):
             'ref_id': ['Object with code=test_invalid does not exist.']
         })
 
-    def test_rest_head(self):
+    def test_rest_list_head(self):
         response = self.client.head('/')
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
+
+    def test_rest_simpleviewset_head(self):
+        response = self.client.head('/login')
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )
