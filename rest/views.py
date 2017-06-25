@@ -212,7 +212,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             headers={'Location': url}
         )
 
-    def saverror(self, request, response):
+    def saveerror(self, request, response):
         errors = [{
             'field': key,
             'errors': val
