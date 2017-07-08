@@ -470,11 +470,11 @@ class ModelSerializer(BaseModelSerializer):
 
     def compute_filter(self, filter, model_conf, context):
         def render(value):
-            if value == '':
-                return None
             import pystache
             result = pystache.render(value, context)
-            if result.isdigit():
+            if result == '':
+                return None
+            elif result.isdigit():
                 result = int(result)
             return result
 
