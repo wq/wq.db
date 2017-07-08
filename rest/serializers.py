@@ -470,7 +470,7 @@ class ModelSerializer(BaseModelSerializer):
 
     def compute_filter(self, filter, model_conf, context):
         def render(value):
-            if not context:
+            if value == '':
                 return None
             import pystache
             result = pystache.render(value, context)
