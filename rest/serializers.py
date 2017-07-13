@@ -350,6 +350,10 @@ class ModelSerializer(BaseModelSerializer):
 
         # Add labels for dates and fields with choices
         for name, field in info.fields.items():
+            if name in getattr(self.Meta, "exclude", []):
+                continue
+            if name + '_label' in default_fields:
+                continue
             if isinstance(field, model_fields.DateTimeField):
                 fields[name + '_label'] = LocalDateTimeField(source=name)
             if field.choices:
@@ -360,6 +364,8 @@ class ModelSerializer(BaseModelSerializer):
         # Add labels for related fields
         for name, field in info.forward_relations.items():
             if name in getattr(self.Meta, "exclude", []):
+                continue
+            if name + '_label' in default_fields:
                 continue
 
             f, field_kwargs = self.build_relational_field(
