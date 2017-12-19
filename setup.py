@@ -97,7 +97,7 @@ setup(
     description=LONG_DESCRIPTION.strip(),
     long_description=parse_markdown_readme(),
     install_requires=[
-        'Django>=1.8',
+        'Django>=1.8,<2.0',
         'djangorestframework>=3.3.3',
         'django-mustache',
         'html-json-forms',
