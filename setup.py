@@ -85,7 +85,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='1.0.0-1',
+    version='1.0.1-dev',
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='https://wq.io/wq.db',
