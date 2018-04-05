@@ -73,11 +73,13 @@ class IdentifierManager(models.Manager):
 class Identifier(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     slug = models.SlugField(blank=True)
-    authority = models.ForeignKey('Authority', blank=True, null=True)
+    authority = models.ForeignKey(
+        'Authority', models.CASCADE, blank=True, null=True,
+    )
     is_primary = models.BooleanField(default=False)
 
     # Identifer can contain a pointer to any model
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
 

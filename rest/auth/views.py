@@ -27,7 +27,7 @@ class AuthView(SimpleViewSet):
 
 class LoginView(AuthView):
     def list(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             return self.user_info(request)
         else:
             return self.csrf_info(request)
@@ -45,6 +45,6 @@ class LoginView(AuthView):
 
 class LogoutView(AuthView):
     def list(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             logout(request)
         return self.csrf_info(request)

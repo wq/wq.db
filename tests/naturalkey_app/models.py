@@ -14,7 +14,7 @@ class NaturalKeyParent(NaturalKeyModel):
 
 class NaturalKeyChild(NaturalKeyModel):
     date = models.DateField()
-    parent = models.ForeignKey(NaturalKeyParent)
+    parent = models.ForeignKey(NaturalKeyParent, models.CASCADE)
 
     def __str__(self):
         return "%s on %s" % (self.parent, self.date)
@@ -24,7 +24,7 @@ class NaturalKeyChild(NaturalKeyModel):
 
 
 class ModelWithNaturalKey(models.Model):
-    key = models.ForeignKey(NaturalKeyChild)
+    key = models.ForeignKey(NaturalKeyChild, models.CASCADE)
     note = models.TextField()
 
     def __str__(self):

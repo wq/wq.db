@@ -551,7 +551,7 @@ class RestPostTestCase(APITestCase):
         self.assertIn('date_label', response.data)
         self.assertEqual(response.data['date_label'], "2015-06-01 07:00 AM")
         self.assertIn('date', response.data)
-        self.assertEqual(response.data['date'], "2015-06-01T12:00:00Z")
+        self.assertEqual(response.data['date'], "2015-06-01T07:00:00-05:00")
 
     def test_rest_empty_date_post(self):
         """

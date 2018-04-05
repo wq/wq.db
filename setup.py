@@ -101,7 +101,7 @@ setup(
         'djangorestframework>=3.8.0',
         'django-mustache',
         'html-json-forms',
-        'natural-keys>=1.2.0',
+        'natural-keys>=1.3.0',
         'Markdown',
     ],
     classifiers=[

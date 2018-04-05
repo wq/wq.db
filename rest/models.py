@@ -44,8 +44,9 @@ class ContentType(DjangoContentType):
             return []
         parents = {}
         for f in cls._meta.fields:
-            if f.rel is not None and type(f.rel).__name__ == 'ManyToOneRel':
-                parent = get_ct(f.rel.to)
+            rel = f.remote_field
+            if rel is not None and type(rel).__name__ == 'ManyToOneRel':
+                parent = get_ct(rel.model)
                 parents.setdefault(parent, [])
                 parents[parent].append(f.name)
         return parents

@@ -13,7 +13,7 @@ from .serializers import (
 
 
 def cache_users_own_data(qs, req):
-    if req.user.is_authenticated():
+    if req.user.is_authenticated:
         return qs.filter(user=req.user)
     else:
         return qs.none()

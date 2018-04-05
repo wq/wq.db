@@ -12,7 +12,9 @@ class CustomPatternModel(models.Model):
 
 class CustomAttachment(models.Model):
     name = models.CharField(max_length=10)
-    parent = models.ForeignKey(CustomPatternModel, related_name='attachments')
+    parent = models.ForeignKey(
+        CustomPatternModel, models.CASCADE, related_name='attachments',
+    )
 
 
 class CustomTypedPatternModel(models.Model):
@@ -28,9 +30,11 @@ class CustomType(models.Model):
 
 class CustomTypedAttachment(models.Model):
     name = models.CharField(max_length=10)
-    type = models.ForeignKey(CustomType)
+    type = models.ForeignKey(CustomType, models.CASCADE)
     parent = models.ForeignKey(
-        CustomTypedPatternModel, related_name='attachments'
+        CustomTypedPatternModel,
+        models.CASCADE,
+        related_name='attachments'
     )
 
 
@@ -40,18 +44,18 @@ class Campaign(models.Model):
 
 class Attribute(models.Model):
     name = models.CharField(max_length=10)
-    campaign = models.ForeignKey(Campaign)
+    campaign = models.ForeignKey(Campaign, models.CASCADE)
     is_active = models.BooleanField()
     category = models.CharField(max_length=10, blank=True)
 
 
 class Entity(models.Model):
-    campaign = models.ForeignKey(Campaign)
+    campaign = models.ForeignKey(Campaign, models.CASCADE)
 
     class Meta:
         verbose_name_plural = 'entities'
 
 
 class Value(models.Model):
-    attribute = models.ForeignKey(Attribute)
-    entity = models.ForeignKey(Entity, related_name='values')
+    attribute = models.ForeignKey(Attribute, models.CASCADE)
+    entity = models.ForeignKey(Entity, models.CASCADE, related_name='values')

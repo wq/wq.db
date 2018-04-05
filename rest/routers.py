@@ -46,6 +46,7 @@ class ModelRouter(DefaultRouter):
                 'post': 'create'
             },
             name='{basename}-list',
+            detail=False,
             initkwargs={'suffix': 'List'}
         ))
         super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
@@ -228,7 +229,7 @@ class ModelRouter(DefaultRouter):
         view = self.get_viewset_for_model(model).as_view(
             actions={'get': 'list'},
         )
-        return view(request).data
+        return view(request._request).data
 
     def get_queryset_for_model(self, model, request=None):
         if model in self._page_models:
@@ -317,7 +318,7 @@ class ModelRouter(DefaultRouter):
         return self._base_config
 
     def get_config(self, user=None):
-        if user is None or not user.is_authenticated():
+        if user is None or not user.is_authenticated:
             return self.base_config
 
         # Add user-specific permissions to configuration
@@ -524,6 +525,7 @@ class ModelRouter(DefaultRouter):
                 ),
                 mapping={'get': 'list'},
                 name="{basename}-for-%s" % fields[0],
+                detail=False,
                 initkwargs={'suffix': 'List'},
             ))
 
@@ -535,6 +537,7 @@ class ModelRouter(DefaultRouter):
                 url='^%s-by-{prefix}' % cbase,
                 mapping={'get': 'list'},
                 name="%s-by-%s" % (cct.identifier, ct.identifier),
+                detail=False,
                 initkwargs={'target': cbase, 'suffix': 'List'},
             ))
 

@@ -98,8 +98,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             except FieldDoesNotExist:
                 del init[key]
             else:
-                if field.rel:
-                    fk_model = field.rel.to
+                if field.remote_field:
+                    fk_model = field.remote_field.model
                     try:
                         obj = get_by_identifier(fk_model.objects, init[key])
                     except fk_model.DoesNotExist:

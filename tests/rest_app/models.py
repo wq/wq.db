@@ -12,21 +12,26 @@ class RootModel(LabelModel):
 
 
 class OneToOneModel(LabelModel):
-    root = models.OneToOneField(RootModel)
+    root = models.OneToOneField(RootModel, models.CASCADE)
 
     wq_label_template = "onetoonemodel for {{root}}"
 
 
 class ForeignKeyModel(LabelModel):
-    root = models.ForeignKey(RootModel)
+    root = models.ForeignKey(RootModel, models.CASCADE)
 
     wq_label_template = "foreignkeymodel for {{root}}"
 
 
 class ExtraModel(LabelModel):
-    root = models.ForeignKey(RootModel, related_name="extramodels")
+    root = models.ForeignKey(
+        RootModel,
+        models.CASCADE,
+        related_name="extramodels",
+    )
     alt_root = models.ForeignKey(
         RootModel,
+        models.CASCADE,
         related_name="extramodel_set",
         null=True,
         blank=True,
@@ -36,7 +41,7 @@ class ExtraModel(LabelModel):
 
 
 class UserManagedModel(models.Model):
-    user = models.ForeignKey("auth.User")
+    user = models.ForeignKey("auth.User", models.CASCADE)
 
 
 class Parent(LabelModel):
@@ -45,7 +50,7 @@ class Parent(LabelModel):
 
 class Child(LabelModel):
     name = models.CharField(max_length=10)
-    parent = models.ForeignKey(Parent, related_name="children")
+    parent = models.ForeignKey(Parent, models.CASCADE, related_name="children")
 
 
 class ItemType(LabelModel):
@@ -55,21 +60,17 @@ class ItemType(LabelModel):
 
 class Item(LabelModel):
     name = models.CharField(max_length=10)
-    type = models.ForeignKey(ItemType)
+    type = models.ForeignKey(ItemType, models.CASCADE)
 
 
 class GeometryModel(LabelModel):
     name = models.CharField(max_length=255)
     geometry = models.GeometryField(srid=settings.SRID)
 
-    objects = models.GeoManager()
-
 
 class PointModel(LabelModel):
     name = models.CharField(max_length=255)
     geometry = models.PointField(srid=settings.SRID)
-
-    objects = models.GeoManager()
 
 
 class FileModel(LabelModel):
@@ -88,14 +89,14 @@ class SlugModel(LabelModel):
 
 
 class SlugRefParent(LabelModel):
-    ref = models.ForeignKey(SlugModel)
+    ref = models.ForeignKey(SlugModel, models.CASCADE)
     name = models.CharField(max_length=255)
 
     wq_label_template = "{{name}}{{#ref_id}} ({{ref}}){{/ref_id}}"
 
 
 class SlugRefChild(models.Model):
-    parent = models.ForeignKey(SlugRefParent)
+    parent = models.ForeignKey(SlugRefParent, models.CASCADE)
     name = models.CharField(max_length=255)
 
 

@@ -31,7 +31,7 @@ def has_perm(user, ct, perm):
     else:
         perm = '%s.%s_%s' % (ct.app_label, perm, ct.model)
 
-    if user.is_authenticated():
+    if user.is_authenticated:
         return user.has_perm(perm)
     else:
         from django.conf import settings

@@ -1,4 +1,4 @@
 def is_authenticated(request):
     return {
-        'is_authenticated': request.user.is_authenticated()
+        'is_authenticated': bool(request.user.is_authenticated)
     }
