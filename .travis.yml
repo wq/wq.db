@@ -1,24 +1,22 @@
 language: python
 sudo: false
 python:
- - "2.7"
  - "3.4"
  - "3.5"
  - "3.6"
 env:
   global:
-   - DRF="djangorestframework==3.6.3"
+   - DRF="djangorestframework==3.8.1"
   matrix:
-   - DJANGO="django==1.8.18"
-   - DJANGO="django==1.10.7"
-   - DJANGO="django==1.11.3"
-   - DJANGO="django==1.11.3" LINT=1
+   - DJANGO="django==1.11.12"
+   - DJANGO="django==2.0.4"
+   - DJANGO="django==2.0.4" LINT=1
 before_script:
  - createdb -Upostgres wqdb_test
  - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
 install:
  - pip install $DJANGO $DRF
- - pip install flake8
+ - pip install flake8 psycopg2-binary
 script:
  - ./runtests.sh
 addons:
