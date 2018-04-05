@@ -1,12 +1,5 @@
 <div>
   {{#is_authenticated}}
     <p>{{#user}}{{username}}{{/user}}</p>
-    {{#social_auth}}
-    <ul>
-      {{#accounts}}
-      <li>{{provider_label}} - {{label}}</li>
-      {{/accounts}}
-    </ul>
-    {{/social_auth}}
   {{/is_authenticated}}
 </div>

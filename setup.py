@@ -102,13 +102,8 @@ setup(
         'django-mustache',
         'html-json-forms',
         'natural-keys>=1.2.0',
-        'swapper',
         'Markdown',
     ],
-    extras_require={
-        'files': ['wq.io', 'Pillow'],
-        'social': ['python-social-auth'],
-    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
@@ -129,8 +124,5 @@ setup(
     test_suite='tests',
     tests_require=[
         'psycopg2-binary',
-        'wq.io',
-        'Pillow',
-        'python-social-auth<0.3.0',
     ],
 )
