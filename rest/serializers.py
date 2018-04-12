@@ -299,6 +299,11 @@ class ModelSerializer(BaseModelSerializer):
                 fields.pop(name, None)
                 continue
 
+            default_field = fields[name]
+            auto_related_field = (serializers.Serializer, LookupRelatedField)
+            if not isinstance(default_field, auto_related_field):
+                continue
+
             if name + '_id' not in fields:
                 id_field, id_field_kwargs = self.build_relational_field(
                     name, field
@@ -309,7 +314,7 @@ class ModelSerializer(BaseModelSerializer):
             if name in fields:
                 # Update/remove DRF default foreign key field (w/o _id)
                 if self.is_detail and isinstance(
-                        fields[name], serializers.Serializer):
+                        default_field, serializers.Serializer):
                     # Nested representation, keep for detail template context
                     fields[name].read_only = True
                 else:
