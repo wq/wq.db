@@ -46,6 +46,7 @@ class ModelRouter(DefaultRouter):
                 'post': 'create'
             },
             name='{basename}-list',
+            detail=False,
             initkwargs={'suffix': 'List'}
         ))
         super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
