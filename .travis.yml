@@ -7,7 +7,7 @@ python:
  - "3.6"
 env:
   global:
-   - DRF="djangorestframework==3.6.3"
+   - DRF="djangorestframework==3.8.2"
   matrix:
    - DJANGO="django==1.8.18"
    - DJANGO="django==1.10.7"
