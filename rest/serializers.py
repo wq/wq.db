@@ -10,6 +10,7 @@ from django.conf import settings
 from rest_framework.utils import model_meta
 from html_json_forms.serializers import JSONFormSerializer
 from .model_tools import get_object_id
+from .exceptions import ImproperlyConfigured
 
 
 class GeometryField(serializers.Field):
@@ -141,7 +142,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 'label': label,
             } for cname, label in field.choices.items()]
         elif getattr(field, 'max_length', None):
-            info['wq:length'] = field.max_length
+            if not isinstance(field, serializers.FileField):
+                info['wq:length'] = field.max_length
 
         if isinstance(field, serializers.ListSerializer):
             # Nested model with a foreign key to this one
@@ -404,6 +406,12 @@ class ModelSerializer(BaseModelSerializer):
         return Serializer
 
     def build_relational_field(self, field_name, relation_info):
+        if isinstance(relation_info.related_model, str):
+            raise ImproperlyConfigured(
+                "%s could not be resolved to a model class"
+                % relation_info.related_model,
+            )
+
         field_class, field_kwargs = super(
             ModelSerializer, self
         ).build_relational_field(field_name, relation_info)

@@ -1,7 +1,6 @@
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
-from django.core.exceptions import ImproperlyConfigured
 from django.db.utils import ProgrammingError
 
 from django.conf import settings
@@ -14,6 +13,7 @@ from .model_tools import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
+from .exceptions import ImproperlyConfigured
 
 
 class ModelRouter(DefaultRouter):
