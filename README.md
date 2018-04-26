@@ -3,7 +3,7 @@
 [wq.db](https://wq.io/wq.db) is a collection of Python modules for building robust, flexible schemas and REST APIs for use in creating field data collection apps and (more generally) mobile-first websites with progressive enhancement.  wq.db is the backend component of [wq] and is geared primarily for use with [wq.app], though it can be used separately.  wq.db is built on the [Django] platform.
 
 
-[![Latest PyPI Release](https://img.shields.io/pypi/v/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
+[![Latest PyPI Release](https://img.shields.io/pypi/v/wq.db.svg)](https://pypi.org/project/wq.db)
 [![Release Notes](https://img.shields.io/github/release/wq/wq.db.svg)](https://github.com/wq/wq.db/releases)
 [![Documentation](https://img.shields.io/badge/Docs-1.0-blue.svg)](https://wq.io/wq.db)
 [![License](https://img.shields.io/pypi/l/wq.db.svg)](https://wq.io/license)
@@ -12,8 +12,20 @@
 [![GitHub Issues](https://img.shields.io/github/issues/wq/wq.db.svg)](https://github.com/wq/wq.db/issues)
 
 [![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
-[![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.python.org/pypi/wq.db)
-[![Django Support](https://img.shields.io/badge/Django-1.8%2C%201.10%2C%201.11-blue.svg)](https://pypi.python.org/pypi/wq.db)
+[![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.org/project/wq.db)
+[![Django Support](https://img.shields.io/badge/Django-1.11%2C%202.0-blue.svg)](https://pypi.org/project/wq.db)
+
+#### Support Matrix
+
+wq.db 1.1.0 is compatible with Django 1.11 and newer, and optimized for Python 3.
+
+&nbsp;      | Python | Django | Django REST Framework
+------------|--------|--------|-----------------------
+**wq.db 1.0.0** | 2.7, 3.4, 3.5, 3.6 | 1.8, 1.10, 1.11 | 3.6
+**wq.db 1.1.0** | 2.7*, 3.4, 3.5, 3.6 | 1.11, 2.0 | 3.8
+**wq.db 2.0 (Future)** | 3.4+ | 2.0+ | TBD
+
+&#42; Python 2.7 support is no longer tested, though it should still work for now.
 
 ## Getting Started
 
@@ -40,7 +52,7 @@ wq.db provides the following modules:
 Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a GeoJSON serializer/renderer.
 
 ### [wq.db.patterns]
-A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide long-term flexibility and sustainability for user-maintained data collection applications.  These patterns are implemented as installable Django apps.
+A collection of abstract models and serializers for use in constructing advanced [design patterns] including [nested forms], [EAV structures][EAV], and [natural keys].  Includes [wq.db.patterns.identify][identify], an installable Django app module to help manage third-party entity identifers.
 
 [wq]: https://wq.io
 [Django]: https://www.djangoproject.com/
@@ -56,3 +68,7 @@ A collection of [design patterns]&nbsp;(e.g. [identify], [relate]) that provide 
 [design patterns]: https://wq.io/docs/about-patterns
 [identify]: https://wq.io/docs/identify
 [relate]: https://wq.io/docs/relate
+[design patterns]: https://wq.io/docs/about-patterns
+[nested forms]: https://wq.io/docs/nested-forms
+[EAV]: https://wq.io/docs/eav-vs-relational
+[natural keys]: https://github.com/wq/django-natural-keys
