@@ -52,3 +52,9 @@ REST_FRAMEWORK = {
 # wq.db settings
 ANONYMOUS_PERMISSIONS = tuple()
 SRID = 4326
+
+# Deprecated, do not use
+# FIXME: Remove in wq.db 2.0
+SOCIAL_AUTH_PIPELINE = None
+DEFAULT_AUTH_GROUP = None
+DISAMBIGUATE = None
