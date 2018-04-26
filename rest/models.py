@@ -58,18 +58,14 @@ class ContentType(DjangoContentType):
         cls = self.model_class()
         if cls is None:
             return []
-        # get_all_related_objects() removed in Django 1.10
+
         rels = [
             field for field in cls._meta.get_fields()
             if (field.one_to_many or field.one_to_one)
             and field.auto_created and not field.concrete
         ]
 
-        # get_all_related_objects() structure changed in Django 1.8
-        def get_model(rel):
-            return getattr(rel, 'related_model', rel.model)
-
-        children = [(get_ct(get_model(rel)), rel) for rel in rels]
+        children = [(get_ct(rel.related_model), rel) for rel in rels]
         if include_rels:
             return set(children)
         else:

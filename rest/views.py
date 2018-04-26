@@ -118,11 +118,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         Custom retrieve watches for "new" lookup value and switches modes
         accordingly
         """
-        if hasattr(self, 'lookup_url_kwarg'):
-            # New in DRF 2.4?
-            lookup = self.lookup_url_kwarg or self.lookup_field
-        else:
-            lookup = self.lookup_field
+        lookup = self.lookup_url_kwarg or self.lookup_field
 
         if self.kwargs.get(lookup, "") == "new":
             # new/edit mode

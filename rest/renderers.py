@@ -14,7 +14,7 @@ class JSONRenderer(JSONRenderer):
 
 
 class GeoJSONRenderer(JSONRenderer):
-    media_type = 'application/vnd.geo+json'
+    media_type = 'application/geo+json'
     format = 'geojson'
 
     def render(self, data, *args, **kwargs):

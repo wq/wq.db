@@ -26,10 +26,11 @@ def router_info(request):
 
     return {
         'router_info': info,
-        'pages_info': info,
+        'pages_info': info,  # FIXME: Remove in 2.0
     }
 
 
+# FIXME: Remove in 2.0
 def pages_info(request):
     return router_info(request)
 

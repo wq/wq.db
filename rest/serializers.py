@@ -192,10 +192,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 except FieldDoesNotExist:
                     pass
                 else:
-                    # hasattr check not needed in Django 1.9+
-                    if hasattr(source, 'get_internal_type'):
-                        if source.get_internal_type() == "TextField":
-                            info['type'] = "text"
+                    if source.get_internal_type() == "TextField":
+                        info['type'] = "text"
 
         return info
 
