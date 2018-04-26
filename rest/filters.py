@@ -25,11 +25,11 @@ class FilterBackend(BaseFilterBackend):
             if field_name != key:
                 continue
 
-            rel = getattr(field, 'rel', None)
+            rel = field.remote_field
             if not rel:
                 continue
 
-            pcls = field.rel.to
+            pcls = rel.model
             router = getattr(view, 'router', None)
             if router:
                 slug = router.get_lookup_for_model(pcls)

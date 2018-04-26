@@ -292,6 +292,7 @@ class ModelSerializer(BaseModelSerializer):
 
         # In list views, remove [fieldname] as an attribute in favor of
         # [fieldname]_id.
+        extra_kwargs = self.get_extra_kwargs()
         for name, field in info.forward_relations.items():
             include = getattr(self.Meta, "fields", [])
             if include == "__all__":
@@ -309,6 +310,14 @@ class ModelSerializer(BaseModelSerializer):
             if name + '_id' not in fields:
                 id_field, id_field_kwargs = self.build_relational_field(
                     name, field
+                )
+                extra_field_kwargs = extra_kwargs.get(name, {})
+                extra_field_kwargs.update(
+                    extra_kwargs.get(name + '_id', {})
+                )
+                self.include_extra_kwargs(
+                    id_field_kwargs,
+                    extra_field_kwargs,
                 )
                 id_field_kwargs['source'] = name
                 id_fields[name] = id_field(**id_field_kwargs)
