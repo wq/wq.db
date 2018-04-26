@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route
 from rest_framework import status, viewsets
 from .model_tools import get_ct, get_object_id, get_by_identifier
-from django.db.models.fields import FieldDoesNotExist
+from django.db.models import FieldDoesNotExist, ProtectedError
 
 
 class GenericAPIView(RestGenericAPIView):
@@ -226,6 +226,20 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             status=response.status_code,
             template_name=template
         )
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            response = super(ModelViewSet, self).destroy(
+                request, *args, **kwargs
+            )
+        except ProtectedError as e:
+            return Response({
+                'non_field_errors': [
+                    e.args[0]
+                ]
+            }, status=400)
+        else:
+            return response
 
     def get_parent(self, ct, kwarg_name, response):
         pid = self.kwargs.get(kwarg_name, None)
