@@ -1,7 +1,7 @@
 from django.utils.encoding import force_text
 from django.utils.six import string_types
 from django.conf.urls import url
-from django.db.utils import ProgrammingError
+from django.db.utils import DatabaseError
 
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
@@ -290,7 +290,7 @@ class ModelRouter(DefaultRouter):
         for model in self._models:
             try:
                 ct = get_ct(model)
-            except (RuntimeError, ProgrammingError):
+            except (RuntimeError, DatabaseError):
                 # This can happen before contenttypes is migrated
                 ct = str(model._meta)
 
@@ -329,7 +329,10 @@ class ModelRouter(DefaultRouter):
         for page, info in config['pages'].items():
             if not info.get('list', False):
                 continue
-            ct = get_ct(self._page_models[page])
+            try:
+                ct = get_ct(self._page_models[page])
+            except (RuntimeError, DatabaseError):
+                continue
             info = info.copy()
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
@@ -504,7 +507,7 @@ class ModelRouter(DefaultRouter):
         # /[parentmodel_url]/[foreignkey_value]/[model_url]
         try:
             ct = get_ct(model)
-        except (RuntimeError, ProgrammingError):
+        except (RuntimeError, DatabaseError):
             # This can happen before contenttypes is migrated
             return routes
         for pct, fields in ct.get_foreign_keys().items():
