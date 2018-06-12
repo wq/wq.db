@@ -5,7 +5,7 @@
 
 [![Latest PyPI Release](https://img.shields.io/pypi/v/wq.db.svg)](https://pypi.org/project/wq.db)
 [![Release Notes](https://img.shields.io/github/release/wq/wq.db.svg)](https://github.com/wq/wq.db/releases)
-[![Documentation](https://img.shields.io/badge/Docs-1.0-blue.svg)](https://wq.io/wq.db)
+[![Documentation](https://img.shields.io/badge/Docs-1.1-blue.svg)](https://wq.io/wq.db)
 [![License](https://img.shields.io/pypi/l/wq.db.svg)](https://wq.io/license)
 [![GitHub Stars](https://img.shields.io/github/stars/wq/wq.db.svg)](https://github.com/wq/wq.db/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/wq/wq.db.svg)](https://github.com/wq/wq.db/network)
