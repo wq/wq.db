@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from django.contrib.gis.db import models as model_fields
-from django.contrib.gis.geos import GEOSGeometry
+try:
+    from django.contrib.gis.db import models as model_fields
+    from django.contrib.gis.geos import GEOSGeometry
+except OSError:
+    from django.db import models as model_fields
+    GEOSGeometry = None
+
 from django.utils import timezone
 from django.core.exceptions import FieldDoesNotExist
 from collections import OrderedDict
@@ -24,6 +29,10 @@ class GeometryField(serializers.Field):
         import json
         if isinstance(value, dict):
             value = json.dumps(value)
+
+        if not GEOSGeometry:
+            raise Exception("Missing GDAL")
+
         geom = GEOSGeometry(value)
         srid = getattr(settings, 'SRID', 4326)
 
@@ -222,10 +231,11 @@ class ModelSerializer(BaseModelSerializer):
             if serializer_field == serializers.CharField:
                 mapping[model_field] = BlankCharField
 
-        for field in ('Geometry', 'GeometryCollection',
-                      'Point', 'LineString', 'Polygon',
-                      'MultiPoint', 'MultiLineString', 'MultiPolygon'):
-            mapping[getattr(model_fields, field + 'Field')] = GeometryField
+        if GEOSGeometry:
+            for field in ('Geometry', 'GeometryCollection',
+                          'Point', 'LineString', 'Polygon',
+                          'MultiPoint', 'MultiLineString', 'MultiPolygon'):
+                mapping[getattr(model_fields, field + 'Field')] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
     @property
