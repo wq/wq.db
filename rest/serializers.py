@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from django.core.exceptions import ImproperlyConfigured
 try:
     from django.contrib.gis.db import models as model_fields
     from django.contrib.gis.geos import GEOSGeometry
-except OSError:
+except (OSError, ImproperlyConfigured):
     from django.db import models as model_fields
     GEOSGeometry = None
 
