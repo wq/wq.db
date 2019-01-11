@@ -524,7 +524,7 @@ class ModelRouter(DefaultRouter):
             routes.append(Route(
                 url=(
                     '^' + purlbase + r'(?P<' + fields[0] +
-                    '>[^\/\?]+)/{prefix}{trailing_slash}$'
+                    r'>[^\/\?]+)/{prefix}{trailing_slash}$'
                 ),
                 mapping={'get': 'list'},
                 name="{basename}-for-%s" % fields[0],
