@@ -4,6 +4,5 @@
 *.sw?
 build
 dist
-README.rst
 wq/
 tests/media

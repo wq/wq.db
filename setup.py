@@ -7,25 +7,12 @@ Django design patterns and REST API for citizen science field data collection.
 """
 
 
-def parse_markdown_readme():
-    """
-    Convert README.md to RST via pandoc, and load into memory
-    (fallback to LONG_DESCRIPTION on failure)
-    """
-    # Attempt to run pandoc on markdown file
-    import subprocess
-    try:
-        subprocess.call(
-            ['pandoc', '-t', 'rst', '-o', 'README.rst', 'README.md']
-        )
-    except OSError:
-        return LONG_DESCRIPTION
-
-    # Attempt to load output
+def load_markdown_readme():
+    # Attempt to load markdown file
     try:
         readme = open(os.path.join(
             os.path.dirname(__file__),
-            'README.rst'
+            'README.md'
         ))
     except IOError:
         return LONG_DESCRIPTION
@@ -85,7 +72,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
 
 setup(
     name='wq.db',
-    version='1.1.2',
+    use_scm_version=True,
     author='S. Andrew Sheppard',
     author_email='andrew@wq.io',
     url='https://wq.io/wq.db',
@@ -95,7 +82,8 @@ setup(
     namespace_packages=['wq'],
     entry_points={'wq': 'wq.db=wq.db'},
     description=LONG_DESCRIPTION.strip(),
-    long_description=parse_markdown_readme(),
+    long_description=load_markdown_readme(),
+    long_description_content_type="text/markdown",
     install_requires=[
         'Django>=1.11,<3.0',
         'djangorestframework>=3.8.0',
@@ -124,5 +112,8 @@ setup(
     test_suite='tests',
     tests_require=[
         'psycopg2-binary',
+    ],
+    setup_requires=[
+        'setuptools_scm',
     ],
 )
