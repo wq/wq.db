@@ -75,7 +75,7 @@ class ModelRouter(DefaultRouter):
             kwargs['url'] = url.replace(' ', '')
 
         other_model = self._page_models.get(kwargs['name'], None)
-        if other_model and other_model != model:
+        if other_model:
             raise ImproperlyConfigured(
                 "Could not register %s: "
                 "the name '%s' was already registered for %s"
@@ -83,7 +83,7 @@ class ModelRouter(DefaultRouter):
             )
 
         other_model = self._url_models.get(kwargs['url'], None)
-        if other_model and other_model != model:
+        if other_model:
             raise ImproperlyConfigured(
                 "Could not register %s: "
                 "the url '%s' was already registered for %s"
