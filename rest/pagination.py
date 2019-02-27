@@ -10,7 +10,7 @@ class Pagination(PageNumberPagination):
         data = super(Pagination, self).paginate_queryset(
             queryset, request, view
         )
-        if not view or not view.router:
+        if not view or not getattr(view, 'router', None):
             return data
 
         if request.accepted_renderer.format != 'json':
