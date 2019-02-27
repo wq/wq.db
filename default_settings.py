@@ -39,6 +39,7 @@ REST_FRAMEWORK = {
     ),
 
     'DEFAULT_PAGINATION_CLASS': 'wq.db.rest.pagination.Pagination',
+    'PAGE_SIZE': 50,
 
     'DEFAULT_PERMISSION_CLASSES': (
         'wq.db.rest.permissions.ModelPermissions',

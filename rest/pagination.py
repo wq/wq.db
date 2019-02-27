@@ -4,7 +4,6 @@ from rest_framework.response import Response
 
 
 class Pagination(PageNumberPagination):
-    page_size = 50
     page_size_query_param = 'limit'
 
     def paginate_queryset(self, queryset, request, view=None):
