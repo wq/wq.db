@@ -29,6 +29,8 @@ class IdentifierFilterBackend(BaseFilterBackend):
                         "Could not resolve %s to a single item!" % key
                     )
                 elif len(items) == 1:
+                    if id_map is None:
+                        id_map = {}
                     id_map[key] = items[0]
                 else:
                     options['extra'].append(key)
