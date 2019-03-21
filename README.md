@@ -13,16 +13,16 @@
 
 [![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.org/project/wq.db)
-[![Django Support](https://img.shields.io/badge/Django-1.11%2C%202.0-blue.svg)](https://pypi.org/project/wq.db)
+[![Django Support](https://img.shields.io/pypi/djversions/wq.db.svg)](https://pypi.org/project/wq.db)
 
 #### Support Matrix
 
-wq.db 1.1.0 is compatible with Django 1.11 and newer, and optimized for Python 3.
+wq.db 1.1 is compatible with Django 1.11 and newer, and optimized for Python 3.
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
-**wq.db 1.0.0** | 2.7, 3.4, 3.5, 3.6 | 1.8, 1.10, 1.11 | 3.6
-**wq.db 1.1.0** | 2.7*, 3.4, 3.5, 3.6 | 1.11, 2.0 | 3.8
+**wq.db 1.0** | 2.7, 3.4, 3.5, 3.6 | 1.8, 1.10, 1.11 | 3.6
+**wq.db 1.1** | 2.7*, 3.4, 3.5, 3.6, 3.7 | 1.11, 2.0, 2.1 | 3.9
 **wq.db 2.0 (Future)** | 3.4+ | 2.0+ | TBD
 
 &#42; Python 2.7 support is no longer tested, though it should still work for now.

@@ -7,13 +7,10 @@ Django design patterns and REST API for citizen science field data collection.
 """
 
 
-def load_markdown_readme():
+def readme():
     # Attempt to load markdown file
     try:
-        readme = open(os.path.join(
-            os.path.dirname(__file__),
-            'README.md'
-        ))
+        readme = open('README.md')
     except IOError:
         return LONG_DESCRIPTION
     return readme.read()
@@ -82,7 +79,7 @@ setup(
     namespace_packages=['wq'],
     entry_points={'wq': 'wq.db=wq.db'},
     description=LONG_DESCRIPTION.strip(),
-    long_description=load_markdown_readme(),
+    long_description=readme(),
     long_description_content_type="text/markdown",
     install_requires=[
         'Django>=1.11,<3.0',
@@ -101,9 +98,11 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Framework :: Django',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Text Processing :: Markup :: HTML',
         'Topic :: Scientific/Engineering :: GIS',
@@ -116,4 +115,12 @@ setup(
     setup_requires=[
         'setuptools_scm',
     ],
+    project_urls={
+        'Homepage': 'https://wq.io/wq.db',
+        'Documentation': 'https://wq.io/docs/',
+        'Source': 'https://github.com/wq/wq.db',
+        'Release Notes': 'https://github.com/wq/wq.db/releases',
+        'Issues': 'https://github.com/wq/wq.db/issues',
+        'CI': 'https://travis-ci.org/wq/wq.db',
+    },
 )
