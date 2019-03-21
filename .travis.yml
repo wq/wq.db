@@ -1,26 +1,68 @@
 language: python
-sudo: false
-python:
- - "3.4"
- - "3.5"
- - "3.6"
+dist: xenial
 env:
   global:
-   - DRF="djangorestframework==3.8.1"
-  matrix:
-   - DJANGO="django==1.11.12"
-   - DJANGO="django==2.0.4"
-   - DJANGO="django==2.0.4" LINT=1
-before_script:
- - createdb -Upostgres wqdb_test
- - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
+    - DRF="djangorestframework==3.9.1"
+    - DJANGO="django==2.1.7"
+matrix:
+  include:
+    - python: "3.7"
+      name: "Python 3.7 (Django 1.11)"
+      env:
+        - DJANGO="django==1.11.20"
+    - python: "3.7"
+      name: "Python 3.7 (Django 1.11) + PostGIS"
+      env:
+        - PSYCOPG2="psycopg2-binary"
+        - WITH_GIS=1
+      addons:
+        postgresql: "10"
+        apt:
+          packages:
+           - postgresql-10-postgis-2.4
+      before_script:
+       - createdb -Upostgres wqdb_test
+       - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
+    - python: "3.4"
+      name: "Python 3.4"
+      env:
+        - DJANGO="django==2.0.13"
+    - python: "3.5"
+      name: "Python 3.5"
+      env: []
+    - python: "3.6"
+      name: "Python 3.6"
+      env: []
+    - python: "3.7"
+      name: "Python 3.7"
+      env: []
+    - python: "3.7"
+      name: "Python 3.7 + SpatiaLite"
+      env:
+        - WITH_GIS=1
+      addons:
+        apt:
+          packages:
+           - libsqlite3-mod-spatialite
+           - gdal-bin
+    - python: "3.7"
+      name: "Python 3.7 + PostGIS"
+      env:
+        - PSYCOPG2="psycopg2-binary"
+        - WITH_GIS=1
+      addons:
+        postgresql: "10"
+        apt:
+          packages:
+           - postgresql-10-postgis-2.4
+      before_script:
+       - createdb -Upostgres wqdb_test
+       - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
+    - python: "3.7"
+      name: "Code Lint"
+      env:
+        - LINT="flake8"
 install:
- - pip install $DJANGO $DRF
- - pip install flake8 psycopg2-binary
+ - pip install $DJANGO $DRF $PSYCOPG2 $LINT
 script:
  - ./runtests.sh
-addons:
-  postgresql: "9.6"
-  apt:
-    packages:
-     - postgresql-9.6-postgis-2.3

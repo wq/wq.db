@@ -24,13 +24,36 @@ INSTALLED_APPS = (
     'tests.naturalkey_app',
 )
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'wqdb_test',
-        'USER': 'postgres',
+WITH_GIS = os.environ.get("WITH_GIS")
+
+if WITH_GIS:
+    INSTALLED_APPS += ('tests.gis_app',)
+
+
+if os.environ.get('PSYCOPG2'):
+    if WITH_GIS:
+        engine = 'django.contrib.gis.db.backends.postgis'
+    else:
+        engine = 'django.db.backends.postgresql'
+    DATABASES = {
+        'default': {
+            'ENGINE': engine,
+            'NAME': 'wqdb_test',
+            'USER': 'postgres',
+        }
     }
-}
+else:
+    if WITH_GIS:
+        engine = 'django.contrib.gis.db.backends.spatialite'
+        SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+    else:
+        engine = 'django.db.backends.sqlite3'
+    DATABASES = {
+        'default': {
+             'ENGINE': engine,
+             'NAME': ':memory:',
+        }
+    }
 
 USE_TZ = True
 TIME_ZONE = "America/Chicago"

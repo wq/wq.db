@@ -1,15 +1,18 @@
+import unittest
 from rest_framework.test import APITestCase
 from rest_framework import status
 import json
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
-    Parent, ItemType, GeometryModel, SlugModel, DateModel, ChoiceModel,
+    Parent, ItemType, SlugModel, DateModel, ChoiceModel,
 )
+from tests.gis_app.models import GeometryModel
 from tests.rest_app.serializers import (
     ChoiceLabelSerializer, DateLabelSerializer, ItemLabelSerializer,
 )
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
+from django.conf import settings
 
 
 class RestTestCase(APITestCase):
@@ -173,7 +176,8 @@ class RestTestCase(APITestCase):
             pconf['label_template'],
         )
 
-    def test_rest_config_subtype(self):
+    @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
+    def test_rest_config_subtype_gis(self):
         conf = self.get_config('geometrymodel')
         field = self.get_field(conf, 'geometry')
         self.assertEqual('geoshape', field['type'])
@@ -182,6 +186,7 @@ class RestTestCase(APITestCase):
         field = self.get_field(conf, 'geometry')
         self.assertEqual('geopoint', field['type'])
 
+    def test_rest_config_subtype(self):
         conf = self.get_config('filemodel')
         field = self.get_field(conf, 'file')
         self.assertEqual('binary', field['type'])
@@ -489,6 +494,7 @@ class RestPostTestCase(APITestCase):
         self.user = User.objects.create(username="testuser", is_superuser=True)
         self.client.force_authenticate(self.user)
 
+    @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
     def test_rest_geometry_post_geojson(self):
         """
         Posting GeoJSON to a model with a geometry field should work.
@@ -514,6 +520,7 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(geom.x, -90)
         self.assertEqual(geom.y, 44)
 
+    @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
     def test_rest_geometry_post_wkt(self):
         """
         Posting WKT to a model with a geometry field should work.

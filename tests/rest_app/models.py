@@ -1,5 +1,4 @@
-from django.contrib.gis.db import models
-from django.conf import settings
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from wq.db.patterns.models import LabelModel
 
@@ -61,16 +60,6 @@ class ItemType(LabelModel):
 class Item(LabelModel):
     name = models.CharField(max_length=10)
     type = models.ForeignKey(ItemType, models.CASCADE)
-
-
-class GeometryModel(LabelModel):
-    name = models.CharField(max_length=255)
-    geometry = models.GeometryField(srid=settings.SRID)
-
-
-class PointModel(LabelModel):
-    name = models.CharField(max_length=255)
-    geometry = models.PointField(srid=settings.SRID)
 
 
 class FileModel(LabelModel):
