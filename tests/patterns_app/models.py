@@ -6,6 +6,13 @@ class IdentifiedModel(patterns.IdentifiedModel):
     pass
 
 
+class FilterableModel(patterns.LabelModel):
+    name = models.CharField(max_length=10)
+    parent = models.ForeignKey(
+        IdentifiedModel, models.CASCADE
+    )
+
+
 class CustomPatternModel(models.Model):
     name = models.CharField(max_length=10)
 

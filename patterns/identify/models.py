@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connections
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import (
     GenericForeignKey, GenericRelation
@@ -48,9 +48,15 @@ class IdentifierManager(models.Manager):
             ids = self.filter_by_identifier(identifier)
             if exclude_apps:
                 ids = ids.exclude(content_type__app_label__in=exclude_apps)
-            items = ids.order_by(
-                'content_type', 'object_id'
-            ).distinct('content_type', 'object_id').count()
+            if connections[self.db].features.can_distinct_on_fields:
+                items = ids.order_by(
+                    'content_type', 'object_id'
+                ).distinct('content_type', 'object_id').count()
+            else:
+                distinct_ids = set()
+                for ident in ids:
+                    distinct_ids.add((ident.content_type_id, ident.object_id))
+                items = len(distinct_ids)
             if items == 1:
                 if resolved is None:
                     resolved = {}

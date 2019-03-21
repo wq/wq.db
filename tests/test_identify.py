@@ -326,3 +326,33 @@ class IdentifyRestTestCase(APITestCase):
             response.status_code, status.HTTP_200_OK, response.data
         )
         self.assertEqual(response.data['id'], 'test-7')
+
+    def test_filter_backend(self):
+        self.instance.filterablemodel_set.create(
+            pk=1,
+            name="Filter 1",
+        )
+        self.instance.filterablemodel_set.create(
+            pk=2,
+            name="Filter 2",
+        )
+        instance2 = IdentifiedModel.objects.find("Test 2")
+        instance2.filterablemodel_set.create(
+            pk=3,
+            name="Filter 3",
+        )
+        instance3 = IdentifiedModel.objects.find("Test 3")
+        instance3.filterablemodel_set.create(
+            pk=4,
+            name="Filter 4",
+        )
+
+        response = self.client.get("/filterable/test1/test-3?format=json")
+        self.assertEqual(
+            status.HTTP_200_OK, response.status_code
+        )
+        self.assertIn('list', response.data)
+        self.assertEqual(3, len(response.data['list']))
+        self.assertEqual(1, response.data['list'][0]['id'])
+        self.assertEqual(2, response.data['list'][1]['id'])
+        self.assertEqual(4, response.data['list'][2]['id'])
