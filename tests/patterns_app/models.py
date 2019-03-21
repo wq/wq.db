@@ -36,7 +36,8 @@ class CustomType(models.Model):
 
 
 class CustomTypedAttachment(models.Model):
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=10, null=True, blank=True)
+    value = models.FloatField(null=True, blank=True)
     type = models.ForeignKey(CustomType, models.CASCADE)
     parent = models.ForeignKey(
         CustomTypedPatternModel,

@@ -72,8 +72,11 @@ class CustomPatternTestCase(APITestCase):
                     'name': 'name',
                     'label': 'Name',
                     'type': 'string',
-                    'bind': {'required': True},
                     'wq:length': 10,
+                }, {
+                    'name': 'value',
+                    'label': 'Value',
+                    'type': 'decimal',
                 }, {
                     'name': 'type',
                     'label': 'Type',
@@ -140,6 +143,27 @@ class CustomPatternTestCase(APITestCase):
         atts = response.data['attachments']
         self.assertEqual(len(atts), 1)
         self.assertEqual(atts[0]['type_label'], 'Custom')
+
+    def test_customtypedpattern_post_empty(self):
+        form = {
+            'name': 'Test 5',
+            'attachments': [
+                 {'value': '', 'type_id': self.type.pk, 'name': ''},
+                 {'value': 0,  'type_id': self.type.pk, 'name': ''},
+            ]
+        }
+
+        response = self.client.post(
+            '/customtypedpatternmodels.json', form, format='json'
+        )
+        self.assertEqual(
+            response.status_code, status.HTTP_201_CREATED, response.data
+        )
+        self.assertIn("attachments", response.data)
+        atts = response.data['attachments']
+        self.assertEqual(len(atts), 1)
+        self.assertEqual(atts[0]['type_label'], 'Custom')
+        self.assertEqual(atts[0]['value'], 0)
 
     def test_customtypedpattern_put(self):
         form = {

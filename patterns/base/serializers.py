@@ -28,6 +28,12 @@ class AttachmentListSerializer(serializers.ListSerializer):
 
 
 class TypedAttachmentListSerializer(AttachmentListSerializer):
+    def check_empty(self, value):
+        if value is None or value == '':
+            return True
+        else:
+            return False
+
     def get_value(self, dictionary):
         # Handle attachments that are submitted together with their parent
         value = super(TypedAttachmentListSerializer, self).get_value(
@@ -41,7 +47,7 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
                 for key, val in row.items():
                     if key == self.child.Meta.type_field:
                         continue
-                    elif val:
+                    elif not self.check_empty(val):
                         empty = False
             if empty:
                 value[i] = None
