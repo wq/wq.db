@@ -60,6 +60,10 @@ matrix:
        - createdb -Upostgres wqdb_test
        - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
     - python: "3.7"
+      name: "Python 3.7 + Non-Root Base URL"
+      env:
+        - WITH_NONROOT=1
+    - python: "3.7"
       name: "Code Lint"
       env:
         - LINT="flake8"

@@ -30,6 +30,9 @@ if WITH_GIS:
     INSTALLED_APPS += ('tests.gis_app',)
 
 
+WITH_NONROOT = os.environ.get("WITH_NONROOT")
+
+
 if os.environ.get('PSYCOPG2'):
     if WITH_GIS:
         engine = 'django.contrib.gis.db.backends.postgis'
@@ -51,7 +54,7 @@ else:
     DATABASES = {
         'default': {
              'ENGINE': engine,
-             'NAME': ':memory:',
+             'NAME': 'wqdb_test.sqlite3',
         }
     }
 
@@ -64,3 +67,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 VERSION_TXT = os.path.join(BASE_DIR, "version.txt")
 
 TEMPLATES[0]['DIRS'] += (os.path.join(BASE_DIR, "templates"),)
+
+DEBUG = True

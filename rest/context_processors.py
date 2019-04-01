@@ -1,18 +1,32 @@
 from . import router
 from django.utils.http import urlquote
+from django.urls import reverse
 
 
 def version(request):
     return {'version': router.version}
 
 
+def get_base_url():
+    return reverse('wq:config-list').replace('/config/', '')
+
+
+def get_wq_path(request):
+    base_url = get_base_url()
+    if base_url and not request.path.startswith(base_url):
+        return None
+    path = request.path.replace(base_url + "/", "")
+    return path
+
+
 def router_info(request):
-    # FIXME: support non-root base_url
-    base_url = ""
-    path = request.path[1:]
+    base_url = get_base_url()
+    full_path = request.path
+    path = get_wq_path(request)
+    if not path:
+        return {}
     if request.GET:
         path += "?" + request.GET.urlencode()
-    full_path = base_url + "/" + path
 
     info = {
         'base_url': base_url,
@@ -25,6 +39,8 @@ def router_info(request):
     }
 
     return {
+        'rt': base_url,
+        'svc': base_url,
         'router_info': info,
         'pages_info': info,  # FIXME: Remove in 2.0
     }
@@ -36,20 +52,22 @@ def pages_info(request):
 
 
 def wq_config(request):
-    # FIXME: support non-root base_url
-    parts = request.path.split('/')
+    path = get_wq_path(request)
+    if not path:
+        return {}
+    parts = path.split('/')
     user = request.user if request.user.is_authenticated else None
     wq_conf = router.get_config(user=user)
     page_conf = None
     root_conf = None
 
     for name, conf in wq_conf['pages'].items():
-        if parts[1] == conf['url']:
+        if parts[0] == conf['url']:
             page_conf = conf
         elif conf['url'] == "":
             root_conf = conf
 
-    if not page_conf and root_conf and len(parts) == 2:
+    if not page_conf and root_conf and len(parts) == 1:
         page_conf = root_conf
 
     return {

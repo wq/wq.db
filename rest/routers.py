@@ -15,6 +15,8 @@ from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
 from .exceptions import ImproperlyConfigured
 
+import inspect
+
 
 class ModelRouter(DefaultRouter):
     _models = set()
@@ -562,6 +564,18 @@ class ModelRouter(DefaultRouter):
                 self._version = vfile.read()
                 vfile.close()
         return self._version
+
+    @property
+    def urls(self):
+        urls = super().urls
+        try:
+            # FIXME: Remove in 2.0
+            caller = inspect.stack()[1]
+            if 'include' in caller.code_context[0]:
+                return urls, 'wq'
+        except Exception:
+            pass
+        return urls, 'wq', 'wq'
 
 
 # Default router instance, c.f. django.contrib.admin.sites.site

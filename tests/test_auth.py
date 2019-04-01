@@ -1,4 +1,4 @@
-from rest_framework.test import APITestCase
+from .base import APITestCase
 import json
 
 from django.contrib.auth.models import User

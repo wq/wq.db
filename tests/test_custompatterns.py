@@ -1,5 +1,5 @@
 from wq.db import rest
-from rest_framework.test import APITestCase
+from .base import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
 from tests.patterns_app.models import (

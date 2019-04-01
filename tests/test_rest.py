@@ -1,5 +1,5 @@
 import unittest
-from rest_framework.test import APITestCase
+from .base import APITestCase
 from rest_framework import status
 import json
 from tests.rest_app.models import (
@@ -13,6 +13,7 @@ from tests.rest_app.serializers import (
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
+from django.urls import include
 
 
 class RestTestCase(APITestCase):
@@ -487,6 +488,10 @@ class RestRouterTestCase(APITestCase):
             )
 
         self.assertNotIn(TestModel, rest.router._models)
+
+    def test_rest_include(self):
+        from wq.db import rest
+        include(rest.router.urls)
 
 
 class RestPostTestCase(APITestCase):

@@ -1,4 +1,4 @@
-from rest_framework.test import APITestCase
+from .base import APITestCase
 from django.core.management import call_command
 try:
     from StringIO import StringIO

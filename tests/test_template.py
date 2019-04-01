@@ -1,10 +1,11 @@
-from rest_framework.test import APITestCase
+from .base import APITestCase
 from rest_framework import status
 from tests.rest_app.models import (
     RootModel, OneToOneModel, ForeignKeyModel, ExtraModel, UserManagedModel,
     Parent, Child, ItemType, Item, SlugModel, SlugRefParent, ChoiceModel,
 )
 from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class TemplateTestCase(APITestCase):
@@ -53,6 +54,11 @@ class TemplateTestCase(APITestCase):
             pk=1,
             choice="two"
         )
+
+    def assertHTMLEqual(self, expected_html, html, auto_replace=True):
+        if settings.WITH_NONROOT and auto_replace:
+            html = html.replace('/wqsite/', '/')
+        super().assertHTMLEqual(expected_html, html)
 
     def check_html(self, url, expected_html):
         response = self.client.get(url)
@@ -202,15 +208,22 @@ class TemplateTestCase(APITestCase):
         html = response.content.decode('utf-8')
         token = html.split('value="')[1].split('"')[0]
         self.assertTrue(len(token) >= 32)
+        if settings.WITH_NONROOT:
+            base_url = '/wqsite'
+        else:
+            base_url = ''
         self.assertHTMLEqual("""
-            <p>/rest_context</p>
+            <p>{base_url}/rest_context</p>
+            <p>rest_context</p>
+            <p>{base_url}/</p>
+            <p>{base_url}/</p>
             <p>0.0.0</p>
             <p>
               <input name="csrfmiddlewaretoken" type="hidden" value="{csrf}">
             </p>
             <p>rest_context</p>
             <p>Can Edit Items</p>
-        """.format(csrf=token), html)
+        """.format(csrf=token, base_url=base_url), html, auto_replace=False)
 
     def test_template_page_config(self):
         item = Item.objects.get(name="Test 1")
