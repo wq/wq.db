@@ -571,7 +571,8 @@ class ModelRouter(DefaultRouter):
         try:
             # FIXME: Remove in 2.0
             caller = inspect.stack()[1]
-            if 'include' in caller.code_context[0]:
+            code_context = getattr(caller, 'code_context', caller[4])
+            if 'include' in code_context[0]:
                 return urls, 'wq'
         except Exception:
             pass

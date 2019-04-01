@@ -13,7 +13,10 @@ from tests.rest_app.serializers import (
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
-from django.urls import include
+try:
+    from django.urls import include
+except ImportError:
+    from django.conf.urls import include
 
 
 class RestTestCase(APITestCase):
