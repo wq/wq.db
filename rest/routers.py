@@ -314,6 +314,8 @@ class ModelRouter(DefaultRouter):
             pages[info['name']] = info
 
         self._base_config = {'pages': pages}
+        if settings.DEBUG:
+            self._base_config['debug'] = True
         self._base_config.update(self._extra_config)
         return self._base_config
 
