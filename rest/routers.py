@@ -570,7 +570,7 @@ class ModelRouter(DefaultRouter):
 
     @property
     def urls(self):
-        urls = super().urls
+        urls = super(ModelRouter, self).urls
         try:
             # FIXME: Remove in 2.0
             caller = inspect.stack()[1]
