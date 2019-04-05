@@ -203,7 +203,7 @@ class ModelRouter(DefaultRouter):
 
         return serializer
 
-    def serialize(self, obj, many=False, depth=None):
+    def serialize(self, obj, many=False, depth=None, request=None):
         if many:
             # assume obj is a queryset
             model = obj.model
@@ -214,7 +214,10 @@ class ModelRouter(DefaultRouter):
             if depth is None:
                 depth = 1
         serializer = self.get_serializer_for_model(model, depth)
-        return serializer(obj, many=many, context={'router': self}).data
+        context = {'router': self}
+        if request:
+            context['request'] = request
+        return serializer(obj, many=many, context=context).data
 
     def get_paginate_by_for_model(self, model_class):
         config = self.get_model_config(model_class) or {}

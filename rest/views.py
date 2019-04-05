@@ -260,5 +260,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         response.data['parent_page'] = ct.identifier
         response.data['page_config'] = get_ct(self.model).get_config()
         if self.router:
-            response.data['parent'] = self.router.serialize(parent)
+            response.data['parent'] = self.router.serialize(
+                parent,
+                request=self.request,
+            )
         return parent
