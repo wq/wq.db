@@ -4,11 +4,11 @@ from .models import (
     FileModel, ImageModel,
     SlugModel, SlugRefParent, SlugRefChild,
     DateModel, ChoiceModel, TranslatedModel,
-    CharFieldModel,
+    CharFieldModel, ExpensiveModel
 )
 from .serializers import (
     RootModelSerializer, ParentSerializer, ItemSerializer,
-    SlugRefChildSerializer,
+    SlugRefChildSerializer, ExpensiveSerializer,
 )
 
 
@@ -92,7 +92,11 @@ rest.router.register_model(
     CharFieldModel,
     fields="__all__",
 )
-rest.router.set_extra_config(debug=True)
+rest.router.register_model(
+    ExpensiveModel,
+    serializer=ExpensiveSerializer,
+    queryset=ExpensiveModel.objects.defer('expensive', 'more_expensive'),
+)
 
 rest.router.add_page("rest_context", {})
 rest.router.add_page("auth_context", {})

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from wq.db.patterns.models import LabelModel
+import time
 
 
 class RootModel(LabelModel):
@@ -130,4 +131,31 @@ class CharFieldModel(models.Model):
     blankable_field = models.CharField(blank=True, max_length=20)
     nullableblankable_field = models.CharField(
         null=True, blank=True, max_length=20
+    )
+
+
+class ExpensiveField(models.CharField):
+    def __init__(self, cost=None, **kwargs):
+        self.cost = cost
+        super().__init__(**kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs['cost'] = self.cost
+        return name, path, args, kwargs
+
+    def to_python(self, value):
+        if value:
+            time.sleep(self.cost)
+        return super().to_python(value)
+
+
+class ExpensiveModel(LabelModel):
+    name = models.CharField(max_length=20)
+    expensive = ExpensiveField(cost=2, max_length=255)
+    more_expensive = ExpensiveField(
+        cost=5,
+        max_length=255,
+        null=True,
+        blank=True
     )

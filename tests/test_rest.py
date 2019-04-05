@@ -61,12 +61,13 @@ class RestTestCase(APITestCase):
         self.assertIn(page_name, result['pages'])
         return result['pages'][page_name]
 
-    def get_field(self, page_config, field_name):
+    def get_field(self, page_config, field_name, allow_none=False):
         self.assertIn('form', page_config)
         for field in page_config['form']:
             if field['name'] == field_name:
                 return field
-        self.fail("Could not find %s" % field_name)
+        if not allow_none:
+            self.fail("Could not find %s" % field_name)
 
     # Test existence and content of config.json
     def test_rest_config_json(self):
@@ -424,6 +425,14 @@ class RestTestCase(APITestCase):
         self.assertEqual(obj['type_label'], 'TEST')
         self.assertEqual(obj['label'], 'Test: Test 1')
 
+    def test_rest_list_exclude_config(self):
+        conf = self.get_config('expensivemodel')
+        self.get_field(conf, 'name')
+        self.get_field(conf, 'expensive')
+        self.assertIsNone(
+            self.get_field(conf, 'more_expensive', allow_none=True)
+        )
+
 
 class RestRouterTestCase(APITestCase):
     def test_rest_model_conflict(self):
@@ -660,6 +669,39 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(response.data, {
             'ref_id': ['Object with code=test_invalid does not exist.']
         })
+
+    def test_rest_list_exclude_post(self):
+        # Create
+        response = self.client.post('/expensivemodels.json', {
+            "name": "Test",
+            "expensive": "SOME_DATA",
+        })
+        item = response.data
+        item_url = '/expensivemodels/{pk}.json'.format(pk=item['id'])
+        self.assertEqual(item['name'], "Test")
+        self.assertEqual(item['expensive'], "SOME_DATA")
+
+        # List view
+        response = self.client.get('/expensivemodels.json')
+        item = response.data['list'][0]
+        self.assertEqual(item['name'], "Test")
+        self.assertNotIn('expensive', item)
+        self.assertNotIn('more_expensive', item)
+
+        # Detail view
+        response = self.client.get(item_url)
+        item = response.data
+        self.assertEqual(item['name'], "Test")
+        self.assertEqual(item['expensive'], "SOME_DATA")
+
+        # Update
+        response = self.client.put(item_url, {
+            "name": "Test 2",
+            "expensive": "SOME_OTHER_DATA",
+        })
+        item = response.data
+        self.assertEqual(item['name'], "Test 2")
+        self.assertEqual(item['expensive'], "SOME_OTHER_DATA")
 
     def test_rest_list_head(self):
         response = self.client.head('/')
