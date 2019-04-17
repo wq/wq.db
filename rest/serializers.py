@@ -71,6 +71,16 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
+class BooleanLabelField(serializers.ReadOnlyField):
+    def to_representation(self, value):
+        if value is None:
+            return None
+        elif value:
+            return 'Yes'
+        else:
+            return 'No'
+
+
 class BlankCharField(serializers.CharField):
     def run_validation(self, data=serializers.empty):
         if self.allow_blank and data is None:
@@ -99,7 +109,20 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         for name, field in list(fields.items()):
             if name == 'id' or field.read_only:
                 fields.pop(name)
+            elif isinstance(field, serializers.NullBooleanField):
+                fields[name] = serializers.ChoiceField(
+                    choices=self.get_boolean_choices(field),
+                    required=False,
+                )
+            elif isinstance(field, serializers.BooleanField):
+                fields[name] = serializers.ChoiceField(
+                    choices=self.get_boolean_choices(field),
+                    required=field.required,
+                )
         return fields
+
+    def get_boolean_choices(self, field):
+        return [(True, 'Yes'), (False, 'No')]
 
     def get_wq_config(self):
         fields = []
@@ -400,6 +423,10 @@ class ModelSerializer(BaseModelSerializer):
             if field.choices:
                 fields[name + '_label'] = serializers.ReadOnlyField(
                     source='get_%s_display' % name
+                )
+            if isinstance(field, model_fields.BooleanField):
+                fields[name + '_label'] = BooleanLabelField(
+                    source=name,
                 )
 
         # Add labels for related fields

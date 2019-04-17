@@ -156,7 +156,11 @@ class IdentifyRestTestCase(APITestCase):
                 }, {
                     'name': 'is_primary',
                     'label': 'Is Primary',
-                    'type': 'string',
+                    'type': 'select one',
+                    'choices': [
+                        {'name': True, 'label': 'Yes'},
+                        {'name': False, 'label': 'No'},
+                    ],
                 }],
                 'initial': {
                     'type_field': 'authority',

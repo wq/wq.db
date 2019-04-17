@@ -33,6 +33,12 @@ class LabelTestCase(APITestCase):
         self.assertIn('choice_label', response.data)
         self.assertEqual(response.data['choice_label'], "Choice Two")
 
+    def test_rest_boolean_label(self):
+        response = self.client.get("/itemtypes/1.json")
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        self.assertIn('active_label', response.data)
+        self.assertEqual(response.data['active_label'], "Yes")
+
     def test_custom_date_label(self):
         from wq.db.rest import router
 

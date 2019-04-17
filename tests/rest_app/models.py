@@ -55,7 +55,7 @@ class Child(LabelModel):
 
 class ItemType(LabelModel):
     name = models.CharField(max_length=10)
-    active = models.BooleanField(default=True)
+    active = models.NullBooleanField(default=True)
 
 
 class Item(LabelModel):

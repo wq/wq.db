@@ -88,6 +88,30 @@ class ConfigTestCase(APITestCase):
             }
         ], conf['form'])
 
+    def test_rest_config_json_boolean_choices(self):
+        conf = self.get_config('itemtype')
+        self.assertEqual([
+            {
+                'name': 'name',
+                'label': 'Name',
+                'type': 'string',
+                'wq:length': 10,
+                'bind': {'required': True},
+            },
+            {
+                'name': 'active',
+                'label': 'Active',
+                'type': 'select one',
+                'choices': [{
+                    'name': True,
+                    'label': 'Yes',
+                }, {
+                    'name': False,
+                    'label': 'No',
+                }],
+            }
+        ], conf['form'])
+
     def test_rest_config_json_rels(self):
         pconf = self.get_config('parent')
         self.assertEqual({
