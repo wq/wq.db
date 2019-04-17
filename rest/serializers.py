@@ -71,6 +71,12 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
+MODEL_BOOLEAN_FIELDS = (
+    model_fields.BooleanField,
+    model_fields.NullBooleanField,
+)
+
+
 class BooleanLabelField(serializers.ReadOnlyField):
     def to_representation(self, value):
         if value is None:
@@ -424,7 +430,7 @@ class ModelSerializer(BaseModelSerializer):
                 fields[name + '_label'] = serializers.ReadOnlyField(
                     source='get_%s_display' % name
                 )
-            if isinstance(field, model_fields.BooleanField):
+            if isinstance(field, MODEL_BOOLEAN_FIELDS):
                 fields[name + '_label'] = BooleanLabelField(
                     source=name,
                 )
