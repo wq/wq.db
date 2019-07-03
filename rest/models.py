@@ -16,6 +16,7 @@ __all__ = (
 
 class ContentTypeManager(DjangoContentTypeManager):
     def get_by_identifier(self, identifier):
+        # TODO: What if model is configured with a different name?
         return self.get(model=identifier)
 
 
@@ -24,7 +25,9 @@ class ContentType(DjangoContentType):
 
     @property
     def identifier(self):
-        return self.model
+        from . import router
+        conf = router._config.get(self.model_class(), {})
+        return conf.get('name', self.model)
 
     @property
     def urlbase(self):
