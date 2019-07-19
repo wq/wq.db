@@ -171,36 +171,3 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(response.data, {
             'ref_id': ['Object with code=test_invalid does not exist.']
         })
-
-    def test_rest_list_exclude_post(self):
-        # Create
-        response = self.client.post('/expensivemodels.json', {
-            "name": "Test",
-            "expensive": "SOME_DATA",
-        })
-        item = response.data
-        item_url = '/expensivemodels/{pk}.json'.format(pk=item['id'])
-        self.assertEqual(item['name'], "Test")
-        self.assertEqual(item['expensive'], "SOME_DATA")
-
-        # List view
-        response = self.client.get('/expensivemodels.json')
-        item = response.data['list'][0]
-        self.assertEqual(item['name'], "Test")
-        self.assertNotIn('expensive', item)
-        self.assertNotIn('more_expensive', item)
-
-        # Detail view
-        response = self.client.get(item_url)
-        item = response.data
-        self.assertEqual(item['name'], "Test")
-        self.assertEqual(item['expensive'], "SOME_DATA")
-
-        # Update
-        response = self.client.put(item_url, {
-            "name": "Test 2",
-            "expensive": "SOME_OTHER_DATA",
-        })
-        item = response.data
-        self.assertEqual(item['name'], "Test 2")
-        self.assertEqual(item['expensive'], "SOME_OTHER_DATA")

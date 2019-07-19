@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from wq.db.rest.serializers import ModelSerializer
 from .models import (
-    OneToOneModel, ExtraModel, Child, ChoiceModel, DateModel, Item,
-    ExpensiveModel,
+    OneToOneModel, ExtraModel, Child, ChoiceModel, DateModel, Item
 )
 
 
@@ -91,11 +90,3 @@ class ItemLabelSerializer(ModelSerializer):
     class Meta:
         model = Item
         fields = "__all__"
-
-
-class ExpensiveSerializer(ModelSerializer):
-    class Meta:
-        fields = "__all__"
-        list_exclude = ('expensive', 'more_expensive')
-        config_exclude = ('more_expensive',)
-        model = ExpensiveModel

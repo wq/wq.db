@@ -71,22 +71,6 @@ class LocalDateTimeField(serializers.ReadOnlyField):
         return value.strftime('%Y-%m-%d %I:%M %p')
 
 
-MODEL_BOOLEAN_FIELDS = (
-    model_fields.BooleanField,
-    model_fields.NullBooleanField,
-)
-
-
-class BooleanLabelField(serializers.ReadOnlyField):
-    def to_representation(self, value):
-        if value is None:
-            return None
-        elif value:
-            return 'Yes'
-        else:
-            return 'No'
-
-
 class BlankCharField(serializers.CharField):
     def run_validation(self, data=serializers.empty):
         if self.allow_blank and data is None:
@@ -109,26 +93,11 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
     ))
 
     def get_fields_for_config(self):
-        self._for_wq_config = True
         fields = self.get_fields()
-        del self._for_wq_config
         for name, field in list(fields.items()):
             if name == 'id' or field.read_only:
                 fields.pop(name)
-            elif isinstance(field, serializers.NullBooleanField):
-                fields[name] = serializers.ChoiceField(
-                    choices=self.get_boolean_choices(field),
-                    required=False,
-                )
-            elif isinstance(field, serializers.BooleanField):
-                fields[name] = serializers.ChoiceField(
-                    choices=self.get_boolean_choices(field),
-                    required=field.required,
-                )
         return fields
-
-    def get_boolean_choices(self, field):
-        return [(True, 'Yes'), (False, 'No')]
 
     def get_wq_config(self):
         fields = []
@@ -309,30 +278,16 @@ class ModelSerializer(BaseModelSerializer):
             return True
         return False
 
-    @property
-    def is_config(self):
-        return getattr(self, '_for_wq_config', False)
-
     def get_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
         fields = self.update_id_fields(fields)
         fields.update(self.get_label_fields(fields))
-        exclude = set()
-
-        def get_exclude(meta_name):
-            return set(getattr(self.Meta, meta_name, []))
-
-        if not self.is_detail and not self.is_config:
-            exclude |= get_exclude('list_exclude')
+        if not self.is_detail:
+            for field in getattr(self.Meta, 'list_exclude', []):
+                fields.pop(field, None)
             if self.is_html:
-                exclude |= get_exclude('html_list_exclude')
-
-        if self.is_config:
-            exclude |= get_exclude('config_exclude')
-
-        for field in list(exclude):
-            fields.pop(field, None)
-
+                for field in getattr(self.Meta, 'html_list_exclude', []):
+                    fields.pop(field, None)
         return fields
 
     def update_id_fields(self, fields):
@@ -429,10 +384,6 @@ class ModelSerializer(BaseModelSerializer):
             if field.choices:
                 fields[name + '_label'] = serializers.ReadOnlyField(
                     source='get_%s_display' % name
-                )
-            if isinstance(field, MODEL_BOOLEAN_FIELDS):
-                fields[name + '_label'] = BooleanLabelField(
-                    source=name,
                 )
 
         # Add labels for related fields

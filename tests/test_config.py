@@ -12,13 +12,12 @@ class ConfigTestCase(APITestCase):
         self.assertIn(page_name, result['pages'])
         return result['pages'][page_name]
 
-    def get_field(self, page_config, field_name, allow_none=False):
+    def get_field(self, page_config, field_name):
         self.assertIn('form', page_config)
         for field in page_config['form']:
             if field['name'] == field_name:
                 return field
-        if not allow_none:
-            self.fail("Could not find %s" % field_name)
+        self.fail("Could not find %s" % field_name)
 
     # Test existence and content of config.json
     def test_rest_config_json(self):
@@ -85,30 +84,6 @@ class ConfigTestCase(APITestCase):
                     'name': 'three',
                     'label': 'Choice Three',
                 }]
-            }
-        ], conf['form'])
-
-    def test_rest_config_json_boolean_choices(self):
-        conf = self.get_config('itemtype')
-        self.assertEqual([
-            {
-                'name': 'name',
-                'label': 'Name',
-                'type': 'string',
-                'wq:length': 10,
-                'bind': {'required': True},
-            },
-            {
-                'name': 'active',
-                'label': 'Active',
-                'type': 'select one',
-                'choices': [{
-                    'name': True,
-                    'label': 'Yes',
-                }, {
-                    'name': False,
-                    'label': 'No',
-                }],
             }
         ], conf['form'])
 
@@ -187,11 +162,3 @@ class ConfigTestCase(APITestCase):
         conf = self.get_config('slugrefparent')
         self.assertEqual(conf['form'][0]['name'], 'ref')
         self.assertEqual(conf['form'][1]['name'], 'name')
-
-    def test_rest_list_exclude_config(self):
-        conf = self.get_config('expensivemodel')
-        self.get_field(conf, 'name')
-        self.get_field(conf, 'expensive')
-        self.assertIsNone(
-            self.get_field(conf, 'more_expensive', allow_none=True)
-        )
