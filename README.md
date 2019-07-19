@@ -17,15 +17,16 @@
 
 #### Support Matrix
 
-wq.db 1.1 is compatible with Django 1.11 and newer, and optimized for Python 3.
+wq.db is compatible with Python >= 3.4 and Django >= 1.11.
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
 **wq.db 1.0** | 2.7, 3.4, 3.5, 3.6 | 1.8, 1.10, 1.11 | 3.6
-**wq.db 1.1** | 2.7?*, 3.4, 3.5, 3.6, 3.7 | 1.11, 2.0, 2.1 | 3.9
-**wq.db 2.0 (Future)** | 3.4+ | 2.0+ | TBD
+**wq.db 1.1** | 2.7*, 3.4, 3.5, 3.6, 3.7 | 1.11, 2.0, 2.1 | 3.9
+**wq.db 1.2 (In Development)** | 3.4+ | 1.11, 2.0, 2.1, 2.2 | 3.9, 3.10
+**wq.db 2.0 (Future)** | 3.5+ | 2.1+ | 3.10
 
-&#42; Python 2.7 support is no longer tested, though it might still work for now.
+&#42; Python 2.7 support is no longer tested, but is known to work in wq.db 1.1 and earlier.
 
 ## Getting Started
 
