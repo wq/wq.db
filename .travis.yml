@@ -1,44 +1,14 @@
 language: python
+python: 3.7
 dist: xenial
 env:
   global:
-    - DRF="djangorestframework==3.9.1"
-    - DJANGO="django==2.1.7"
+    - DRF="djangorestframework==3.10.1"
+    - DJANGO="django==2.2.3"
 matrix:
   include:
-    - python: "3.7"
-      name: "Python 3.7 (Django 1.11)"
-      env:
-        - DJANGO="django==1.11.20"
-    - python: "3.7"
-      name: "Python 3.7 (Django 1.11) + PostGIS"
-      env:
-        - DJANGO="django==1.11.20"
-        - PSYCOPG2="psycopg2-binary"
-        - WITH_GIS=1
-      addons:
-        postgresql: "10"
-        apt:
-          packages:
-           - postgresql-10-postgis-2.4
-      before_script:
-       - createdb -Upostgres wqdb_test
-       - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
-    - python: "3.4"
-      name: "Python 3.4"
-      env:
-        - DJANGO="django==2.0.13"
-    - python: "3.5"
-      name: "Python 3.5"
-      env: []
-    - python: "3.6"
-      name: "Python 3.6"
-      env: []
-    - python: "3.7"
-      name: "Python 3.7"
-      env: []
-    - python: "3.7"
-      name: "Python 3.7 + SpatiaLite"
+    - name: "Defaults (Python 3.7, Django 2.2, DRF 3.10)"
+    - name: "+ SpatiaLite"
       env:
         - WITH_GIS=1
       addons:
@@ -46,8 +16,7 @@ matrix:
           packages:
            - libsqlite3-mod-spatialite
            - gdal-bin
-    - python: "3.7"
-      name: "Python 3.7 + PostGIS"
+    - name: "+ PostGIS"
       env:
         - PSYCOPG2="psycopg2-binary"
         - WITH_GIS=1
@@ -59,12 +28,43 @@ matrix:
       before_script:
        - createdb -Upostgres wqdb_test
        - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
-    - python: "3.7"
-      name: "Python 3.7 + Non-Root Base URL"
+    - name: "+ Non-Root Base URL"
       env:
         - WITH_NONROOT=1
-    - python: "3.7"
-      name: "Code Lint"
+    - name: "Python 3.6"
+      python: "3.6"
+    - name: "Python 3.5"
+      python: "3.5"
+    - name: "Python 3.4 (Django 1.11)"
+      python: "3.4"
+      env:
+        - DJANGO="django==1.11.22"
+    - name: "Django 2.1"
+      env:
+        - DJANGO="django==2.1.10"
+    - name: "Django 1.11"
+      env:
+        - DJANGO="django==1.11.22"
+    - name: "Django 1.11 + PostGIS"
+      env:
+        - DJANGO="django==1.11.22"
+        - PSYCOPG2="psycopg2-binary"
+        - WITH_GIS=1
+      addons:
+        postgresql: "10"
+        apt:
+          packages:
+           - postgresql-10-postgis-2.4
+      before_script:
+       - createdb -Upostgres wqdb_test
+       - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
+    - name: "DRF 3.9"
+      env:
+        - DRF="djangorestframework==3.9.4"
+    - name: "DRF 3.8"
+      env:
+        - DRF="djangorestframework==3.8.2"
+    - name: "Code Lint"
       env:
         - LINT="flake8"
 install:
