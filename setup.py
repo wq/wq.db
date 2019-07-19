@@ -83,7 +83,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         'Django>=1.11,<3.0',
-        'djangorestframework>=3.8.0,<3.10',
+        'djangorestframework>=3.8.0,<3.11',
         'django-mustache',
         'html-json-forms',
         'natural-keys>=1.3.0',
@@ -102,6 +102,7 @@ setup(
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
         'Framework :: Django :: 2.1',
+        'Framework :: Django :: 2.2',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Text Processing :: Markup :: HTML',
         'Topic :: Scientific/Engineering :: GIS',

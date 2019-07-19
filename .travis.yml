@@ -35,10 +35,6 @@ matrix:
       python: "3.6"
     - name: "Python 3.5"
       python: "3.5"
-    - name: "Python 3.4 (Django 1.11)"
-      python: "3.4"
-      env:
-        - DJANGO="django==1.11.22"
     - name: "Django 2.1"
       env:
         - DJANGO="django==2.1.10"
@@ -64,6 +60,11 @@ matrix:
     - name: "DRF 3.8"
       env:
         - DRF="djangorestframework==3.8.2"
+    - name: "Python 3.4, Django 1.11, DRF 3.9"
+      python: "3.4"
+      env:
+        - DJANGO="django==1.11.22"
+        - DRF="djangorestframework==3.9.4"
     - name: "Code Lint"
       env:
         - LINT="flake8"
