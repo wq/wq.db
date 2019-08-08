@@ -203,7 +203,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             info['type'] = 'string'
             info['name'] = info['name'].replace('_id', '')
             info['label'] = info['label'].replace(' Id', '')
-            if field.queryset:
+            if hasattr(field, 'queryset'):
                 fk = self.get_wq_foreignkey_info(field.queryset.model)
                 if fk:
                     info['wq:ForeignKey'] = fk
