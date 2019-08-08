@@ -336,7 +336,7 @@ class ModelSerializer(BaseModelSerializer):
         return fields
 
     def update_id_fields(self, fields):
-        if 'id' not in self.fields:
+        if 'id' not in self._declared_fields:
             lookup = getattr(self.Meta, 'wq_config', {}).get('lookup', None)
             if lookup and lookup != 'id':
                 fields['id'] = serializers.ReadOnlyField(source=lookup)

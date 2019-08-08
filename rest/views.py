@@ -1,6 +1,6 @@
 from rest_framework.generics import GenericAPIView as RestGenericAPIView
 from rest_framework.response import Response
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework import status, viewsets
 from .model_tools import get_ct, get_object_id, get_by_identifier
 from django.db.models import FieldDoesNotExist, ProtectedError
@@ -72,7 +72,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         else:
             return 0
 
-    @detail_route()
+    @action(detail=True)
     def edit(self, request, *args, **kwargs):
         """
         Generates a context appropriate for editing a form
