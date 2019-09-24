@@ -2,6 +2,7 @@
 context_processors = (
     'django.template.context_processors.csrf',
     'django.contrib.auth.context_processors.auth',
+    'django.contrib.messages.context_processors.messages',
     'wq.db.rest.auth.context_processors.is_authenticated',
     'wq.db.rest.context_processors.version',
     'wq.db.rest.context_processors.router_info',
