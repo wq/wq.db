@@ -162,8 +162,9 @@ class IdentifiedModelManager(NaturalKeyModelManager):
     def get_by_natural_key(self, identifier):
         return self.get_by_identifier(identifier)
 
-    def create_by_natural_key(self, identifier):
-        return self.create(name=identifier)
+    def create_by_natural_key(self, identifier, **kwargs):
+        defaults = kwargs.get('defaults') or {}
+        return self.create(name=identifier, **defaults)
 
 
 class IdentifiedModel(NaturalKeyModel, LabelModel):
