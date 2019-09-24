@@ -100,3 +100,4 @@ rest.router.register_model(
 
 rest.router.add_page("rest_context", {})
 rest.router.add_page("auth_context", {})
+rest.router.add_page("script_context", {})

@@ -65,6 +65,7 @@ ROOT_URLCONF = "tests.urls"
 BASE_DIR = os.path.dirname(__file__)
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 VERSION_TXT = os.path.join(BASE_DIR, "version.txt")
+WQ_SCRIPT_FILE = os.path.join(BASE_DIR, "index.html")
 
 TEMPLATES[0]['DIRS'] += (os.path.join(BASE_DIR, "templates"),)
 

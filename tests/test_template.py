@@ -367,3 +367,16 @@ class TemplateTestCase(APITestCase):
               <button>Submit</button>
             </form>
         """)
+
+    def test_script_tags(self):
+        self.check_html('/script_context', """
+            <html>
+              <head>
+                <script async>TEST</script>
+                <script async src="chunk1.js"></script>
+                <script async src="chunk2.js"></script>
+              </head>
+              <body>
+              </body>
+            </html>
+        """)

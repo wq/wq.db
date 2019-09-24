@@ -1,6 +1,9 @@
 from . import router
 from django.utils.http import urlquote
+from django.utils.safestring import mark_safe
 from django.urls import reverse
+from django.conf import settings
+from html.parser import HTMLParser
 
 
 def version(request):
@@ -74,3 +77,50 @@ def wq_config(request):
         'wq_config': wq_conf,
         'page_config': page_conf,
     }
+
+
+_script_tags = None
+
+
+def script_tags(request):
+    global _script_tags
+    if _script_tags is None:
+        _script_tags = parse_script_tags()
+    return {'script_tags': mark_safe(_script_tags)}
+
+
+def parse_script_tags():
+    filename = getattr(settings, 'WQ_SCRIPT_FILE', None)
+    if not filename:
+        return ''
+
+    parser = ScriptTagParser()
+    with open(filename) as f:
+        parser.feed(f.read())
+
+    return '\n'.join(parser.output)
+
+
+class ScriptTagParser(HTMLParser):
+    in_script = None
+    output = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'script':
+            if attrs:
+                attrs = dict(attrs)
+                self.output.append(
+                    "<script async src='{src}'>".format(**attrs)
+                )
+            else:
+                self.output.append("<script async>")
+            self.in_script = True
+
+    def handle_data(self, data):
+        if self.in_script:
+            self.output.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'script':
+            self.output.append('</script>')
+            self.in_script = False

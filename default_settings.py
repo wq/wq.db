@@ -7,6 +7,7 @@ context_processors = (
     'wq.db.rest.context_processors.version',
     'wq.db.rest.context_processors.router_info',
     'wq.db.rest.context_processors.wq_config',
+    'wq.db.rest.context_processors.script_tags',
 )
 
 TEMPLATES = [
