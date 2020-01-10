@@ -1,6 +1,5 @@
 from rest_framework.permissions import BasePermission
 from .model_tools import get_ct
-from django.utils.six import string_types
 
 
 class ModelPermissions(BasePermission):
@@ -26,7 +25,7 @@ class ModelPermissions(BasePermission):
 def has_perm(user, ct, perm):
     if perm == 'view':
         return True
-    if isinstance(ct, string_types):
+    if isinstance(ct, str):
         perm = '%s_%s' % (ct, perm)
     else:
         perm = '%s.%s_%s' % (ct.app_label, perm, ct.model)

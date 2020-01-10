@@ -1,5 +1,4 @@
 from django.utils.encoding import force_text
-from django.utils.six import string_types
 from django.conf.urls import url
 from django.db.utils import DatabaseError
 
@@ -56,7 +55,7 @@ class ModelRouter(DefaultRouter):
     def register_model(self, model, viewset=None, serializer=None, fields=None,
                        queryset=None, filter=None, cache_filter=None,
                        **kwargs):
-        if isinstance(model, string_types) and '.' in model:
+        if isinstance(model, str) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
 

@@ -1,9 +1,6 @@
-from django.utils.six import string_types
-
-
 def get_ct(model, for_concrete_model=False):
     from .models import ContentType
-    if isinstance(model, string_types):
+    if isinstance(model, str):
         ctype = ContentType.objects.get_by_identifier(model)
     else:
         ctype = ContentType.objects.get_for_model(

@@ -31,15 +31,22 @@ class IdentifierSerializer(base.TypedAttachmentSerializer):
 
 
 class IdentifiedModelValidator(UniqueTogetherValidator):
-    def enforce_required_fields(self, attrs):
+    def enforce_required_fields(self, attrs, serializer=None):
         pass
 
-    def filter_queryset(self, attrs, queryset):
+    def filter_queryset(self, attrs, queryset, serializer=None):
         for field in self.fields:
             attrs.setdefault(field, None)
-        return super(IdentifiedModelValidator, self).filter_queryset(
-            attrs, queryset
-        )
+        if getattr(self, 'requires_context', None):
+            # DRF 3.11+
+            return super(IdentifiedModelValidator, self).filter_queryset(
+                attrs, queryset, serializer
+            )
+        else:
+            # DRF 3.10 and earlier
+            return super(IdentifiedModelValidator, self).filter_queryset(
+                attrs, queryset
+            )
 
 
 class IdentifiedModelSerializer(base.AttachedModelSerializer):
