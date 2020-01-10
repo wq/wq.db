@@ -1,13 +1,13 @@
 language: python
-python: 3.7
+python: 3.8
 dist: xenial
 env:
   global:
-    - DRF="djangorestframework==3.10.1"
-    - DJANGO="django==2.2.3"
+    - DRF="djangorestframework==3.11.0"
+    - DJANGO="django==3.0.2"
 matrix:
   include:
-    - name: "Defaults (Python 3.7, Django 2.2, DRF 3.10)"
+    - name: "Defaults (Python 3.8, Django 3.0, DRF 3.11)"
     - name: "+ SpatiaLite"
       env:
         - WITH_GIS=1
@@ -31,19 +31,19 @@ matrix:
     - name: "+ Non-Root Base URL"
       env:
         - WITH_NONROOT=1
+    - name: "Python 3.7"
+      python: "3.7"
     - name: "Python 3.6"
       python: "3.6"
-    - name: "Python 3.5"
-      python: "3.5"
-    - name: "Django 2.1"
+    - name: "Django 2.2"
       env:
-        - DJANGO="django==2.1.10"
+        - DJANGO="django==2.2.9"
     - name: "Django 1.11"
       env:
-        - DJANGO="django==1.11.22"
+        - DJANGO="django==1.11.27"
     - name: "Django 1.11 + PostGIS"
       env:
-        - DJANGO="django==1.11.22"
+        - DJANGO="django==1.11.27"
         - PSYCOPG2="psycopg2-binary"
         - WITH_GIS=1
       addons:
@@ -57,13 +57,14 @@ matrix:
     - name: "DRF 3.9"
       env:
         - DRF="djangorestframework==3.9.4"
-    - name: "DRF 3.8"
+    - name: "Python 3.5, Django 2.2"
+      python: "3.5"
       env:
-        - DRF="djangorestframework==3.8.2"
-    - name: "Python 3.4, Django 1.11, DRF 3.9"
+        - DJANGO="django==2.2.9"
+    - name: "Python 3.4, Django 2.0, DRF 3.9"
       python: "3.4"
       env:
-        - DJANGO="django==1.11.22"
+        - DJANGO="django==2.0.13"
         - DRF="djangorestframework==3.9.4"
     - name: "Code Lint"
       env:
