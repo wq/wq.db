@@ -1,6 +1,6 @@
 language: python
 python: 3.8
-dist: xenial
+dist: bionic
 env:
   global:
     - DRF="djangorestframework==3.11.0"
@@ -54,14 +54,12 @@ matrix:
       before_script:
        - createdb -Upostgres wqdb_test
        - psql -Upostgres wqdb_test -c "CREATE EXTENSION postgis;"
-    - name: "DRF 3.9"
-      env:
-        - DRF="djangorestframework==3.9.4"
     - name: "Python 3.5, Django 2.2"
       python: "3.5"
       env:
         - DJANGO="django==2.2.9"
     - name: "Python 3.4, Django 2.0, DRF 3.9"
+      dist: xenial
       python: "3.4"
       env:
         - DJANGO="django==2.0.13"

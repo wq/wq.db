@@ -48,7 +48,7 @@ if os.environ.get('PSYCOPG2'):
 else:
     if WITH_GIS:
         engine = 'django.contrib.gis.db.backends.spatialite'
-        SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+        SPATIALITE_LIBRARY_PATH = 'mod_spatialite.so'
     else:
         engine = 'django.db.backends.sqlite3'
     DATABASES = {
