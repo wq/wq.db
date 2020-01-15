@@ -21,10 +21,10 @@ wq.db is compatible with Python >= 3.4 and Django >= 1.11.
 
 &nbsp;      | Python | Django | Django REST Framework
 ------------|--------|--------|-----------------------
-**wq.db 1.0** | 2.7, 3.4, 3.5, 3.6 | 1.8, 1.10, 1.11 | 3.6
-**wq.db 1.1** | 2.7*, 3.4, 3.5, 3.6, 3.7 | 1.11, 2.0, 2.1 | 3.9
-**wq.db 1.2** | 3.4+ | 1.11, 2.x, 3.0 | 3.9, 3.10, 3.11
-**wq.db 2.0 (Future)** | 3.5+ | 2.1+ | 3.11+
+**wq.db 1.0** | 2.7, 3.4 &ndash; 3.6 | 1.8, 1.10, 1.11 | 3.6
+**wq.db 1.1** | 2.7*, 3.4 &ndash; 3.7 | 1.11, 2.0, 2.1 | 3.9
+**wq.db 1.2** | 3.4 &ndash; 3.8 | 1.11, 2.x, 3.0 | 3.9, 3.10, 3.11
+**wq.db 2.0 (Future)** | 3.5+ | 2.2+ | 3.11+
 
 &#42; Python 2.7 support is no longer tested, but is known to work in wq.db 1.1 and earlier.
 
@@ -47,29 +47,26 @@ See [the documentation] for more information.
 
 ## Features
 
-wq.db provides the following modules:
+### [wq.db.rest][rest]
+Extends [Django REST Framework] with model-based views and serializers that facilitate creating an integrated [website, REST API, and mobile app][url-structure].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [@wq/app].  wq.db.rest also includes a GeoJSON serializer/renderer.
 
-### [wq.db.rest]
-Extends the excellent [Django REST Framework] with a collection of views, serializers, and context processors useful for creating a progresively enhanced website that serves as its own mobile app and [its own REST API].  The core of the library is an admin-like [ModelRouter] that connects REST urls to registered models, and provides a descriptive [configuration object] for consumption by [wq.app's client-side router].  wq.db.rest also includes a GeoJSON serializer/renderer.
-
-### [wq.db.patterns]
-A collection of abstract models and serializers for use in constructing advanced [design patterns] including [nested forms], [EAV structures][EAV], and [natural keys].  Includes [wq.db.patterns.identify][identify], an installable Django app module to help manage third-party entity identifers.
+### [wq.db.patterns][patterns]
+A collection of abstract models and serializers for use in constructing advanced [design patterns][patterns] including [nested forms], [EAV structures][EAV], and [natural keys].  Includes [wq.db.patterns.identify][identify], an installable Django app module to help manage third-party entity identifers.
 
 [wq]: https://wq.io
+[wq.app]: https://wq.io/wq.app
 [Django]: https://www.djangoproject.com/
 [the documentation]: https://wq.io/docs/
-[wq.db.rest]: https://wq.io/docs/about-rest
-[wq.app]: https://wq.io/wq.app
-[its own REST API]: https://wq.io/docs/website-rest-api
-[wq.app's client-side router]: https://wq.io/docs/app-js
+
+[rest]: https://wq.io/docs/about-rest
 [Django REST Framework]: http://django-rest-framework.org
+[url-structure]: https://wq.io/docs/url-structure
 [ModelRouter]: https://wq.io/docs/router
 [configuration object]: https://wq.io/docs/config
-[wq.db.patterns]: https://wq.io/docs/about-patterns
-[design patterns]: https://wq.io/docs/about-patterns
-[identify]: https://wq.io/docs/identify
-[relate]: https://wq.io/docs/relate
-[design patterns]: https://wq.io/docs/about-patterns
+[@wq/app]: https://wq.io/docs/app-js
+
+[patterns]: https://wq.io/docs/about-patterns
 [nested forms]: https://wq.io/docs/nested-forms
 [EAV]: https://wq.io/docs/eav-vs-relational
 [natural keys]: https://github.com/wq/django-natural-keys
+[identify]: https://wq.io/docs/identify
