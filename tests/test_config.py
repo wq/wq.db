@@ -36,6 +36,19 @@ class ConfigTestCase(APITestCase):
         self.assertIn("list", result["pages"][0])
         self.assertNotIn("list", result["pages"][-1])
 
+    def test_rest_config_meta(self):
+        conf = self.get_config('item')
+        self.assertEqual({
+            'name': 'item',
+            'url': 'items',
+            'list': True,
+            'cache': 'none',
+            'form': conf['form'],
+            'label_template': '{{name}}',
+            'verbose_name': 'item',
+            'verbose_name_plural': 'items'
+        }, conf)
+
     def test_rest_config_json_fields(self):
         self.assertEqual([
             {

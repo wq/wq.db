@@ -153,16 +153,20 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
         config = getattr(self.Meta, 'wq_config', {}).copy()
         config['form'] = fields + nested_fields
-        if 'name' not in config:
-            config['name'] = self.Meta.model._meta.model_name
-        if has_geo_fields and 'map' not in config:
-            config['map'] = True
-        if 'label_template' not in config:
-            label_template = getattr(
-                self.Meta.model, 'wq_label_template', None
-            )
-            if label_template:
-                config['label_template'] = label_template
+
+        meta = self.Meta.model._meta
+        config.setdefault('name', meta.model_name)
+        config.setdefault('verbose_name', meta.verbose_name)
+        config.setdefault('verbose_name_plural', meta.verbose_name_plural)
+
+        if has_geo_fields:
+            config.setdefault('map', True)
+
+        label_template = getattr(
+            self.Meta.model, 'wq_label_template', None
+        )
+        if label_template:
+            config.setdefault('label_template', label_template)
         return config
 
     def get_wq_field_info(self, name, field, model=None):

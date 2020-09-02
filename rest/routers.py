@@ -160,6 +160,7 @@ class ModelRouter(DefaultRouter):
                 return classes[real_model]
             else:
                 if real_model not in self._config:
+                    # FIXME: Probably can just use default instead of erroring
                     raise ImproperlyConfigured(
                         "%s is not registered!" % real_model
                     )
