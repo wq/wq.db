@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
 from .model_tools import get_ct, get_object_id, get_by_identifier
-from django.db.models import FieldDoesNotExist, ProtectedError
+from django.core.exceptions import FieldDoesNotExist
+from django.db.models import ProtectedError
 
 
 class GenericAPIView(RestGenericAPIView):

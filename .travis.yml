@@ -3,11 +3,11 @@ python: 3.8
 dist: bionic
 env:
   global:
-    - DRF="djangorestframework==3.11.0"
-    - DJANGO="django==3.0.2"
+    - DRF="djangorestframework==3.11.1"
+    - DJANGO="django==3.1.1"
 matrix:
   include:
-    - name: "Defaults (Python 3.8, Django 3.0, DRF 3.11)"
+    - name: "Defaults (Python 3.8, Django 3.1, DRF 3.11)"
     - name: "+ SpatiaLite"
       env:
         - WITH_GIS=1
@@ -37,13 +37,13 @@ matrix:
       python: "3.6"
     - name: "Django 2.2"
       env:
-        - DJANGO="django==2.2.9"
+        - DJANGO="django==2.2.16"
     - name: "Django 1.11"
       env:
-        - DJANGO="django==1.11.27"
+        - DJANGO="django==1.11.29"
     - name: "Django 1.11 + PostGIS"
       env:
-        - DJANGO="django==1.11.27"
+        - DJANGO="django==1.11.29"
         - PSYCOPG2="psycopg2-binary"
         - WITH_GIS=1
       addons:
@@ -57,7 +57,7 @@ matrix:
     - name: "Python 3.5, Django 2.2"
       python: "3.5"
       env:
-        - DJANGO="django==2.2.9"
+        - DJANGO="django==2.2.16"
     - name: "Python 3.4, Django 2.0, DRF 3.9"
       dist: xenial
       python: "3.4"

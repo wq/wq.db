@@ -1,5 +1,5 @@
 from rest_framework.filters import BaseFilterBackend
-from django.db.models.fields import FieldDoesNotExist
+from django.core.exceptions import FieldDoesNotExist
 
 
 class FilterBackend(BaseFilterBackend):
