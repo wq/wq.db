@@ -17,6 +17,8 @@ class Command(BaseCommand):
             cls=encoders.JSONEncoder,
             indent=4,
         )
-        if options['format'] == "amd":
+        if options['format'] == "esm":
+            text = "export default %s;" % text
+        elif options['format'] == "amd":
             text = "define(%s);" % text
         self.stdout.write(text)

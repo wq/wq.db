@@ -1,6 +1,7 @@
 # Django settings
 context_processors = (
     'django.template.context_processors.csrf',
+    'django.template.context_processors.request',
     'django.contrib.auth.context_processors.auth',
     'django.contrib.messages.context_processors.messages',
     'wq.db.rest.auth.context_processors.is_authenticated',
@@ -35,7 +36,7 @@ SESSION_COOKIE_HTTPONLY = False
 REST_FRAMEWORK = {
 
     'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.TemplateHTMLRenderer',
+        'wq.db.rest.renderers.HTMLRenderer',
         'wq.db.rest.renderers.JSONRenderer',
         'wq.db.rest.renderers.GeoJSONRenderer',
     ),

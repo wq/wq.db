@@ -1,6 +1,56 @@
-from rest_framework.renderers import JSONRenderer
+from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from django.conf import settings
 from wq.db.default_settings import SRID as DEFAULT_SRID
+import re
+
+
+APP_TEMPLATES = {}
+
+
+def load_app_template(template_name):
+    with open(template_name) as f:
+        template = f.read()
+    template = re.sub(
+        '<title>(.+)</title>',
+        '<title>{{title}}</title>',
+        template
+    )
+    if '{{title}}' in template:
+        return template, True
+    else:
+        return template, False
+
+
+def get_title(data, request):
+    title = None
+    if isinstance(data, dict):
+        title = data.get('label')
+
+    return title or settings.PROJECT_NAME
+
+
+def render_app(template_name, data, request):
+    if template_name not in APP_TEMPLATES:
+        APP_TEMPLATES[template_name] = load_app_template(template_name)
+
+    template, has_title = APP_TEMPLATES[template_name]
+    if has_title:
+        return template.replace('{{title}}', get_title(data, request))
+    else:
+        return template
+
+
+class HTMLRenderer(TemplateHTMLRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if getattr(settings, 'WQ_APP_TEMPLATE', None):
+            return render_app(
+                settings.WQ_APP_TEMPLATE,
+                data,
+                (renderer_context or {}).get('request'),
+            )
+        return super(HTMLRenderer, self).render(
+            data, accepted_media_type, renderer_context
+        )
 
 
 class JSONRenderer(JSONRenderer):
