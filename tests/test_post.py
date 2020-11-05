@@ -10,6 +10,12 @@ from django.conf import settings
 
 class RestPostTestCase(APITestCase):
     def setUp(self):
+        """
+        Set the username and password.
+
+        Args:
+            self: (todo): write your description
+        """
         self.user = User.objects.create(username="testuser", is_superuser=True)
         self.client.force_authenticate(self.user)
 
@@ -94,7 +100,20 @@ class RestPostTestCase(APITestCase):
         )
 
     def test_rest_empty_string(self):
+        """
+        Test for empty empty string.
+
+        Args:
+            self: (todo): write your description
+        """
         def check_result(form, expected_output):
+            """
+            Check the result of a response.
+
+            Args:
+                form: (str): write your description
+                expected_output: (dict): write your description
+            """
             response = self.client.post("/charfieldmodels.json", form)
             if not expected_output:
                 self.assertEqual(
@@ -143,6 +162,12 @@ class RestPostTestCase(APITestCase):
         })
 
     def test_rest_custom_lookup_fk(self):
+        """
+        Makes a custom custom custom field.
+
+        Args:
+            self: (todo): write your description
+        """
         SlugModel.objects.create(
             code='test1',
             name='Test #1',
@@ -173,6 +198,12 @@ class RestPostTestCase(APITestCase):
         })
 
     def test_rest_list_exclude_post(self):
+        """
+        Exclude rest api.
+
+        Args:
+            self: (todo): write your description
+        """
         # Create
         response = self.client.post('/expensivemodels.json', {
             "name": "Test",

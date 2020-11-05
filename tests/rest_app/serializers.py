@@ -56,6 +56,13 @@ class ChoiceLabelSerializer(ModelSerializer):
     choice_label = serializers.SerializerMethodField()
 
     def get_choice_label(self, instance):
+        """
+        Returns the label for a label
+
+        Args:
+            self: (todo): write your description
+            instance: (todo): write your description
+        """
         return instance.choice.upper()
 
     class Meta:
@@ -67,6 +74,13 @@ class DateLabelSerializer(ModelSerializer):
     date_label = serializers.SerializerMethodField()
 
     def get_date_label(self, instance):
+        """
+        Returns the label of the instance.
+
+        Args:
+            self: (todo): write your description
+            instance: (str): write your description
+        """
         return instance.date.strftime('%B %-d, %Y')
 
     class Meta:
@@ -80,12 +94,33 @@ class ItemLabelSerializer(ModelSerializer):
     type_label = serializers.SerializerMethodField()
 
     def get_label(self, instance):
+        """
+        Returns label for instance.
+
+        Args:
+            self: (todo): write your description
+            instance: (todo): write your description
+        """
         return '%s: %s' % (instance.type.name, instance.name)
 
     def get_type_id(self, instance):
+        """
+        Returns the type id of an instance.
+
+        Args:
+            self: (todo): write your description
+            instance: (todo): write your description
+        """
         return 'id-%s' % instance.type_id
 
     def get_type_label(self, instance):
+        """
+        Returns the label of an instance
+
+        Args:
+            self: (todo): write your description
+            instance: (todo): write your description
+        """
         return instance.type.name.upper()
 
     class Meta:

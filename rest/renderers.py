@@ -8,6 +8,12 @@ APP_TEMPLATES = {}
 
 
 def load_app_template(template_name):
+    """
+    Load the application template.
+
+    Args:
+        template_name: (str): write your description
+    """
     with open(template_name) as f:
         template = f.read()
     template = re.sub(
@@ -22,6 +28,13 @@ def load_app_template(template_name):
 
 
 def get_title(data, request):
+    """
+    Returns the title.
+
+    Args:
+        data: (dict): write your description
+        request: (todo): write your description
+    """
     title = None
     if isinstance(data, dict):
         title = data.get('label')
@@ -30,6 +43,14 @@ def get_title(data, request):
 
 
 def render_app(template_name, data, request):
+    """
+    Renders the template.
+
+    Args:
+        template_name: (str): write your description
+        data: (array): write your description
+        request: (todo): write your description
+    """
     if template_name not in APP_TEMPLATES:
         APP_TEMPLATES[template_name] = load_app_template(template_name)
 
@@ -42,6 +63,15 @@ def render_app(template_name, data, request):
 
 class HTMLRenderer(TemplateHTMLRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
+        """
+        Renders the context.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+            accepted_media_type: (todo): write your description
+            renderer_context: (todo): write your description
+        """
         if getattr(settings, 'WQ_APP_TEMPLATE', None):
             return render_app(
                 settings.WQ_APP_TEMPLATE,
@@ -55,6 +85,15 @@ class HTMLRenderer(TemplateHTMLRenderer):
 
 class JSONRenderer(JSONRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
+        """
+        Renders data ascii.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+            accepted_media_type: (todo): write your description
+            renderer_context: (todo): write your description
+        """
         if renderer_context and 'request' in renderer_context:
             if not renderer_context['request'].is_ajax():
                 renderer_context['indent'] = 4
@@ -68,6 +107,13 @@ class GeoJSONRenderer(JSONRenderer):
     format = 'geojson'
 
     def render(self, data, *args, **kwargs):
+        """
+        Renders features in json.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         if isinstance(data, list):
             features, simple = self.render_features(data)
             data = {
@@ -93,6 +139,13 @@ class GeoJSONRenderer(JSONRenderer):
         return super(GeoJSONRenderer, self).render(data, *args, **kwargs)
 
     def render_feature(self, obj):
+        """
+        Render a feature as a dict.
+
+        Args:
+            self: (todo): write your description
+            obj: (dict): write your description
+        """
         feature = {
             'type': 'Feature',
             'properties': obj
@@ -127,6 +180,13 @@ class GeoJSONRenderer(JSONRenderer):
         return feature, simple
 
     def render_features(self, objs):
+        """
+        Renders features.
+
+        Args:
+            self: (todo): write your description
+            objs: (todo): write your description
+        """
         features = []
         has_simple = False
         for obj in objs:

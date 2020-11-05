@@ -1,4 +1,11 @@
 def get_ct(model, for_concrete_model=False):
+    """
+    Return a ctypes instance for a ctypes model.
+
+    Args:
+        model: (str): write your description
+        for_concrete_model: (bool): write your description
+    """
     from .models import ContentType
     if isinstance(model, str):
         ctype = ContentType.objects.get_by_identifier(model)
@@ -14,6 +21,12 @@ def get_ct(model, for_concrete_model=False):
 
 
 def get_object_id(instance):
+    """
+    Get the id of an object.
+
+    Args:
+        instance: (todo): write your description
+    """
     ct = get_ct(instance)
     config = ct.get_config()
     if config and 'lookup' in config:
@@ -22,6 +35,13 @@ def get_object_id(instance):
 
 
 def get_by_identifier(queryset, ident):
+    """
+    Get an object by its identifier.
+
+    Args:
+        queryset: (todo): write your description
+        ident: (str): write your description
+    """
     if hasattr(queryset, 'get_by_identifier'):
         return queryset.get_by_identifier(ident)
     else:

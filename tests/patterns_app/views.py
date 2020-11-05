@@ -16,6 +16,14 @@ class FilterableView(ListAPIView):
     action = None
 
     def filter_by_identifiedmodel(self, queryset, ids):
+        """
+        Filter queryset by ids.
+
+        Args:
+            self: (todo): write your description
+            queryset: (todo): write your description
+            ids: (list): write your description
+        """
         return queryset.filter(
             parent_id__in=ids,
         )

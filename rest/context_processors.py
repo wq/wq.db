@@ -7,14 +7,31 @@ from html.parser import HTMLParser
 
 
 def version(request):
+    """
+    Return the version of the current request.
+
+    Args:
+        request: (todo): write your description
+    """
     return {'version': router.version}
 
 
 def get_base_url():
+    """
+    Get the base url.
+
+    Args:
+    """
     return reverse('wq:config-list').replace('/config/', '')
 
 
 def get_wq_path(request):
+    """
+    Return the wq path. wq.
+
+    Args:
+        request: (todo): write your description
+    """
     base_url = get_base_url()
     if base_url and not request.path.startswith(base_url):
         return None
@@ -23,6 +40,12 @@ def get_wq_path(request):
 
 
 def router_info(request):
+    """
+    Return a dictionary.
+
+    Args:
+        request: (todo): write your description
+    """
     base_url = get_base_url()
     full_path = request.path
     path = get_wq_path(request)
@@ -51,10 +74,22 @@ def router_info(request):
 
 # FIXME: Remove in 2.0
 def pages_info(request):
+    """
+    Return information about a request.
+
+    Args:
+        request: (todo): write your description
+    """
     return router_info(request)
 
 
 def wq_config(request):
+    """
+    Return wqq config.
+
+    Args:
+        request: (todo): write your description
+    """
     path = get_wq_path(request)
     if not path:
         return {}
@@ -83,6 +118,12 @@ _script_tags = None
 
 
 def script_tags(request):
+    """
+    Returns a list of script tags.
+
+    Args:
+        request: (todo): write your description
+    """
     global _script_tags
     if _script_tags is None:
         _script_tags = parse_script_tags()
@@ -90,6 +131,11 @@ def script_tags(request):
 
 
 def parse_script_tags():
+    """
+    Parse a list of script.
+
+    Args:
+    """
     filename = getattr(settings, 'WQ_SCRIPT_FILE', None)
     if not filename:
         return ''
@@ -106,6 +152,14 @@ class ScriptTagParser(HTMLParser):
     output = []
 
     def handle_starttag(self, tag, attrs):
+        """
+        Handle starttag.
+
+        Args:
+            self: (todo): write your description
+            tag: (str): write your description
+            attrs: (dict): write your description
+        """
         if tag == 'script':
             if attrs:
                 attrs = dict(attrs)
@@ -117,10 +171,24 @@ class ScriptTagParser(HTMLParser):
             self.in_script = True
 
     def handle_data(self, data):
+        """
+        Handle incoming data.
+
+        Args:
+            self: (todo): write your description
+            data: (todo): write your description
+        """
         if self.in_script:
             self.output.append(data)
 
     def handle_endtag(self, tag):
+        """
+        Handle the endtag
+
+        Args:
+            self: (todo): write your description
+            tag: (str): write your description
+        """
         if tag == 'script':
             self.output.append('</script>')
             self.in_script = False

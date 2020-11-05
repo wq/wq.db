@@ -9,17 +9,36 @@ import json
 
 class CommandTestCase(APITestCase):
     def check_config(self, text):
+        """
+        Check the text.
+
+        Args:
+            self: (todo): write your description
+            text: (str): write your description
+        """
         data = json.loads(text)
         self.assertIn('pages', data)
         page = list(data['pages'].values())[0]
         self.assertIn('url', page)
 
     def test_dump_config_json(self):
+        """
+        Dumps config toml.
+
+        Args:
+            self: (todo): write your description
+        """
         f = StringIO()
         call_command('dump_config', stdout=f)
         self.check_config(f.getvalue())
 
     def test_dump_config_amd(self):
+        """
+        Dump the test config dump to the test config.
+
+        Args:
+            self: (todo): write your description
+        """
         f = StringIO()
         call_command('dump_config', format='amd', stdout=f)
         text = f.getvalue().strip()

@@ -8,6 +8,12 @@ except ImportError:
 
 class RestRouterTestCase(APITestCase):
     def test_rest_model_conflict(self):
+        """
+        Test if a new configuration
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db import rest
         from tests.conflict_app.models import Item
 
@@ -43,6 +49,12 @@ class RestRouterTestCase(APITestCase):
         self.assertIn("conflictitem", rest.router.get_config()['pages'])
 
     def test_rest_old_config(self):
+        """
+        Initialize configuration
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db import rest
         from tests.conflict_app.models import TestModel
 
@@ -74,5 +86,11 @@ class RestRouterTestCase(APITestCase):
         self.assertNotIn(TestModel, rest.router._models)
 
     def test_rest_include(self):
+        """
+        Test if the rest interface is closed.
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db import rest
         include(rest.router.urls)

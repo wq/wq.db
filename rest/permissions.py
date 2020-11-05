@@ -14,6 +14,14 @@ class ModelPermissions(BasePermission):
     }
 
     def has_permission(self, request, view):
+        """
+        Determine if the current user has the permissions.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            view: (todo): write your description
+        """
         if getattr(view, 'model', None) is None:
             return True
         user = request.user
@@ -23,6 +31,14 @@ class ModelPermissions(BasePermission):
 
 
 def has_perm(user, ct, perm):
+    """
+    Checks if the user has the given user.
+
+    Args:
+        user: (todo): write your description
+        ct: (todo): write your description
+        perm: (str): write your description
+    """
     if perm == 'view':
         return True
     if isinstance(ct, str):

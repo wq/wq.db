@@ -9,6 +9,12 @@ from django.contrib.auth.models import User
 
 class RestTestCase(APITestCase):
     def setUp(self):
+        """
+        Create a new item
+
+        Args:
+            self: (todo): write your description
+        """
         instance = RootModel.objects.create(
             slug='instance',
             description="Test",
@@ -34,17 +40,35 @@ class RestTestCase(APITestCase):
 
     # Test url="" use case
     def test_rest_list_at_root(self):
+        """
+        Test if rest of the root i / oai root.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get("/.json")
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertTrue(len(response.data['list']) == 1)
 
     def test_rest_detail_at_root(self):
+        """
+        Test if a single document was successful.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/instance.json')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertTrue(response.data['description'] == "Test")
 
     # Test nested models with foreign keys
     def test_rest_detail_nested_foreignkeys(self):
+        """
+        Test if the keys of the keys
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/instance.json')
 
         # Include explicitly declared serializers for related fields
@@ -65,6 +89,12 @@ class RestTestCase(APITestCase):
         self.assertNotIn("foreignkeymodels", response.data)
 
     def test_rest_filter_by_parent(self):
+        """
+        Test for rest rest of the parent
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/parents/1/children.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
@@ -74,6 +104,12 @@ class RestTestCase(APITestCase):
         self.assertEqual(len(response.data['list']), 2)
 
     def test_rest_target_to_children(self):
+        """
+        Sends the target to target
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/children-by-parents.json')
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data['list']), 2)
@@ -81,12 +117,24 @@ class RestTestCase(APITestCase):
         self.assertEqual(response.data['target'], 'children')
 
     def test_rest_detail_user_serializer(self):
+        """
+        Test if user serializer
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/usermanagedmodels/1.json')
         self.assertIn('user', response.data)
         self.assertIn('label', response.data['user'])
         self.assertNotIn('password', response.data['user'])
 
     def test_rest_multi(self):
+        """
+        Test if rest api rest api
+
+        Args:
+            self: (todo): write your description
+        """
         lists = ['usermanagedmodels', 'items', 'children']
         response = self.client.get(
             "/multi.json?lists=" + ",".join(lists)
@@ -97,26 +145,56 @@ class RestTestCase(APITestCase):
             self.assertGreater(len(response.data[listurl]["list"]), 0)
 
     def test_rest_custom_lookup(self):
+        """
+        Check if the rest api call to be executed.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/slugmodels/test.json')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['id'], 'test')
 
     def test_rest_default_per_page(self):
+        """
+        Check if the rest api call.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/parents.json')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 50)
 
     def test_rest_custom_per_page(self):
+        """
+        Check if the status of rest api call.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/children.json')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 100)
 
     def test_rest_limit(self):
+        """
+        Test if the rest api rest api.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/children.json?limit=10')
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertEqual(response.data['per_page'], 10)
 
     def test_rest_cache_all(self):
+        """
+        Test if all cache
+
+        Args:
+            self: (todo): write your description
+        """
         for num in range(2, 101):
             ItemType.objects.create(
                 pk=num,
@@ -142,6 +220,12 @@ class RestTestCase(APITestCase):
             self.assertEqual(response.data['count'], 100)
 
     def test_rest_cache_filter(self):
+        """
+        Returns a new github user that will be sent user
+
+        Args:
+            self: (todo): write your description
+        """
         other_user = User.objects.create(username='otheruser')
         UserManagedModel.objects.create(id=2, user=other_user)
         UserManagedModel.objects.create(id=3, user=other_user)
@@ -174,6 +258,12 @@ class RestTestCase(APITestCase):
                 self.assertEqual(response.data['count'], expect_count)
 
     def test_rest_cache_none(self):
+        """
+        Check if a cache data cache
+
+        Args:
+            self: (todo): write your description
+        """
         tests = [
             (0, '/items.json'),
             (2, '/items/'),
@@ -193,18 +283,36 @@ class RestTestCase(APITestCase):
             self.assertEqual(response.data['count'], 2)
 
     def test_rest_list_head(self):
+        """
+        Request the rest of the rest request.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.head('/')
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )
 
     def test_rest_simpleviewset_head(self):
+        """
+        Test if the rest of the test.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.head('/login')
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )
 
     def test_rest_options(self):
+        """
+        Get the rest api options.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.options('/')
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data

@@ -16,6 +16,13 @@ __all__ = (
 
 class ContentTypeManager(DjangoContentTypeManager):
     def get_by_identifier(self, identifier):
+        """
+        Get a model by its identifier.
+
+        Args:
+            self: (todo): write your description
+            identifier: (str): write your description
+        """
         # TODO: What if model is configured with a different name?
         return self.get(model=identifier)
 
@@ -25,12 +32,24 @@ class ContentType(DjangoContentType):
 
     @property
     def identifier(self):
+        """
+        Return the identifier of the model.
+
+        Args:
+            self: (todo): write your description
+        """
         from . import router
         conf = router._config.get(self.model_class(), {})
         return conf.get('name', self.model)
 
     @property
     def urlbase(self):
+        """
+        Return base url.
+
+        Args:
+            self: (todo): write your description
+        """
         cls = self.model_class()
         if cls is None:
             return None
@@ -42,6 +61,12 @@ class ContentType(DjangoContentType):
 
     # Get foreign keys for this content type
     def get_foreign_keys(self):
+        """
+        Returns a list of foreign keys
+
+        Args:
+            self: (todo): write your description
+        """
         cls = self.model_class()
         if cls is None:
             return []
@@ -55,9 +80,22 @@ class ContentType(DjangoContentType):
         return parents
 
     def get_parents(self):
+        """
+        Returns the set of this model.
+
+        Args:
+            self: (todo): write your description
+        """
         return set(self.get_foreign_keys().keys())
 
     def get_children(self, include_rels=False):
+        """
+        Return a list of all relationships
+
+        Args:
+            self: (todo): write your description
+            include_rels: (bool): write your description
+        """
         cls = self.model_class()
         if cls is None:
             return []
@@ -75,11 +113,24 @@ class ContentType(DjangoContentType):
             return set(child[0] for child in children)
 
     def get_config(self, user=None):
+        """
+        Get config : class : router : userconfig : : parameterconfigconfig object
+
+        Args:
+            self: (todo): write your description
+            user: (todo): write your description
+        """
         from . import router  # avoid circular import
         cls = self.model_class()
         return router.get_model_config(cls, user)
 
     def is_registered(self):
+        """
+        Return class of the model class.
+
+        Args:
+            self: (todo): write your description
+        """
         from . import router  # avoid circular import
         cls = self.model_class()
         return router.model_is_registered(cls)

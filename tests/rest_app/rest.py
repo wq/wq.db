@@ -13,6 +13,13 @@ from .serializers import (
 
 
 def cache_users_own_data(qs, req):
+    """
+    Returns a list of users that have been fetcher.
+
+    Args:
+        qs: (todo): write your description
+        req: (todo): write your description
+    """
     if req.user.is_authenticated:
         return qs.filter(user=req.user)
     else:

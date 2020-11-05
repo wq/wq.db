@@ -4,6 +4,15 @@ from django.core.exceptions import FieldDoesNotExist
 
 class FilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
+        """
+        Filter queryset based on request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            queryset: (todo): write your description
+            view: (todo): write your description
+        """
         kwargs = {}
         for key, val in list(view.kwargs.items()) + list(request.GET.items()):
             if key in getattr(view, 'ignore_kwargs', []):

@@ -17,6 +17,13 @@ WQ_IDENTIFIER_ORDER = getattr(
 
 
 def find_unique_slug(name, queryset):
+    """
+    Finds a unique slug.
+
+    Args:
+        name: (str): write your description
+        queryset: (todo): write your description
+    """
     if not name:
         maxobj = queryset.order_by('-pk').first()
         name = str(maxobj.pk + 1 if maxobj else 1)
@@ -37,11 +44,26 @@ def find_unique_slug(name, queryset):
 
 class IdentifierManager(models.Manager):
     def filter_by_identifier(self, identifier):
+        """
+        Filter by identifier.
+
+        Args:
+            self: (todo): write your description
+            identifier: (todo): write your description
+        """
         return self.filter(
             models.Q(slug=identifier) | models.Q(name=identifier)
         ).order_by('-is_primary')
 
     def resolve(self, identifiers, exclude_apps=[]):
+        """
+        Resolve a set of identifiers.
+
+        Args:
+            self: (todo): write your description
+            identifiers: (todo): write your description
+            exclude_apps: (bool): write your description
+        """
         resolved = None
         unresolved = None
         for identifier in identifiers:
@@ -69,6 +91,13 @@ class IdentifierManager(models.Manager):
 
     # Default implementation of get_or_create doesn't work well with generics
     def get_or_create(self, defaults={}, **kwargs):
+        """
+        Get an object or create it.
+
+        Args:
+            self: (todo): write your description
+            defaults: (todo): write your description
+        """
         try:
             return self.get(**kwargs), False
         except self.model.DoesNotExist:
@@ -93,12 +122,24 @@ class Identifier(models.Model):
 
     @property
     def url(self):
+        """
+        Return the url for this page.
+
+        Args:
+            self: (todo): write your description
+        """
         if (not self.authority or not self.authority.object_url):
             return None
         else:
             return self.authority.object_url % self.slug
 
     def save(self, *args, **kwargs):
+        """
+        Make sure the slug.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.slug:
             model = self.content_type.model_class()
             queryset = model.objects.exclude(pk=self.object_id)
@@ -123,6 +164,12 @@ class Identifier(models.Model):
                 obj.save()
 
     def __str__(self):
+        """
+        Return the string representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.name
 
     class Meta:
@@ -133,6 +180,14 @@ class Identifier(models.Model):
 
 class IdentifiedModelManager(NaturalKeyModelManager):
     def get_by_identifier(self, identifier, auto_create=False):
+        """
+        Get an object by identifier.
+
+        Args:
+            self: (todo): write your description
+            identifier: (str): write your description
+            auto_create: (str): write your description
+        """
         searches = [
             {'slug': identifier},
             {'name': identifier},
@@ -160,9 +215,23 @@ class IdentifiedModelManager(NaturalKeyModelManager):
         return obj
 
     def get_by_natural_key(self, identifier):
+        """
+        Get natural natural natural natural natural natural natural natural natural natural natural natural natural identifier.
+
+        Args:
+            self: (todo): write your description
+            identifier: (str): write your description
+        """
         return self.get_by_identifier(identifier)
 
     def create_by_natural_key(self, identifier, **kwargs):
+        """
+        Create a natural natural natural natural natural natural key.
+
+        Args:
+            self: (todo): write your description
+            identifier: (todo): write your description
+        """
         defaults = kwargs.get('defaults') or {}
         return self.create(name=identifier, **defaults)
 
@@ -177,6 +246,12 @@ class IdentifiedModel(NaturalKeyModel, LabelModel):
     objects = IdentifiedModelManager()
 
     def save(self, *args, **kwargs):
+        """
+        Save the slug.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.slug:
             self.slug = find_unique_slug(self.name, type(self).objects)
         if not self.name:
@@ -196,6 +271,12 @@ class IdentifiedModel(NaturalKeyModel, LabelModel):
 
     @property
     def primary_identifier(self):
+        """
+        : meth : class : return :
+
+        Args:
+            self: (todo): write your description
+        """
         return self.identifiers.filter(is_primary=True).first()
 
     class Meta:

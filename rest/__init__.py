@@ -11,6 +11,11 @@ __all__ = (
 
 
 def autodiscover():
+    """
+    Registers autodiscover modules.
+
+    Args:
+    """
     autodiscover_modules('rest', register_to=None)
 
 

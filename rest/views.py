@@ -23,32 +23,77 @@ class GenericAPIView(RestGenericAPIView):
 
     @property
     def depth(self):
+        """
+        Return the number of nodes.
+
+        Args:
+            self: (todo): write your description
+        """
         return 0
 
     def get_template_names(self):
+        """
+        Returns a list of template names.
+
+        Args:
+            self: (todo): write your description
+        """
         return [self.template_name]
 
     def get_queryset(self):
+        """
+        Returns the list of allowed fields.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.router is not None and self.model is not None:
             return self.router.get_queryset_for_model(self.model, self.request)
         return super(GenericAPIView, self).get_queryset()
 
     def get_serializer_class(self):
+        """
+        Return the serializer class.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.router is not None and self.model is not None:
             return self.router.get_serializer_for_model(self.model, self.depth)
         return super(GenericAPIView, self).get_serializer_class()
 
     def head(self, request, *args, **kwargs):
+        """
+        Perform a head request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return self.get(request, *args, **kwargs)
 
 
 class SimpleView(GenericAPIView):
     def get(self, request, *args, **kwargs):
+        """
+        Wrapper around requests.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return Response({})
 
 
 class SimpleViewSet(viewsets.ViewSet, GenericAPIView):
     def list(self, request, *args, **kwargs):
+        """
+        A wrapper around list.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         return Response({})
 
 
@@ -57,6 +102,12 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
     @property
     def template_name(self):
+        """
+        Returns template name.
+
+        Args:
+            self: (todo): write your description
+        """
         basename = get_ct(self.model).identifier
         if self.action in ('retrieve', 'create', 'update', 'delete'):
             suffix = 'detail'
@@ -68,6 +119,12 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
     @property
     def depth(self):
+        """
+        Return the depth.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.action in ('retrieve', 'edit'):
             return 1
         else:
@@ -129,6 +186,13 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
+        """
+        Returns a list of the fields.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         response = super(ModelViewSet, self).list(
             request, *args, **kwargs
         )
@@ -144,6 +208,13 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         return response
 
     def create(self, request, *args, **kwargs):
+        """
+        Create a new media type is not set.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         response = super(ModelViewSet, self).create(
             request, *args, **kwargs
         )
@@ -158,6 +229,13 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return self.saveerror(request, response)
 
     def update(self, request, *args, **kwargs):
+        """
+        Custom save method.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         response = super(ModelViewSet, self).update(
             request, *args, **kwargs
         )
@@ -172,6 +250,14 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return self.saveerror(request, response)
 
     def postsave(self, request, response):
+        """
+        Post save to save
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            response: (todo): write your description
+        """
         ct = get_ct(self.model)
         conf = ct.get_config(request.user)
 
@@ -210,6 +296,14 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         )
 
     def saveerror(self, request, response):
+        """
+        Return a json response
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            response: (todo): write your description
+        """
         errors = [{
             'field': key,
             'errors': val
@@ -225,6 +319,13 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         )
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Handles a model.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+        """
         try:
             response = super(ModelViewSet, self).destroy(
                 request, *args, **kwargs
@@ -239,6 +340,15 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return response
 
     def get_parent(self, ct, kwarg_name, response):
+        """
+        Get parent object.
+
+        Args:
+            self: (todo): write your description
+            ct: (todo): write your description
+            kwarg_name: (str): write your description
+            response: (todo): write your description
+        """
         pid = self.kwargs.get(kwarg_name, None)
         if not pid:
             return

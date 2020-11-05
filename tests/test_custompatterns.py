@@ -16,6 +16,12 @@ from tests.patterns_app.serializers import (
 
 class CustomPatternTestCase(APITestCase):
     def setUp(self):
+        """
+        Creates a new user.
+
+        Args:
+            self: (todo): write your description
+        """
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.client.force_authenticate(user=self.user)
         self.type = CustomType.objects.create(
@@ -55,6 +61,12 @@ class CustomPatternTestCase(APITestCase):
             )
 
     def test_customtypedpattern_config(self):
+        """
+        Create a custom custom config pattern.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/config.json')
         self.assertEqual([
             {
@@ -92,6 +104,12 @@ class CustomPatternTestCase(APITestCase):
         ], response.data['pages']['customtypedpatternmodel']['form'])
 
     def test_custompattern_post(self):
+        """
+        Respond to a post request.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 3',
 
@@ -110,6 +128,12 @@ class CustomPatternTestCase(APITestCase):
         self.assertEqual(atts[0]['name'], 'Attachment')
 
     def test_custompattern_put(self):
+        """
+        Test for custom test.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': "Test 1'",
             'attachments[0][name]': "Attachment"
@@ -128,6 +152,12 @@ class CustomPatternTestCase(APITestCase):
         self.assertEqual(self.instance.attachments.first().name, "Attachment")
 
     def test_customtypedpattern_post(self):
+        """
+        Respond to see if a custom type.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 4',
             'attachments[0][name]': 'Attachment',
@@ -145,6 +175,12 @@ class CustomPatternTestCase(APITestCase):
         self.assertEqual(atts[0]['type_label'], 'Custom')
 
     def test_customtypedpattern_post_empty(self):
+        """
+        Create a new empty data type.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 5',
             'attachments': [
@@ -166,6 +202,12 @@ class CustomPatternTestCase(APITestCase):
         self.assertEqual(atts[0]['value'], 0)
 
     def test_customtypedpattern_put(self):
+        """
+        Test for custom custom custom type of type }
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': "Test 2'",
             'attachments[0][name]': "Attachment",
@@ -189,6 +231,12 @@ class CustomPatternTestCase(APITestCase):
         )
 
     def test_eavfilter_empty(self):
+        """
+        Get empty empty empty empty empty empty empty empty empty.
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerBase)
@@ -199,6 +247,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_cid(self):
+        """
+        Test for filter filter for tests.
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerCampaignID)
@@ -210,6 +264,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_cid_miss(self):
+        """
+        : return : attr : entity.
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerCampaignID)
@@ -220,6 +280,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_isactive(self):
+        """
+        Check if the entity is ready.
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerIsActiveT)
@@ -239,6 +305,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_isactivecid(self):
+        """
+        Check if the filter is valid.
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerActiveTCampaignID)
@@ -250,6 +322,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_category(self):
+        """
+        Test for entity filter
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerCategoryDim)
@@ -260,6 +338,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_category_empty(self):
+        """
+        Test for filter filter filter
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerCategoryEmpty)
@@ -270,6 +354,12 @@ class CustomPatternTestCase(APITestCase):
             [i['attribute_id'] for i in response.data['values']])
 
     def test_eavfilter_category_ctxt_empty(self):
+        """
+        Register filter for entity filter
+
+        Args:
+            self: (todo): write your description
+        """
         rest.router.register_serializer(
             Entity,
             EntitySerializerCategoryCtxt)

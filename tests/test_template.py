@@ -10,6 +10,12 @@ from django.conf import settings
 
 class TemplateTestCase(APITestCase):
     def setUp(self):
+        """
+        Creates a new item.
+
+        Args:
+            self: (todo): write your description
+        """
         instance = RootModel.objects.create(
             slug='instance',
             description="Test"
@@ -56,11 +62,28 @@ class TemplateTestCase(APITestCase):
         )
 
     def assertHTMLEqual(self, expected_html, html, auto_replace=True):
+        """
+        Assert that expected_html.
+
+        Args:
+            self: (todo): write your description
+            expected_html: (str): write your description
+            html: (str): write your description
+            auto_replace: (todo): write your description
+        """
         if settings.WITH_NONROOT and auto_replace:
             html = html.replace('/wqsite/', '/')
         super().assertHTMLEqual(expected_html, html)
 
     def check_html(self, url, expected_html):
+        """
+        Check the response.
+
+        Args:
+            self: (todo): write your description
+            url: (str): write your description
+            expected_html: (str): write your description
+        """
         response = self.client.get(url)
         self.assertTrue(status.is_success(response.status_code), response.data)
         html = response.content.decode('utf-8')
@@ -68,6 +91,12 @@ class TemplateTestCase(APITestCase):
 
     # Test url="" use case
     def test_template_list_at_root(self):
+        """
+        !
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html("/", """
             <ul>
               <li><a href="/instance">instance</a></li>
@@ -75,6 +104,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_detail_at_root(self):
+        """
+        Test if the template template exists.
+
+        Args:
+            self: (todo): write your description
+        """
         instance = RootModel.objects.get(slug='instance')
         self.check_html("/instance", """
             <h1>instance</h1>
@@ -100,6 +135,12 @@ class TemplateTestCase(APITestCase):
         ))
 
     def test_template_filter_by_parent(self):
+        """
+        Test if the parent of the parent item.
+
+        Args:
+            self: (todo): write your description
+        """
         childs = Parent.objects.get(pk=1).children.order_by('pk')
         self.check_html('/parents/1/children', """
             <p>2 Records</p>
@@ -126,6 +167,12 @@ class TemplateTestCase(APITestCase):
         ))
 
     def test_template_detail_user_serializer(self):
+        """
+        Èi̇·åıĸçķ¨ĭè½½ç½®
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/usermanagedmodels/1', """
             <h1>Object #1</h1>
             <p>Created by testuser</p>
@@ -133,9 +180,21 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_custom_lookup(self):
+        """
+        Hook for custom custom lookups.
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/slugmodels/test', "<h1>Test</h1>")
 
     def test_template_default_per_page(self):
+        """
+        This method that the default page
+
+        Args:
+            self: (todo): write your description
+        """
         parent = Parent.objects.get(pk=1)
         parent.name = "Test 1"
         parent.save()
@@ -163,6 +222,12 @@ class TemplateTestCase(APITestCase):
         self.check_html("/parents/", html)
 
     def test_template_custom_per_page(self):
+        """
+        This method for html page
+
+        Args:
+            self: (todo): write your description
+        """
         for i in range(3, 102):
             child = Child.objects.create(
                 name="Test %s" % i,
@@ -181,6 +246,12 @@ class TemplateTestCase(APITestCase):
         """.format(pk=child.pk))
 
     def test_template_limit(self):
+        """
+        Generate a html limit of the number of - limit.
+
+        Args:
+            self: (todo): write your description
+        """
         for i in range(3, 101):
             child = Child.objects.create(
                 name="Test %s" % i,
@@ -204,6 +275,12 @@ class TemplateTestCase(APITestCase):
         self.check_html("/children/?limit=10", html)
 
     def test_template_context_processors(self):
+        """
+        Display context context with context.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/rest_context')
         html = response.content.decode('utf-8')
         token = html.split('value="')[1].split('"')[0]
@@ -226,6 +303,12 @@ class TemplateTestCase(APITestCase):
         """.format(csrf=token, base_url=base_url), html, auto_replace=False)
 
     def test_template_page_config(self):
+        """
+        Test if the config page.
+
+        Args:
+            self: (todo): write your description
+        """
         item = Item.objects.get(name="Test 1")
         self.check_html('/items/%s' % item.pk, """
             <h3>Test 1</h3>
@@ -234,6 +317,12 @@ class TemplateTestCase(APITestCase):
         """.format(pk=item.pk))
 
     def test_template_edit_fk(self):
+        """
+        Test if the user can edit a template
+
+        Args:
+            self: (todo): write your description
+        """
         item = Item.objects.get(name="Test 1")
         self.check_html('/items/%s/edit' % item.pk, """
             <form>
@@ -248,6 +337,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_edit_choice(self):
+        """
+        Test if the user has changed
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/choicemodels/1/edit', """
             <form>
               <input name="name" required value="Test">
@@ -268,6 +363,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_fk(self):
+        """
+        Å°ĩå°ĩĵåħ¥¨åīį
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/children/new', """
             <form>
               <input name="name" required value="">
@@ -280,6 +381,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_fk_filtered(self):
+        """
+        Check if the new html file exists.
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/items/new', """
             <form>
               <input name="name" required value="">
@@ -292,6 +399,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_fk_defaults(self):
+        """
+        Èi̇·åıĸæīģä¸º¿
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/items/new?type_id=1', """
             <form>
               <input name="name" required value="">
@@ -304,6 +417,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_fk_slug(self):
+        """
+        Çļ¾ç½®ä¸ĭ¶æģä¸ĭ
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/slugrefparents/new?ref_id=test', """
             <form>
               <input name="name" required value="">
@@ -317,6 +436,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_fk_slug_filtered(self):
+        """
+        Check if the new template.
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/slugrefchildren/new', """
             <form>
               <input name="name" required value="">
@@ -329,6 +454,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_choice(self):
+        """
+        Create a new html
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/choicemodels/new', """
             <form>
               <input name="name" required value="">
@@ -349,6 +480,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_template_new_choice_defaults(self):
+        """
+        Add new choice choice choice.
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/choicemodels/new?choice=three', """
             <form>
               <input name="name" required value="">
@@ -369,6 +506,12 @@ class TemplateTestCase(APITestCase):
         """)
 
     def test_script_tags(self):
+        """
+        Check if the test tags.
+
+        Args:
+            self: (todo): write your description
+        """
         self.check_html('/script_context', """
             <html>
               <head>

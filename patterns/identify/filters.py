@@ -9,6 +9,12 @@ class IdentifierFilterBackend(BaseFilterBackend):
 
     @property
     def filter_options(self):
+        """
+        Filters based on the view.
+
+        Args:
+            self: (todo): write your description
+        """
         if hasattr(self, '_filter_options'):
             return self._filter_options
 
@@ -46,6 +52,15 @@ class IdentifierFilterBackend(BaseFilterBackend):
         return options
 
     def filter_queryset(self, request, queryset, view):
+        """
+        Filter queryset based on request.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            queryset: (todo): write your description
+            view: (todo): write your description
+        """
         self.request = request
         self.view = view
 
@@ -68,15 +83,37 @@ class IdentifierFilterBackend(BaseFilterBackend):
         return queryset
 
     def get_filter_by(self, name):
+        """
+        Returns a filter by name.
+
+        Args:
+            self: (str): write your description
+            name: (str): write your description
+        """
         fn = getattr(self, 'filter_by_%s' % name, None)
         if not fn:
             fn = getattr(self.view, 'filter_by_%s' % name, None)
         return fn
 
     def can_filter(self, name):
+        """
+        Return true if the filter can be filtered.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+        """
         return self.get_filter_by(name) is not None
 
     def filter_by_extra(self, queryset, extra):
+        """
+        Filter the queryset based on the given filter.
+
+        Args:
+            self: (todo): write your description
+            queryset: (str): write your description
+            extra: (array): write your description
+        """
         if self.ignore_extra:
             return queryset
         else:

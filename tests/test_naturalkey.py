@@ -7,10 +7,22 @@ from tests.naturalkey_app.models import ModelWithNaturalKey
 
 class NaturalKeyTestCase(APITestCase):
     def setUp(self):
+        """
+        Set the username and password.
+
+        Args:
+            self: (todo): write your description
+        """
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.client.force_authenticate(user=self.user)
 
     def test_naturalkey_config(self):
+        """
+        Test natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural natural
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/config.json')
         self.assertEqual([
             {
@@ -41,6 +53,12 @@ class NaturalKeyTestCase(APITestCase):
         ], response.data['pages']['modelwithnaturalkey']['form'])
 
     def test_naturalkey_post(self):
+        """
+        Makes a natural natural natural natural natural natural natural key.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'key[parent][slug]': 'test-key',
             'key[date]': '2016-12-31',

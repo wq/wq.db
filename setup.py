@@ -8,6 +8,11 @@ Django design patterns and REST API for citizen science field data collection.
 
 
 def readme():
+    """
+    Read the contents of the readme.
+
+    Args:
+    """
     # Attempt to load markdown file
     try:
         readme = open('README.md')

@@ -6,6 +6,13 @@ from natural_keys import NaturalKeySerializer, NaturalKeyModelSerializer
 
 class AttachmentListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
+        """
+        Convert data to a list.
+
+        Args:
+            self: (todo): write your description
+            data: (dict): write your description
+        """
         data = super(AttachmentListSerializer, self).to_representation(data)
         if not self.parent:
             return
@@ -21,6 +28,13 @@ class AttachmentListSerializer(serializers.ListSerializer):
         return data
 
     def default_attachments(self, initial):
+        """
+        Returns a list of attachments.
+
+        Args:
+            self: (todo): write your description
+            initial: (array): write your description
+        """
         data = []
         for i in range(0, int(initial)):
             data.append({'new_attachment': True})
@@ -29,12 +43,26 @@ class AttachmentListSerializer(serializers.ListSerializer):
 
 class TypedAttachmentListSerializer(AttachmentListSerializer):
     def check_empty(self, value):
+        """
+        Returns true if the value is empty.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         if value is None or value == '':
             return True
         else:
             return False
 
     def get_value(self, dictionary):
+        """
+        Returns a list of dictionaries.
+
+        Args:
+            self: (todo): write your description
+            dictionary: (dict): write your description
+        """
         # Handle attachments that are submitted together with their parent
         value = super(TypedAttachmentListSerializer, self).get_value(
             dictionary
@@ -54,6 +82,13 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
         return value
 
     def default_attachments(self, initial):
+        """
+        Returns a list of attachments for this field.
+
+        Args:
+            self: (todo): write your description
+            initial: (dict): write your description
+        """
         if not isinstance(initial, dict):
             return super(
                 TypedAttachmentListSerializer, self
@@ -88,6 +123,12 @@ class AttachmentSerializer(ModelSerializer):
     id = serializers.IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the attachment.
+
+        Args:
+            self: (todo): write your description
+        """
         kwargs['allow_null'] = True
         super(AttachmentSerializer, self).__init__(*args, **kwargs)
 
@@ -97,6 +138,13 @@ class AttachmentSerializer(ModelSerializer):
 
 class TypedAttachmentSerializer(AttachmentSerializer):
     def to_representation(self, obj):
+        """
+        Serialize the object to a dict.
+
+        Args:
+            self: (todo): write your description
+            obj: (todo): write your description
+        """
         data = super(TypedAttachmentSerializer, self).to_representation(obj)
 
         has_parent = (
@@ -129,6 +177,12 @@ class TypedAttachmentSerializer(AttachmentSerializer):
         return data
 
     def get_wq_config(self):
+        """
+        Returns the configuration dictionary.
+
+        Args:
+            self: (todo): write your description
+        """
         config = super(TypedAttachmentSerializer, self).get_wq_config()
         if 'initial' not in config:
             config['initial'] = {
@@ -150,6 +204,13 @@ class TypedAttachmentSerializer(AttachmentSerializer):
 
 class AttachedModelSerializer(ModelSerializer):
     def create(self, validated_data):
+        """
+        Create a new attachment.
+
+        Args:
+            self: (todo): write your description
+            validated_data: (str): write your description
+        """
         model_data, attachment_data = self.extract_attachments(validated_data)
         instance = super(AttachedModelSerializer, self).create(model_data)
 
@@ -164,6 +225,14 @@ class AttachedModelSerializer(ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        """
+        Updates an object.
+
+        Args:
+            self: (todo): write your description
+            instance: (todo): write your description
+            validated_data: (todo): write your description
+        """
         model_data, attachment_data = self.extract_attachments(validated_data)
         obj = super(
             AttachedModelSerializer, self
@@ -184,6 +253,13 @@ class AttachedModelSerializer(ModelSerializer):
         return obj
 
     def extract_attachments(self, validated_data):
+        """
+        Extract attachment data.
+
+        Args:
+            self: (todo): write your description
+            validated_data: (todo): write your description
+        """
         fields = self.get_fields()
         attachment_data = {}
         for name, field in fields.items():
@@ -192,30 +268,80 @@ class AttachedModelSerializer(ModelSerializer):
         return validated_data, attachment_data
 
     def set_parent_object(self, attachment, instance, name):
+        """
+        Sets the parent object of the object.
+
+        Args:
+            self: (todo): write your description
+            attachment: (todo): write your description
+            instance: (todo): write your description
+            name: (str): write your description
+        """
         serializer = self.get_fields()[name].child
         fk_name = getattr(serializer.Meta, 'object_field', 'content_object')
         attachment[fk_name] = instance
 
     def get_attachment(self, model, pk):
+        """
+        Retrieve the attachment.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+            pk: (str): write your description
+        """
         return model.objects.get(pk=pk)
 
     def update_attachment(self, exist, attachment, name):
+        """
+        Updates an attachment.
+
+        Args:
+            self: (todo): write your description
+            exist: (todo): write your description
+            attachment: (todo): write your description
+            name: (str): write your description
+        """
         field = self.get_fields()[name]
         attachment.pop('id')
         field.child.update(exist, attachment)
 
     def create_attachment(self, model, attachment, name):
+        """
+        Create an attachment
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+            attachment: (str): write your description
+            name: (str): write your description
+        """
         field = self.get_fields()[name]
         field.child.create(attachment)
 
 
 class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
     def get_fields(self):
+        """
+        Returns a list of field fields
+
+        Args:
+            self: (todo): write your description
+        """
         fields = ModelSerializer.get_fields(self)
         fields.update(self.build_natural_key_fields())
         return fields
 
     def get_wq_field_info(self, name, field, model=None):
+        """
+        Return a dictionary of model information.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            field: (todo): write your description
+            model: (str): write your description
+        """
         if isinstance(field, NaturalKeySerializer):
             children = [
                 self.get_wq_field_info(n, f, model=field.Meta.model)
@@ -247,6 +373,13 @@ class NaturalKeyAttachedModelSerializer(NaturalKeyModelSerializer,
                                         AttachedModelSerializer):
 
     def create(self, validated_data):
+        """
+        Create a new attached object.
+
+        Args:
+            self: (todo): write your description
+            validated_data: (str): write your description
+        """
         self.convert_natural_keys(
             validated_data
         )

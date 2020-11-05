@@ -6,6 +6,12 @@ from wq.db.patterns.models import Authority
 
 
 def ident_by_auth(idents):
+    """
+    Return a list of an identifier
+
+    Args:
+        idents: (todo): write your description
+    """
     return {
         ident['authority_id']: ident for ident in idents
     }
@@ -13,6 +19,12 @@ def ident_by_auth(idents):
 
 class IdentifyTestCase(APITestCase):
     def setUp(self):
+        """
+        Sets the current user to a new
+
+        Args:
+            self: (todo): write your description
+        """
         self.auth = Authority.objects.create(
             name="Example",
             homepage="http://example.com/",
@@ -20,6 +32,12 @@ class IdentifyTestCase(APITestCase):
         )
 
     def test_identify_find(self):
+        """
+        This is_identify
+
+        Args:
+            self: (todo): write your description
+        """
         instance = IdentifiedModel.objects.find("Test 1")
         self.assertEqual(instance.name, "Test 1")
         self.assertEqual(instance.slug, "test-1")
@@ -30,6 +48,12 @@ class IdentifyTestCase(APITestCase):
         self.assertEqual(instance, instance2)
 
     def test_identify_auth_url(self):
+        """
+        Initialize auth url.
+
+        Args:
+            self: (todo): write your description
+        """
         instance = IdentifiedModel.objects.find("Test 2")
         instance.identifiers.create(
             authority=self.auth,
@@ -44,6 +68,12 @@ class IdentifyTestCase(APITestCase):
         self.assertEqual(ident.url, "http://example.com/pages/test2")
 
     def test_identify_order(self):
+        """
+        Authenticates an order.
+
+        Args:
+            self: (todo): write your description
+        """
         auth2 = Authority.objects.create(
             name="Example.org",
             homepage="http://example.org/",
@@ -104,6 +134,12 @@ class IdentifyTestCase(APITestCase):
 
 class IdentifyRestTestCase(APITestCase):
     def setUp(self):
+        """
+        Creates a user.
+
+        Args:
+            self: (todo): write your description
+        """
         self.user = User.objects.create(username='testuser', is_superuser=True)
         self.auth = Authority.objects.create(
             name="Example",
@@ -119,6 +155,12 @@ class IdentifyRestTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
     def test_identify_config(self):
+        """
+        Test config.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/config.json')
         self.maxDiff = None
         self.assertEqual([
@@ -170,15 +212,33 @@ class IdentifyRestTestCase(APITestCase):
         ], response.data['pages']['identifiedmodel']['form'])
 
     def test_identify_detail_nested_identifiers(self):
+        """
+        Test whether an identifiers are enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/identifiedmodels/test-1.json')
         self.assertIn('identifiers', response.data)
         self.assertEqual(response.data['identifiers'][0]['slug'], 'test-1')
 
     def test_identify_list_nested_identifiers(self):
+        """
+        Test if a list of identifiers are enabled.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get('/identifiedmodels.json')
         self.assertIn('identifiers', response.data['list'][0])
 
     def test_identify_post(self):
+        """
+        Handles post request.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 2',
 
@@ -205,6 +265,12 @@ class IdentifyRestTestCase(APITestCase):
         self.assertEqual(idents[self.auth.pk]["slug"], "test2")
 
     def test_identify_put(self):
+        """
+        Updates an organization
+
+        Args:
+            self: (todo): write your description
+        """
         ident = self.instance.identifiers.get(authority=self.auth)
         form = {
             'name': 'Test 1 - Updated',
@@ -242,6 +308,12 @@ class IdentifyRestTestCase(APITestCase):
         )
 
     def test_identify_post_duplicate_auto_slug(self):
+        """
+        Identify post - auto - post.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 3',
         }
@@ -258,6 +330,12 @@ class IdentifyRestTestCase(APITestCase):
         self.assertEqual(response.data['id'], 'test-3-1')
 
     def test_identify_post_duplicate_auto_ident_slug(self):
+        """
+        Identify post identity is unique.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 4',
             'identifiers[0][name]': 'Test 4 Ident',
@@ -275,6 +353,12 @@ class IdentifyRestTestCase(APITestCase):
         self.assertEqual(response.data['id'], 'test-4-ident-1')
 
     def test_identify_post_duplicate_explicit_slug(self):
+        """
+        Test for post.
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 5',
             'slug': 'test-5',
@@ -294,6 +378,12 @@ class IdentifyRestTestCase(APITestCase):
         )
 
     def test_identify_post_duplicate_explicit_ident_slug(self):
+        """
+        Test if identity identity.
+
+        Args:
+            self: (todo): write your description
+        """
         # FIXME: Handle this case
         return
         form = {
@@ -312,6 +402,12 @@ class IdentifyRestTestCase(APITestCase):
         )
 
     def test_identify_alt_ident(self):
+        """
+        Test if an identity
+
+        Args:
+            self: (todo): write your description
+        """
         form = {
             'name': 'Test 7',
             'identifiers[0][name]': "Test 7",
@@ -332,6 +428,12 @@ class IdentifyRestTestCase(APITestCase):
         self.assertEqual(response.data['id'], 'test-7')
 
     def test_filter_backend(self):
+        """
+        Create a backend backend instance
+
+        Args:
+            self: (todo): write your description
+        """
         self.instance.filterablemodel_set.create(
             pk=1,
             name="Filter 1",

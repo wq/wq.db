@@ -96,6 +96,12 @@ class DateModel(models.Model):
     empty_date = models.DateTimeField(null=True)
 
     def __str__(self):
+        """
+        Returns a string representation of the date.
+
+        Args:
+            self: (todo): write your description
+        """
         return "%s on %s" % (self.name, self.date.date())
 
 
@@ -136,15 +142,35 @@ class CharFieldModel(models.Model):
 
 class ExpensiveField(models.CharField):
     def __init__(self, cost=None, **kwargs):
+        """
+        Initialize the cost
+
+        Args:
+            self: (todo): write your description
+            cost: (int): write your description
+        """
         self.cost = cost
         super().__init__(**kwargs)
 
     def deconstruct(self):
+        """
+        Deconstruct a callback.
+
+        Args:
+            self: (todo): write your description
+        """
         name, path, args, kwargs = super().deconstruct()
         kwargs['cost'] = self.cost
         return name, path, args, kwargs
 
     def to_python(self, value):
+        """
+        Convert to a value to a python value.
+
+        Args:
+            self: (todo): write your description
+            value: (str): write your description
+        """
         if value:
             time.sleep(self.cost)
         return super().to_python(value)

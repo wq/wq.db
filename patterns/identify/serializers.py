@@ -6,6 +6,13 @@ from .models import Identifier
 
 class IdentifierListSerializer(base.TypedAttachmentListSerializer):
     def to_internal_value(self, data):
+        """
+        Convert the primary key value.
+
+        Args:
+            self: (todo): write your description
+            data: (array): write your description
+        """
         data = super(IdentifierListSerializer, self).to_internal_value(data)
         primary = [
             ident for ident in data
@@ -32,9 +39,26 @@ class IdentifierSerializer(base.TypedAttachmentSerializer):
 
 class IdentifiedModelValidator(UniqueTogetherValidator):
     def enforce_required_fields(self, attrs, serializer=None):
+        """
+        Enforce all required fields.
+
+        Args:
+            self: (todo): write your description
+            attrs: (dict): write your description
+            serializer: (str): write your description
+        """
         pass
 
     def filter_queryset(self, attrs, queryset, serializer=None):
+        """
+        Filter queryset.
+
+        Args:
+            self: (todo): write your description
+            attrs: (dict): write your description
+            queryset: (todo): write your description
+            serializer: (todo): write your description
+        """
         for field in self.fields:
             attrs.setdefault(field, None)
         if getattr(self, 'requires_context', None):
@@ -55,12 +79,24 @@ class IdentifiedModelSerializer(base.AttachedModelSerializer):
     identifiers = IdentifierSerializer(many=True)
 
     def get_unique_together_validators(self):
+        """
+        Returns unique unique validators.
+
+        Args:
+            self: (todo): write your description
+        """
         return [IdentifiedModelValidator(
             queryset=self.Meta.model.objects.all(),
             fields=['slug']
         )]
 
     def save(self, *args, **kwargs):
+        """
+        Custom save method.
+
+        Args:
+            self: (todo): write your description
+        """
         super(IdentifiedModelSerializer, self).save(*args, **kwargs)
         # Fetch instance from DB in case identifier changed slug while saving
         self.instance = self.Meta.model.objects.get(pk=self.instance.pk)

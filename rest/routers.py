@@ -39,6 +39,13 @@ class ModelRouter(DefaultRouter):
     default_serializer_class = ModelSerializer
 
     def __init__(self, trailing_slash=False):
+        """
+        Initialize all routes.
+
+        Args:
+            self: (todo): write your description
+            trailing_slash: (todo): write your description
+        """
         # Add trailing slash for HTML list views
         self.routes.append(Route(
             url=r'^{prefix}/$',
@@ -55,6 +62,19 @@ class ModelRouter(DefaultRouter):
     def register_model(self, model, viewset=None, serializer=None, fields=None,
                        queryset=None, filter=None, cache_filter=None,
                        **kwargs):
+        """
+        Register a model.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+            viewset: (todo): write your description
+            serializer: (str): write your description
+            fields: (todo): write your description
+            queryset: (todo): write your description
+            filter: (todo): write your description
+            cache_filter: (todo): write your description
+        """
         if isinstance(model, str) and '.' in model:
             from django.db.models import get_model
             model = get_model(*model.split('.'))
@@ -105,25 +125,81 @@ class ModelRouter(DefaultRouter):
         self._url_models[kwargs['url']] = model
 
     def register_viewset(self, model, viewset):
+        """
+        Register a modelsetsetsetsetsetsetset with_view.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            viewset: (todo): write your description
+        """
         self._viewsets[model] = viewset
 
     def register_serializer(self, model, serializer):
+        """
+        Register a serializer.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            serializer: (todo): write your description
+        """
         self._serializers[model] = serializer
         self._base_config = None
 
     def register_fields(self, model, fields):
+        """
+        Register the given model.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            fields: (todo): write your description
+        """
         self._fields[model] = fields
 
     def register_queryset(self, model, queryset):
+        """
+        Registers a queryset.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            queryset: (str): write your description
+        """
         self._querysets[model] = queryset
 
     def register_filter(self, model, filter):
+        """
+        Register a filter.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            filter: (dict): write your description
+        """
         self._filters[model] = filter
 
     def register_cache_filter(self, model, cache_filter):
+        """
+        Register a filter filter.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            cache_filter: (todo): write your description
+        """
         self._cache_filters[model] = cache_filter
 
     def register_config(self, model, config):
+        """
+        Registers a configuration.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            config: (todo): write your description
+        """
         for key in ('partial', 'reversed', 'max_local_pages'):
             if key in config:
                 raise ImproperlyConfigured(
@@ -133,6 +209,13 @@ class ModelRouter(DefaultRouter):
         self._base_config = None
 
     def update_config(self, model, **kwargs):
+        """
+        Updates the configuration of a model.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+        """
         if model not in self._config:
             raise RuntimeError("%s must be registered first" % model)
         for key in ('partial', 'reversed', 'max_local_pages'):
@@ -144,13 +227,37 @@ class ModelRouter(DefaultRouter):
         self._base_config = None
 
     def set_extra_config(self, **extra):
+        """
+        Sets the extra configuration.
+
+        Args:
+            self: (todo): write your description
+            extra: (dict): write your description
+        """
         self._extra_config.update(extra)
         self._base_config = None
 
     def get_default_serializer_class(self, model_class):
+        """
+        Return the default class for the given model_class.
+
+        Args:
+            self: (todo): write your description
+            model_class: (todo): write your description
+        """
         return self.default_serializer_class
 
     def get_class(self, classes, model_class, default=lambda model: None):
+        """
+        Return the class for classes.
+
+        Args:
+            self: (todo): write your description
+            classes: (int): write your description
+            model_class: (str): write your description
+            default: (todo): write your description
+            model: (str): write your description
+        """
         if model_class in classes:
             return classes[model_class]
         else:
@@ -167,6 +274,14 @@ class ModelRouter(DefaultRouter):
                 return default(real_model)
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
+        """
+        Get a serializer for a given model.
+
+        Args:
+            self: (todo): write your description
+            model_class: (todo): write your description
+            serializer_depth: (todo): write your description
+        """
         serializer = self.get_class(
             self._serializers, model_class,
             self.get_default_serializer_class
@@ -204,6 +319,16 @@ class ModelRouter(DefaultRouter):
         return serializer
 
     def serialize(self, obj, many=False, depth=None, request=None):
+        """
+        Serialize an object.
+
+        Args:
+            self: (todo): write your description
+            obj: (todo): write your description
+            many: (bool): write your description
+            depth: (todo): write your description
+            request: (todo): write your description
+        """
         if many:
             # assume obj is a queryset
             model = obj.model
@@ -220,6 +345,13 @@ class ModelRouter(DefaultRouter):
         return serializer(obj, many=many, context=context).data
 
     def get_paginate_by_for_model(self, model_class):
+        """
+        Return a paginate model by model.
+
+        Args:
+            self: (todo): write your description
+            model_class: (todo): write your description
+        """
         config = self.get_model_config(model_class) or {}
         paginate_by = config.get('per_page', None)
         if paginate_by:
@@ -227,6 +359,15 @@ class ModelRouter(DefaultRouter):
         return api_settings.PAGE_SIZE
 
     def paginate(self, model, page_num, request):
+        """
+        Paginate the model.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+            page_num: (int): write your description
+            request: (todo): write your description
+        """
         # FIXME: should copy() before modifying but doing so causes recursion
         request.GET = {
             'page': page_num,
@@ -237,6 +378,14 @@ class ModelRouter(DefaultRouter):
         return view(request._request).data
 
     def get_queryset_for_model(self, model, request=None):
+        """
+        Return queryset of all pages.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+            request: (todo): write your description
+        """
         if model in self._page_models:
             model = self._page_models[model]
         if model in self._querysets:
@@ -248,13 +397,34 @@ class ModelRouter(DefaultRouter):
         return qs
 
     def get_cache_filter_for_model(self, model):
+        """
+        Returns a queryset for the given model.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+        """
         return self._cache_filters.get(model, lambda qs, req: qs)
 
     def get_lookup_for_model(self, model_class):
+        """
+        Return the lookup for a model.
+
+        Args:
+            self: (todo): write your description
+            model_class: (todo): write your description
+        """
         config = self.get_model_config(model_class) or {}
         return config.get('lookup', 'pk')
 
     def get_viewset_for_model(self, model_class):
+        """
+        Get a modelsetset for the given model_class.
+
+        Args:
+            self: (todo): write your description
+            model_class: (todo): write your description
+        """
         if model_class in self._page_models:
             model_class = self._page_models[model_class]
         viewset = self.get_class(
@@ -283,6 +453,12 @@ class ModelRouter(DefaultRouter):
 
     @property
     def base_config(self):
+        """
+        Return base configuration.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._base_config:
             return self._base_config
 
@@ -325,6 +501,13 @@ class ModelRouter(DefaultRouter):
         return self._base_config
 
     def get_config(self, user=None):
+        """
+        Get a dict of config values.
+
+        Args:
+            self: (str): write your description
+            user: (todo): write your description
+        """
         if user is None or not user.is_authenticated:
             return self.base_config
 
@@ -349,11 +532,27 @@ class ModelRouter(DefaultRouter):
         return config
 
     def add_page(self, name, config, view=None):
+        """
+        Add a new page.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            config: (todo): write your description
+            view: (todo): write your description
+        """
         if view is None:
             class PageView(SimpleViewSet):
                 template_name = name + '.html'
 
                 def list(self, request, *args, **kwargs):
+                    """
+                    List all the list of configs.
+
+                    Args:
+                        self: (todo): write your description
+                        request: (todo): write your description
+                    """
                     return Response(config)
             view = PageView
         if 'name' not in config:
@@ -364,13 +563,36 @@ class ModelRouter(DefaultRouter):
         self._base_config = None
 
     def get_page(self, page):
+        """
+        Return the page of the given page.
+
+        Args:
+            self: (todo): write your description
+            page: (str): write your description
+        """
         return self._extra_pages[page]
 
     def get_page_config(self, name, user=None):
+        """
+        Get a page config value.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            user: (todo): write your description
+        """
         config = self.get_config(user)
         return config['pages'].get(name, None)
 
     def get_model_config(self, model, user=None):
+        """
+        Get model config.
+
+        Args:
+            self: (todo): write your description
+            model: (str): write your description
+            user: (todo): write your description
+        """
         if model in self._page_models:
             model = self._page_models[model]
 
@@ -386,18 +608,51 @@ class ModelRouter(DefaultRouter):
         return None
 
     def model_is_registered(self, model):
+        """
+        Return true if the given model is registered.
+
+        Args:
+            self: (todo): write your description
+            model: (todo): write your description
+        """
         return model in self._models
 
     def get_config_view(self):
+        """
+        Returns the configview class based onconfig.
+
+        Args:
+            self: (todo): write your description
+        """
         class ConfigView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
+                """
+                Return a list of config values.
+
+                Args:
+                    this: (str): write your description
+                    request: (todo): write your description
+                """
                 return Response(self.get_config(request.user))
         return ConfigView
 
     def get_index(self, user):
+        """
+        Return a list of all pages
+
+        Args:
+            self: (todo): write your description
+            user: (todo): write your description
+        """
         config = self.get_config(user)
 
         def page_sort(page):
+            """
+            Sort a page
+
+            Args:
+                page: (dict): write your description
+            """
             is_list = page.get('list', False)
             return (not is_list, page['name'])
 
@@ -407,19 +662,53 @@ class ModelRouter(DefaultRouter):
         }
 
     def get_index_view(self):
+        """
+        Get the index of a given index.
+
+        Args:
+            self: (todo): write your description
+        """
         class IndexView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
+                """
+                Handles a list of users.
+
+                Args:
+                    this: (str): write your description
+                    request: (todo): write your description
+                """
                 return Response(self.get_index(request.user))
         return IndexView
 
     def get_multi_view(self):
+        """
+        Returns a list of multiple views.
+
+        Args:
+            self: (todo): write your description
+        """
         class MultipleListView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
+                """
+                Make a list. list.
+
+                Args:
+                    this: (str): write your description
+                    request: (todo): write your description
+                """
                 urls = request.GET.get('lists', '').split(',')
                 return self.get_multi(request, urls)
         return MultipleListView
 
     def get_multi(self, request, urls):
+        """
+        Get a list of all the models.
+
+        Args:
+            self: (todo): write your description
+            request: (todo): write your description
+            urls: (str): write your description
+        """
         conf = self.get_config(request.user)
         conf_by_url = {
             conf['url']: (page, conf)
@@ -436,12 +725,25 @@ class ModelRouter(DefaultRouter):
         return Response(result)
 
     def get_urls(self):
+        """
+        Get all registered urls.
+
+        Args:
+            self: (todo): write your description
+        """
         # Register viewsets with DefaultRouter just before returning urls
 
         # The root viewset (with a url of "") should be registered last
         root = {}
 
         def register(config, viewset):
+            """
+            Registers the viewset to the root.
+
+            Args:
+                config: (todo): write your description
+                viewset: (todo): write your description
+            """
             if config['url'] == "":
                 root['view'] = viewset
                 root['name'] = config['name']
@@ -479,6 +781,14 @@ class ModelRouter(DefaultRouter):
         return urls
 
     def get_root_urls(self, viewset, name):
+        """
+        Return a list of urlset.
+
+        Args:
+            self: (todo): write your description
+            viewset: (todo): write your description
+            name: (str): write your description
+        """
         lookup = self.get_lookup_regex(viewset)
         routes = self.get_routes(viewset)
         urls = []
@@ -501,6 +811,13 @@ class ModelRouter(DefaultRouter):
         return format_suffix_patterns(urls)
 
     def get_routes(self, viewset):
+        """
+        Return a list of routes.
+
+        Args:
+            self: (todo): write your description
+            viewset: (todo): write your description
+        """
         routes = super(ModelRouter, self).get_routes(viewset)
         model = getattr(viewset, "model", None)
         if not model:
@@ -558,6 +875,12 @@ class ModelRouter(DefaultRouter):
 
     @property
     def version(self):
+        """
+        Return the version number.
+
+        Args:
+            self: (todo): write your description
+        """
         if not hasattr(self, '_version'):
             vtxt = getattr(settings, 'VERSION_TXT', None)
             if vtxt is None:
@@ -570,6 +893,12 @@ class ModelRouter(DefaultRouter):
 
     @property
     def urls(self):
+        """
+        Returns a list of urls.
+
+        Args:
+            self: (todo): write your description
+        """
         urls = super(ModelRouter, self).urls
         try:
             # FIXME: Remove in 2.0

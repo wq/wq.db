@@ -8,6 +8,12 @@ from tests.rest_app.serializers import (
 
 class LabelTestCase(APITestCase):
     def setUp(self):
+        """
+        Sets the item
+
+        Args:
+            self: (todo): write your description
+        """
         itype = ItemType.objects.create(name="Test", pk=1)
         itype.item_set.create(name="Test 1")
         DateModel.objects.create(
@@ -22,24 +28,48 @@ class LabelTestCase(APITestCase):
         )
 
     def test_rest_date_label(self):
+        """
+        Check if a rest of a rest api alive.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get("/datemodels/1.json")
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertIn('date_label', response.data)
         self.assertEqual(response.data['date_label'], "2015-01-01 06:00 AM")
 
     def test_rest_choice_label(self):
+        """
+        Check if the rest of a rest of the rest of the rest server label.
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get("/choicemodels/1.json")
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertIn('choice_label', response.data)
         self.assertEqual(response.data['choice_label'], "Choice Two")
 
     def test_rest_boolean_label(self):
+        """
+        Check if the rest api label
+
+        Args:
+            self: (todo): write your description
+        """
         response = self.client.get("/itemtypes/1.json")
         self.assertTrue(status.is_success(response.status_code), response.data)
         self.assertIn('active_label', response.data)
         self.assertEqual(response.data['active_label'], "Yes")
 
     def test_custom_date_label(self):
+        """
+        Test for custom meta data for custom meta data.
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db.rest import router
 
         # Default label
@@ -52,6 +82,12 @@ class LabelTestCase(APITestCase):
         self.assertEqual(obj['date_label'], 'January 1, 2015')
 
     def test_custom_choice_label(self):
+        """
+        Set custom choice label
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db.rest import router
 
         # Default label
@@ -64,6 +100,12 @@ class LabelTestCase(APITestCase):
         self.assertEqual(obj['choice_label'], 'TWO')
 
     def test_custom_fk_label(self):
+        """
+        Test for the experiment hasproto fk
+
+        Args:
+            self: (todo): write your description
+        """
         from wq.db.rest import router
 
         # Default labels

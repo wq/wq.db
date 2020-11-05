@@ -7,6 +7,15 @@ class Pagination(PageNumberPagination):
     page_size_query_param = 'limit'
 
     def paginate_queryset(self, queryset, request, view=None):
+        """
+        Filter queryset based on request.
+
+        Args:
+            self: (todo): write your description
+            queryset: (todo): write your description
+            request: (todo): write your description
+            view: (todo): write your description
+        """
         data = super(Pagination, self).paginate_queryset(
             queryset, request, view
         )
@@ -42,6 +51,13 @@ class Pagination(PageNumberPagination):
         return data
 
     def get_paginated_response(self, data):
+        """
+        Returns paginated paginated pagination
+
+        Args:
+            self: (todo): write your description
+            data: (str): write your description
+        """
         return Response(OrderedDict([
             # DRF default metadata
             ('count', self.page.paginator.count),
