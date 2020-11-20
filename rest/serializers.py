@@ -199,18 +199,30 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 child_config = {'form': []}
             info['type'] = 'repeat'
             info['children'] = child_config['form']
-            if 'initial' in child_config:
-                info['initial'] = child_config['initial']
+            for key in ('initial', 'control'):
+                if key in child_config:
+                    info[key] = child_config[key]
 
         elif isinstance(field, serializers.RelatedField):
             # Foreign key to a parent model
-            info['type'] = 'string'
+            info['type'] = 'select one'
             info['name'] = info['name'].replace('_id', '')
             info['label'] = info['label'].replace(' Id', '')
             if hasattr(field, 'queryset'):
                 fk = self.get_wq_foreignkey_info(field.queryset.model)
                 if fk:
                     info['wq:ForeignKey'] = fk
+
+        elif isinstance(field, serializers.ManyRelatedField):
+            # ManyToMany field to related model
+            info['type'] = 'select'
+            info['name'] = info['name'].replace('_id', '')
+            info['label'] = info['label'].replace(' Id', '')
+            if field.child_relation.queryset:
+                fk = self.get_wq_foreignkey_info(
+                    field.child_relation.queryset.model
+                )
+                info['wq:ForeignKey'] = fk
 
         if 'type' not in info:
             info['type'] = 'string'
@@ -361,7 +373,11 @@ class ModelSerializer(BaseModelSerializer):
                 continue
 
             default_field = fields[name]
-            auto_related_field = (serializers.Serializer, LookupRelatedField)
+            auto_related_field = (
+                serializers.BaseSerializer,
+                serializers.ManyRelatedField,
+                LookupRelatedField,
+            )
             if not isinstance(default_field, auto_related_field):
                 continue
 
@@ -383,7 +399,7 @@ class ModelSerializer(BaseModelSerializer):
             if name in fields:
                 # Update/remove DRF default foreign key field (w/o _id)
                 if self.is_detail and isinstance(
-                        default_field, serializers.Serializer):
+                        default_field, serializers.BaseSerializer):
                     # Nested representation, keep for detail template context
                     fields[name].read_only = True
                 else:
@@ -453,7 +469,10 @@ class ModelSerializer(BaseModelSerializer):
                 'source': name,
             }
             if field_kwargs.get('many', None):
-                label_field_kwargs['many'] = field_kwargs['many']
+                label_field_kwargs.update(
+                    many=True,
+                    read_only=True,
+                )
             fields[name + '_label'] = serializers.StringRelatedField(
                 **label_field_kwargs
             )
