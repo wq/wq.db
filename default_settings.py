@@ -50,7 +50,10 @@ REST_FRAMEWORK = {
 
     'DEFAULT_FILTER_BACKENDS': (
         'wq.db.rest.filters.FilterBackend',
-    )
+    ),
+
+    'DEFAULT_CONTENT_NEGOTIATION_CLASS':
+        'wq.db.rest.negotiation.ContentNegotiation'
 }
 
 # wq.db settings
