@@ -145,7 +145,7 @@ class ConfigTestCase(APITestCase):
         self.assertEqual({
             'name': 'parent',
             'label': 'Parent',
-            'type': 'string',
+            'type': 'select one',
             'wq:ForeignKey': 'parent',
             'bind': {'required': True},
         }, self.get_field(cconf, 'parent'))
@@ -155,7 +155,7 @@ class ConfigTestCase(APITestCase):
         self.assertEqual({
             'name': 'type',
             'label': 'Type',
-            'type': 'string',
+            'type': 'select one',
             'wq:ForeignKey': 'itemtype',
             'filter': {'active':  ['1', '{{#id}}0{{/id}}{{^id}}1{{/id}}']},
             'bind': {'required': True},

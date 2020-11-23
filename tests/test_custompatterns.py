@@ -80,7 +80,7 @@ class CustomPatternTestCase(APITestCase):
                 }, {
                     'name': 'type',
                     'label': 'Type',
-                    'type': 'string',
+                    'type': 'select one',
                     'wq:ForeignKey': 'customtype',
                     'bind': {'required': True},
                 }],

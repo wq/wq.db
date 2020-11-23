@@ -151,7 +151,7 @@ class IdentifyRestTestCase(APITestCase):
                 }, {
                     'name': 'authority',
                     'label': 'Authority',
-                    'type': 'string',
+                    'type': 'select one',
                     'wq:ForeignKey': 'authority',
                 }, {
                     'name': 'is_primary',

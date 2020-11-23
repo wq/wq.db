@@ -228,6 +228,7 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
                 fk = self.get_wq_foreignkey_info(field.Meta.model)
                 if fk:
                     info['wq:ForeignKey'] = fk
+                    info['type'] = 'select one'
             else:
                 info = {
                     'name': name,

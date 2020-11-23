@@ -27,7 +27,7 @@ class NaturalKeyTestCase(APITestCase):
                 'children': [{
                      'name': 'parent[slug]',
                      'label': 'Parent',
-                     'type': 'string',
+                     'type': 'select one',
                      'wq:ForeignKey': 'naturalkeyparent',
                      'wq:length': 50,
                      'bind': {'required': True},
