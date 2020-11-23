@@ -1,6 +1,5 @@
 from wq.db.rest.serializers import ModelSerializer
 from rest_framework import serializers
-from wq.db.rest.models import get_ct, get_object_id
 from natural_keys import NaturalKeySerializer, NaturalKeyModelSerializer
 
 
@@ -96,38 +95,6 @@ class AttachmentSerializer(ModelSerializer):
 
 
 class TypedAttachmentSerializer(AttachmentSerializer):
-    def to_representation(self, obj):
-        data = super(TypedAttachmentSerializer, self).to_representation(obj)
-
-        has_parent = (
-            self.parent and self.parent.parent and
-            hasattr(self.parent.parent.Meta, 'model')
-        )
-        if has_parent:
-            # This is being serialized with its parent object, don't need to
-            # reference the parent again.
-            pass
-        else:
-            # Include pointer to parent object. Collapse content_type and
-            # object_id into a single attribute: the identifier for the content
-            # type plus '_id' e.g. if contenttype's name is 'visit' then the
-            # attribute is 'visit_id'.  This lets us pretend the generic
-            # foreign key is a regular one in client.  For the value, Use
-            # get_object_id insted of obj.object_id, in case the the content
-            # object is an IdentifiedModel
-
-            parent_obj = getattr(obj, self.Meta.object_field)
-            if parent_obj is not None:
-                idname = get_ct(parent_obj).identifier
-                data[idname + '_id'] = get_object_id(parent_obj)
-
-                # In detail views, include full parent object (without _id
-                # suffix)
-                if self.is_detail:
-                    from wq.db import rest
-                    data[idname] = rest.router.serialize(parent_obj)
-        return data
-
     def get_wq_config(self):
         config = super(TypedAttachmentSerializer, self).get_wq_config()
         if 'initial' not in config:
