@@ -94,10 +94,39 @@ class BlankCharField(serializers.CharField):
         return super(BlankCharField, self).run_validation(data)
 
 
+def is_empty_or_url(data):
+    if not data:
+        return True
+    if data is serializers.empty:
+        return True
+    if isinstance(data, str) and data.startswith(('http://', 'https://')):
+        return True
+    return False
+
+
+class ClearableFileField(serializers.FileField):
+    def validate_empty_values(self, data):
+        parent = self.parent
+        while parent.parent and parent.instance is None:
+            parent = parent.parent
+        if parent.instance is not None:
+            if is_empty_or_url(data):
+                raise serializers.SkipField()
+            elif data == "__clear__":
+                data = None
+        return super().validate_empty_values(data)
+
+
+class ClearableImageField(ClearableFileField, serializers.ImageField):
+    pass
+
+
 class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
     xlsform_types = OrderedDict((
         (serializers.ImageField, 'image'),
-        (serializers.FileField, 'binary'),
+        (ClearableImageField, 'image'),
+        (serializers.FileField, 'file'),
+        (ClearableFileField, 'file'),
         (serializers.DateField, 'date'),
         (serializers.DateTimeField, 'dateTime'),
         (serializers.FloatField, 'decimal'),
@@ -274,6 +303,8 @@ class ModelSerializer(BaseModelSerializer):
 
     def __init__(self, *args, **kwargs):
         mapping = self.serializer_field_mapping
+        mapping[model_fields.FileField] = ClearableFileField
+        mapping[model_fields.ImageField] = ClearableImageField
 
         for model_field, serializer_field in list(mapping.items()):
             if serializer_field == serializers.CharField:

@@ -182,7 +182,7 @@ class ConfigTestCase(APITestCase):
     def test_rest_config_subtype(self):
         conf = self.get_config('filemodel')
         field = self.get_field(conf, 'file')
-        self.assertEqual('binary', field['type'])
+        self.assertEqual('file', field['type'])
 
         conf = self.get_config('imagemodel')
         field = self.get_field(conf, 'image')
