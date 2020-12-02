@@ -279,6 +279,9 @@ class ModelRouter(DefaultRouter):
 
         return ViewSet
 
+    def get_base_url(self):
+        return getattr(settings, 'WQ_BASE_URL', '')
+
     _base_config = None
 
     @property
@@ -318,7 +321,15 @@ class ModelRouter(DefaultRouter):
 
             pages[info['name']] = info
 
-        self._base_config = {'pages': pages}
+        base_url = self.get_base_url()
+        self._base_config = {
+            'pages': pages,
+            'router': {'base_url': base_url},
+            'store': {
+                'service': base_url,
+                'defaults': {'format': 'json'},
+            },
+        }
         if settings.DEBUG:
             self._base_config['debug'] = True
         self._base_config.update(self._extra_config)

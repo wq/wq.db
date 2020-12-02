@@ -15,7 +15,7 @@ def load_app_template(template_name):
         '<title>{{title}}</title>',
         template
     )
-    if '{{title}}' in template:
+    if '{{' in template:
         return template, True
     else:
         return template, False
@@ -35,7 +35,10 @@ def render_app(template_name, data, request):
 
     template, has_title = APP_TEMPLATES[template_name]
     if has_title:
-        return template.replace('{{title}}', get_title(data, request))
+        from wq.db.rest import router
+        return (template
+                .replace('{{title}}', get_title(data, request))
+                .replace('{{base_url}}', router.get_base_url()))
     else:
         return template
 

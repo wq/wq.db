@@ -11,7 +11,11 @@ def version(request):
 
 
 def get_base_url():
-    return reverse('wq:config-list').replace('/config/', '')
+    base_url = reverse('wq:config-list').replace('/config/', '')
+    if base_url != router.get_base_url():
+        # FIXME: raise ImproperlyConfigured in 2.0?
+        pass
+    return base_url
 
 
 def get_wq_path(request):
