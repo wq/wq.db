@@ -219,14 +219,21 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             if not isinstance(field, serializers.FileField):
                 info['wq:length'] = field.max_length
 
-        if isinstance(field, serializers.ListSerializer):
+        if isinstance(field, serializers.BaseSerializer):
             # Nested model with a foreign key to this one
-            field.child.context['router'] = self.router
-            if hasattr(field.child, 'get_wq_config'):
-                child_config = field.child.get_wq_config()
+            if isinstance(field, serializers.ListSerializer):
+                info['type'] = 'repeat'
+                serializer = field.child
+            else:
+                info['type'] = 'group'
+                serializer = field
+
+            serializer.context['router'] = self.router
+            if hasattr(serializer, 'get_wq_config'):
+                child_config = serializer.get_wq_config()
             else:
                 child_config = {'form': []}
-            info['type'] = 'repeat'
+
             info['children'] = child_config['form']
             for key in ('initial', 'control'):
                 if key in child_config:
@@ -280,6 +287,13 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 else:
                     if source.get_internal_type() == "TextField":
                         info['type'] = "text"
+
+        if 'wq_config' in field.style:
+            info.update(field.style['wq_config'])
+
+        field_config = getattr(self.Meta, 'wq_field_config', {})
+        if name in field_config:
+            info.update(field_config[name])
 
         return info
 
