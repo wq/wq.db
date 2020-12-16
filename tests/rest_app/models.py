@@ -62,6 +62,9 @@ class Item(LabelModel):
     name = models.CharField(max_length=10)
     type = models.ForeignKey(ItemType, models.CASCADE)
 
+    class Meta:
+        ordering = ('type', 'name')
+
 
 class FileModel(LabelModel):
     name = models.CharField(max_length=255)

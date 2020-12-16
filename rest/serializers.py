@@ -148,11 +148,15 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 fields[name] = serializers.ChoiceField(
                     choices=self.get_boolean_choices(field),
                     required=False,
+                    label=field.label,
+                    help_text=field.help_text,
                 )
             elif isinstance(field, serializers.BooleanField):
                 fields[name] = serializers.ChoiceField(
                     choices=self.get_boolean_choices(field),
                     required=field.required,
+                    label=field.label,
+                    help_text=field.help_text,
                 )
         return fields
 
@@ -187,6 +191,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         config.setdefault('name', meta.model_name)
         config.setdefault('verbose_name', meta.verbose_name)
         config.setdefault('verbose_name_plural', meta.verbose_name_plural)
+        if meta.ordering:
+            config.setdefault('ordering', meta.ordering)
 
         if has_geo_fields:
             config.setdefault('map', True)

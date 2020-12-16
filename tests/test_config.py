@@ -46,7 +46,8 @@ class ConfigTestCase(APITestCase):
             'form': conf['form'],
             'label_template': '{{name}}',
             'verbose_name': 'item',
-            'verbose_name_plural': 'items'
+            'verbose_name_plural': 'items',
+            'ordering': ['type', 'name'],
         }, conf)
 
     def test_rest_config_json_fields(self):
