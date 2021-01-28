@@ -2,7 +2,7 @@ import unittest
 from .base import APITestCase
 from rest_framework import status
 import json
-from tests.rest_app.models import SlugModel
+from tests.rest_app.models import SlugModel, FieldsetModel
 from tests.gis_app.models import GeometryModel
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -204,3 +204,41 @@ class RestPostTestCase(APITestCase):
         item = response.data
         self.assertEqual(item['name'], "Test 2")
         self.assertEqual(item['expensive'], "SOME_OTHER_DATA")
+
+    def test_rest_virtual_fieldset(self):
+        response = self.client.post('/fieldsetmodels.json', {
+            "general": {
+                "name": "Test",
+                "title": "Dr.",
+            },
+            "contact": {
+                "address": "123 Main St",
+                "city": "Minneapolis",
+            }
+        }, format='json')
+        self.assertTrue(
+            status.is_success(response.status_code), response.data
+        )
+        obj = FieldsetModel.objects.get(pk=response.data['id'])
+        self.assertEqual(obj.name, "Test")
+        self.assertEqual(obj.title, "Dr.")
+        self.assertEqual(obj.address, "123 Main St")
+        self.assertEqual(obj.city, "Minneapolis")
+
+        response = self.client.post('/fieldsetmodels.json', {
+            "general": {
+                "name": "Test",
+            },
+            "contact": {
+                "address": "123 Main St",
+                "city": "Minneapolis",
+            }
+        }, format='json')
+        self.assertTrue(
+            status.is_client_error(response.status_code), response.data
+        )
+        self.assertEqual(response.data, {
+            'general': {
+                'title': ['This field is required.']
+            }
+        })

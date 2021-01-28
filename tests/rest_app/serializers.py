@@ -2,7 +2,7 @@ from rest_framework import serializers
 from wq.db.rest.serializers import ModelSerializer
 from .models import (
     OneToOneModel, ExtraModel, Child, ChoiceModel, DateModel, Item,
-    ExpensiveModel,
+    ExpensiveModel, FieldsetModel
 )
 
 
@@ -99,3 +99,20 @@ class ExpensiveSerializer(ModelSerializer):
         list_exclude = ('expensive', 'more_expensive')
         config_exclude = ('more_expensive',)
         model = ExpensiveModel
+
+
+class FieldsetSerializer(ModelSerializer):
+    class Meta:
+        model = FieldsetModel
+        fields = "__all__"
+        wq_fieldsets = {
+            'general': {
+                'label': 'General',
+                'fields': ['name', 'title']
+            },
+            'contact': {
+                'label': 'Contact Information',
+                'control': {'appearance': 'contact-fieldset'},
+                'fields': ['address', 'city']
+            }
+        }

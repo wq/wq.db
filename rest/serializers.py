@@ -164,20 +164,36 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         return [(True, 'Yes'), (False, 'No')]
 
     def get_wq_config(self):
+        serializer_fields = self.get_fields_for_config()
         fields = []
         nested_fields = []
         has_geo_fields = False
 
-        overrides = getattr(self.Meta, 'wq_field_config', {})
+        overrides = getattr(self.Meta, 'wq_field_config', None) or {}
+        fieldsets = getattr(self.Meta, 'wq_fieldsets', None) or {}
 
-        for name, field in self.get_fields_for_config().items():
+        def get_info(name, field):
             info = self.get_wq_field_info(name, field)
+            if info['name'] in overrides:
+                info.update(overrides[info['name']])
+            return info
+
+        for name, conf in fieldsets.items():
+            conf = conf.copy()
+            conf.setdefault('name', name)
+            conf.setdefault('type', 'group')
+            conf.setdefault('label', name)
+            conf['children'] = [
+                get_info(name, serializer_fields.pop(name))
+                for name in conf.pop('fields')
+            ]
+            nested_fields.append(conf)
+
+        for name, field in serializer_fields.items():
+            info = get_info(name, field)
 
             if info['type'].startswith('geo') or info['name'] == 'latitude':
                 has_geo_fields = True
-
-            if info['name'] in overrides:
-                info.update(overrides[info['name']])
 
             if info['type'] == 'repeat':
                 nested_fields.append(info)
@@ -313,9 +329,45 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             model_conf = serializer().get_wq_config()
             return model_conf['name']
 
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        if getattr(self.Meta, 'wq_fieldsets', None):
+            return self.to_virtual_fieldsets(data)
+        else:
+            return data
+
+    def to_virtual_fieldsets(self, data):
+        for name, conf in self.Meta.wq_fieldsets.items():
+            for field in conf['fields']:
+                if field not in data:
+                    continue
+                data.setdefault(name, {})
+                data[name][field] = data.pop(field)
+        return data
+
+    def to_internal_value(self, data):
+        if not getattr(self.Meta, 'wq_fieldsets', None):
+            return super().to_internal_value(data)
+
+        for name, conf in self.Meta.wq_fieldsets.items():
+            fs_data = data.pop(name, None)
+            if isinstance(fs_data, dict):
+                data.update(fs_data)
+
+        try:
+            return super().to_internal_value(data)
+        except serializers.ValidationError as e:
+            if isinstance(e.detail, dict):
+                raise serializers.ValidationError(
+                    self.to_virtual_fieldsets(e.detail)
+                )
+            else:
+                raise
+
     class Meta:
         wq_config = {}
         wq_field_config = {}
+        wq_fieldsets = None
 
 
 class ModelSerializer(BaseModelSerializer):

@@ -4,11 +4,11 @@ from .models import (
     FileModel, ImageModel,
     SlugModel, SlugRefParent, SlugRefChild,
     DateModel, ChoiceModel, TranslatedModel,
-    CharFieldModel, ExpensiveModel
+    CharFieldModel, ExpensiveModel, FieldsetModel
 )
 from .serializers import (
     RootModelSerializer, ParentSerializer, ItemSerializer,
-    SlugRefChildSerializer, ExpensiveSerializer,
+    SlugRefChildSerializer, ExpensiveSerializer, FieldsetSerializer,
 )
 
 
@@ -96,6 +96,10 @@ rest.router.register_model(
     ExpensiveModel,
     serializer=ExpensiveSerializer,
     queryset=ExpensiveModel.objects.defer('expensive', 'more_expensive'),
+)
+rest.router.register_model(
+    FieldsetModel,
+    serializer=FieldsetSerializer,
 )
 
 rest.router.add_page("rest_context", {})

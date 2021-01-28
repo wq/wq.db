@@ -162,3 +162,13 @@ class ExpensiveModel(LabelModel):
         null=True,
         blank=True
     )
+
+
+class FieldsetModel(LabelModel):
+    # General
+    name = models.CharField(max_length=50)
+    title = models.CharField(max_length=20)
+
+    # Address
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)

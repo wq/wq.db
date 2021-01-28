@@ -209,3 +209,51 @@ class ConfigTestCase(APITestCase):
         self.assertIsNone(
             self.get_field(conf, 'more_expensive', allow_none=True)
         )
+
+    def test_rest_virtual_fieldset(self):
+        conf = self.get_config('fieldsetmodel')
+        self.assertEqual([
+            {
+                'name': 'general',
+                'type': 'group',
+                'label': 'General',
+                'children': [
+                    {
+                        'name': 'name',
+                        'label': 'Name',
+                        'type': 'string',
+                        'wq:length': 50,
+                        'bind': {'required': True},
+                    },
+                    {
+                        'name': 'title',
+                        'label': 'Title',
+                        'type': 'string',
+                        'wq:length': 20,
+                        'bind': {'required': True},
+                    },
+                ]
+            },
+            {
+                'name': 'contact',
+                'type': 'group',
+                'label': 'Contact Information',
+                'control': {'appearance': 'contact-fieldset'},
+                'children': [
+                    {
+                        'name': 'address',
+                        'label': 'Address',
+                        'type': 'string',
+                        'wq:length': 255,
+                        'bind': {'required': True},
+                    },
+                    {
+                        'name': 'city',
+                        'label': 'City',
+                        'type': 'string',
+                        'wq:length': 255,
+                        'bind': {'required': True},
+                    },
+                ]
+            },
+        ], conf['form'])
