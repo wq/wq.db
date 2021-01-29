@@ -24,16 +24,24 @@ INSTALLED_APPS = (
     'tests.naturalkey_app',
 )
 
-WITH_GIS = os.environ.get("WITH_GIS")
+VARIANT = os.environ.get("TEST_VARIANT")
+
+if VARIANT in ("postgis", "spatialite"):
+    WITH_GIS = True
+else:
+    WITH_GIS = False
+
+if VARIANT == "nonroot":
+    WITH_NONROOT = True
+else:
+    WITH_NONROOT = False
 
 if WITH_GIS:
     INSTALLED_APPS += ('tests.gis_app',)
 
 
-WITH_NONROOT = os.environ.get("WITH_NONROOT")
 
-
-if os.environ.get('PSYCOPG2'):
+if VARIANT in ("postgis", "postgres"):
     if WITH_GIS:
         engine = 'django.contrib.gis.db.backends.postgis'
     else:
@@ -42,7 +50,7 @@ if os.environ.get('PSYCOPG2'):
         'default': {
             'ENGINE': engine,
             'NAME': 'wqdb_test',
-            'USER': 'postgres',
+            'USER': os.environ.get('USER'),
         }
     }
 else:
