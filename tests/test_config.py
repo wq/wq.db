@@ -232,6 +232,12 @@ class ConfigTestCase(APITestCase):
                         'wq:length': 20,
                         'bind': {'required': True},
                     },
+                    {
+                        'name': 'status',
+                        'label': 'Status',
+                        'type': 'string',
+                        'disabled': True,
+                    }
                 ]
             },
             {

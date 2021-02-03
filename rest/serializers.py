@@ -141,8 +141,19 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         self._for_wq_config = True
         fields = self.get_fields()
         del self._for_wq_config
+        overrides = getattr(self.Meta, 'wq_field_config', None) or {}
+
         for name, field in list(fields.items()):
-            if name == 'id' or field.read_only:
+
+            has_wq_config = False
+            if name != 'id' and not field.read_only:
+                has_wq_config = True
+            elif 'wq_config' in field.style:
+                has_wq_config = True
+            elif name in overrides:
+                has_wq_config = True
+
+            if not has_wq_config:
                 fields.pop(name)
             elif isinstance(field, serializers.NullBooleanField):
                 fields[name] = serializers.ChoiceField(

@@ -102,13 +102,24 @@ class ExpensiveSerializer(ModelSerializer):
 
 
 class FieldsetSerializer(ModelSerializer):
+    status = serializers.SerializerMethodField(
+        style={'wq_config': {'disabled': True}}
+    )
+    is_complete = serializers.SerializerMethodField()
+
+    def get_status(self, instance):
+        return 'OK'
+
+    def get_is_complete(self, instance):
+        return True
+
     class Meta:
         model = FieldsetModel
         fields = "__all__"
         wq_fieldsets = {
             'general': {
                 'label': 'General',
-                'fields': ['name', 'title']
+                'fields': ['name', 'title', 'status']
             },
             'contact': {
                 'label': 'Contact Information',
