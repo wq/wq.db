@@ -56,11 +56,14 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Set up SpatiaLite
       if: ${{ matrix.variant == 'spatialite' }}
-      run: sudo apt install libsqlite3-mod-spatialite gdal-bin
+      run: |
+         sudo apt-get update
+         sudo apt-get install libsqlite3-mod-spatialite gdal-bin
     - name: Set up PostgreSQL
       if: ${{ matrix.variant == 'postgis' }}
       run: |
-        sudo apt install postgresql-13-postgis-3
+        sudo apt-get update
+        sudo apt-get install postgresql-13-postgis-3
         # postgresql is already installed on image
         sudo systemctl start postgresql.service
         sudo -u postgres createuser --superuser $USER
