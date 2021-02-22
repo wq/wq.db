@@ -11,7 +11,7 @@
 [![GitHub Forks](https://img.shields.io/github/forks/wq/wq.db.svg)](https://github.com/wq/wq.db/network)
 [![GitHub Issues](https://img.shields.io/github/issues/wq/wq.db.svg)](https://github.com/wq/wq.db/issues)
 
-[![Travis Build Status](https://img.shields.io/travis/wq/wq.db/master.svg)](https://travis-ci.org/wq/wq.db)
+[![Tests](https://github.com/wq/wq.db/actions/workflows/test.yml/badge.svg)](https://github.com/wq/wq.db/actions/workflows/test.yml)
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.org/project/wq.db)
 [![Django Support](https://img.shields.io/pypi/djversions/wq.db.svg)](https://pypi.org/project/wq.db)
 
