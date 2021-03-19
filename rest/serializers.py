@@ -349,6 +349,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
     def to_virtual_fieldsets(self, data):
         for name, conf in self.Meta.wq_fieldsets.items():
+            if name == '':
+                continue
             for field in conf['fields']:
                 if field not in data:
                     continue
@@ -361,6 +363,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             return super().to_internal_value(data)
 
         for name, conf in self.Meta.wq_fieldsets.items():
+            if name == '':
+                continue
             fs_data = data.pop(name, None)
             if isinstance(fs_data, dict):
                 data.update(fs_data)
