@@ -83,7 +83,7 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=[
         'Django>=1.11,<4.0',
-        'djangorestframework>=3.8.0,<3.12',
+        'djangorestframework>=3.8.0,<3.13',
         'django-mustache',
         'html-json-forms',
         'natural-keys>=1.6.0',
