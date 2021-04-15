@@ -23,7 +23,7 @@ wq.db is compatible with Python >= 3.4 and Django >= 1.11.
 ------------|--------|--------|-----------------------
 **wq.db 1.0** | 2.7, 3.4 &ndash; 3.6 | 1.8, 1.10, 1.11 | 3.6
 **wq.db 1.1** | 2.7*, 3.4 &ndash; 3.7 | 1.11, 2.0, 2.1 | 3.9
-**wq.db 1.2** | 3.4 &ndash; 3.8 | 1.11, 2.x, 3.0, 3.1 | 3.9, 3.10, 3.11
+**wq.db 1.2** | 3.4 &ndash; 3.8 | 1.11, 2.x, 3.0, 3.1 | 3.9 &ndash; 3.12
 **wq.db 2.0 (Future)** | 3.5+ | 2.2+ | 3.11+
 
 &#42; Python 2.7 support is no longer tested, but is known to work in wq.db 1.1 and earlier.
