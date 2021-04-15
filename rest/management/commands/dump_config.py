@@ -12,13 +12,17 @@ class Command(BaseCommand):
         )
 
     def handle(self, **options):
-        text = json.dumps(
-            rest.router.get_config(),
-            cls=encoders.JSONEncoder,
-            indent=4,
-        )
-        if options['format'] == "esm":
-            text = "export default %s;" % text
-        elif options['format'] == "amd":
-            text = "define(%s);" % text
-        self.stdout.write(text)
+        dump_config(self.stdout, **options)
+
+
+def dump_config(f, format='json', **kwargs):
+    text = json.dumps(
+        rest.router.get_config(),
+        cls=encoders.JSONEncoder,
+        indent=4,
+    )
+    if format == "esm":
+        text = "export default %s;" % text
+    elif format == "amd":
+        text = "define(%s);" % text
+    f.write(text)
