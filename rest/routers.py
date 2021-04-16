@@ -321,9 +321,20 @@ class ModelRouter(DefaultRouter):
 
             pages[info['name']] = info
 
+        site_title = getattr(settings, 'PROJECT_NAME', None)
         base_url = self.get_base_url()
+
+        if not any(conf.get('url') == '' for conf in pages.values()):
+            pages.setdefault('index', {
+                'url': '',
+                'name': 'index',
+                'show_in_index': False,
+                'verbose_name': site_title
+            })
+
         self._base_config = {
             'pages': pages,
+            'site_title': site_title,
             'router': {'base_url': base_url},
             'store': {
                 'service': base_url,
