@@ -22,7 +22,7 @@ def dump_config(f, format='json', **kwargs):
         indent=4,
     )
     if format == "esm":
-        text = "export default %s;" % text
+        text = "const config = %s;\nexport default config;" % text
     elif format == "amd":
         text = "define(%s);" % text
     f.write(text)
