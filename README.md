@@ -20,6 +20,8 @@
 
 [**API**][api]
 <br>
+[wq Config Object][config]
+&bull;
 [URL Structure][url-structure]
 &bull;
 [Settings][settings]
@@ -41,6 +43,7 @@
 
 [installation]: https://wq.io/wq.db/#installation
 [api]: https://wq.io/wq.db/#api
+[config]: https://wq.io/config
 [url-structure]: https://wq.io/wq.db/url-structure
 [settings]: https://wq.io/wq.db/settings
 [rest]: https://wq.io/wq.db/rest
