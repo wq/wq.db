@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 LONG_DESCRIPTION = """
-Django design patterns and REST API for citizen science field data collection.
+Django REST API for offline mobile surveys and field data collection.
 """
 
 
@@ -99,11 +99,11 @@ setup(
         'setuptools_scm',
     ],
     project_urls={
-        'Homepage': 'https://wq.io/wq.db',
-        'Documentation': 'https://wq.io/docs/',
+        'Homepage': 'https://wq.io/wq.db/',
+        'Documentation': 'https://wq.io/',
         'Source': 'https://github.com/wq/wq.db',
         'Release Notes': 'https://github.com/wq/wq.db/releases',
         'Issues': 'https://github.com/wq/wq.db/issues',
-        'CI': 'https://travis-ci.org/wq/wq.db',
+        'CI': 'https://github.com/wq/wq.db/actions/workflows/test.yml',
     },
 )
