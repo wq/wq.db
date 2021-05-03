@@ -12,28 +12,28 @@ jobs:
       matrix:
         variant: [default, spatialite, postgis]
         python-version: [3.9]
-        django-version: [2.2.17, 3.1.5]
-        drf-version: [3.12.2]
+        django-version: [2.2.20, 3.2]
+        drf-version: [3.12.4]
         include:
         - python-version: 3.9
-          django-version: 3.1.5
+          django-version: 3.2
           drf-version: 3.11.2
           variant: default
         - python-version: 3.9
-          django-version: 3.1.5
-          drf-version: 3.12.2
+          django-version: 3.2
+          drf-version: 3.12.4
           variant: nonroot
         - python-version: 3.8
-          django-version: 3.1.5
-          drf-version: 3.12.2
+          django-version: 3.2
+          drf-version: 3.12.4
           variant: default
         - python-version: 3.7
-          django-version: 3.1.5
-          drf-version: 3.12.2
+          django-version: 3.2
+          drf-version: 3.12.4
           variant: default
         - python-version: 3.6
-          django-version: 3.1.5
-          drf-version: 3.12.2
+          django-version: 3.2
+          drf-version: 3.12.4
           variant: default
     steps:
     - uses: actions/checkout@v2
