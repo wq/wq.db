@@ -33,7 +33,7 @@ class Pagination(PageNumberPagination):
             return list(queryset)
         elif cache == 'none':
             return []
-        elif cache == 'filter':
+        elif cache in ('filter', 'autoupdate'):
             cache_filter = view.router.get_cache_filter_for_model(
                 queryset.model
             )

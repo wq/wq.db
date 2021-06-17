@@ -67,7 +67,7 @@ class ModelRouter(DefaultRouter):
             self.register_filter(model, filter)
         if cache_filter:
             self.register_cache_filter(model, cache_filter)
-            kwargs['cache'] = 'filter'
+            kwargs.setdefault('cache', 'filter')
 
         if 'name' not in kwargs:
             kwargs['name'] = model._meta.model_name
