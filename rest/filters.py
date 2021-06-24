@@ -25,6 +25,10 @@ class FilterBackend(BaseFilterBackend):
             if field_name != key:
                 continue
 
+            if val == 'null':
+                del kwargs[key]
+                kwargs[f'{key}__isnull'] = True
+
             rel = field.remote_field
             if not rel:
                 continue
