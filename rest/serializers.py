@@ -114,6 +114,8 @@ class ClearableFileField(serializers.FileField):
                 raise serializers.SkipField()
             elif data == "__clear__":
                 data = None
+        elif not data:
+            data = None
         return super().validate_empty_values(data)
 
 
