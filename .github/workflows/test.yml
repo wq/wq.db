@@ -70,6 +70,6 @@ jobs:
         sudo -u postgres createuser --superuser $USER
         createdb wqdb_test
         psql wqdb_test -c "CREATE EXTENSION postgis;"
-        python -m pip install psycopg2-binary
+        python -m pip install "psycopg2-binary<2.9"
     - name: Test with unittest
       run: python setup.py test
