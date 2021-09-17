@@ -12,6 +12,7 @@ from .model_tools import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
+from .renderers import JSONRenderer, ESMRenderer
 from .exceptions import ImproperlyConfigured
 
 import inspect
@@ -412,8 +413,15 @@ class ModelRouter(DefaultRouter):
 
     def get_config_view(self):
         class ConfigView(SimpleViewSet):
+            renderer_classes = [JSONRenderer, ESMRenderer]
+
             def list(this, request, *args, **kwargs):
-                return Response(self.get_config(request.user))
+                if request.accepted_renderer.format == 'js':
+                    config = self.base_config
+                else:
+                    config = self.get_config(request.user)
+                return Response(config)
+
         return ConfigView
 
     def get_index(self, user):

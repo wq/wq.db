@@ -148,7 +148,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         for name, field in list(fields.items()):
 
             has_wq_config = False
-            if name != 'id' and not field.read_only:
+            if name != 'id' and not field.read_only and not field.write_only:
                 has_wq_config = True
             elif 'wq_config' in field.style:
                 has_wq_config = True

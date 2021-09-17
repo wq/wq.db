@@ -66,6 +66,17 @@ class JSONRenderer(JSONRenderer):
         )
 
 
+class ESMRenderer(JSONRenderer):
+    media_type = 'application/javascript'
+    format = 'js'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        data = super(JSONRenderer, self).render(
+            data, accepted_media_type, renderer_context
+        )
+        return b"const config = " + data + b";\nexport default config;"
+
+
 class GeoJSONRenderer(JSONRenderer):
     media_type = 'application/geo+json'
     format = 'geojson'
