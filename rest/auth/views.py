@@ -5,6 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from wq.db import rest
 from wq.db.rest.models import get_object_id
 from wq.db.rest.views import SimpleViewSet
+from .serializers import LoginSerializer
 
 
 class AuthView(SimpleViewSet):
@@ -26,6 +27,8 @@ class AuthView(SimpleViewSet):
 
 
 class LoginView(AuthView):
+    serializer_class = LoginSerializer
+
     def list(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return self.user_info(request)

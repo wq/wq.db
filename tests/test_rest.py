@@ -209,3 +209,9 @@ class RestTestCase(APITestCase):
         self.assertEqual(
             response.status_code, status.HTTP_200_OK, response.data
         )
+
+    def test_rest_login_options(self):
+        response = self.client.options('/login')
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK, response.data
+        )
