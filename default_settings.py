@@ -29,9 +29,6 @@ TEMPLATES = [
     }
 ]
 
-
-SESSION_COOKIE_HTTPONLY = False
-
 # Django Rest Framework settings
 REST_FRAMEWORK = {
 
@@ -62,6 +59,7 @@ SRID = 4326
 
 # Deprecated, do not use
 # FIXME: Remove in wq.db 2.0
+SESSION_COOKIE_HTTPONLY = False
 SOCIAL_AUTH_PIPELINE = None
 DEFAULT_AUTH_GROUP = None
 DISAMBIGUATE = None
