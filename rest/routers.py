@@ -342,6 +342,8 @@ class ModelRouter(DefaultRouter):
                 'defaults': {'format': 'json'},
             },
         }
+        if getattr(settings, 'WQ_CONFIG', None):
+            self._base_config.update(settings.WQ_CONFIG)
         if settings.DEBUG:
             self._base_config['debug'] = True
         self._base_config.update(self._extra_config)
