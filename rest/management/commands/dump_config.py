@@ -10,9 +10,17 @@ class Command(BaseCommand):
             '--format',
             default='json',
         )
+        parser.add_argument(
+            '--filename',
+            default=None,
+        )
 
     def handle(self, **options):
-        dump_config(self.stdout, **options)
+        if options.get('filename'):
+            with open(options['filename'], 'w') as f:
+                dump_config(f, **options)
+        else:
+            dump_config(self.stdout, **options)
 
 
 def dump_config(f, format='json', **kwargs):
