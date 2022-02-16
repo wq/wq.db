@@ -1,8 +1,8 @@
 from . import router
-from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.conf import settings
+from urllib.parse import quote
 from html.parser import HTMLParser
 
 
@@ -38,10 +38,10 @@ def router_info(request):
     info = {
         'base_url': base_url,
         'path': path,
-        'path_enc': urlquote(path),
+        'path_enc': quote(path),
         'params': request.GET,
         'full_path': full_path,
-        'full_path_enc': urlquote(full_path),
+        'full_path_enc': quote(full_path),
         'prev_path': '',  # Referer?
     }
 

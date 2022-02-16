@@ -2,7 +2,7 @@ from django.contrib.contenttypes.models import (
     ContentType as DjangoContentType,
     ContentTypeManager as DjangoContentTypeManager
 )
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from .model_tools import get_ct, get_object_id, get_by_identifier
 
 
@@ -37,7 +37,7 @@ class ContentType(DjangoContentType):
         config = self.get_config()
         if config:
             return config['url']
-        urlbase = force_text(cls._meta.verbose_name_plural)
+        urlbase = force_str(cls._meta.verbose_name_plural)
         return urlbase.replace(' ', '')
 
     # Get foreign keys for this content type

@@ -1,5 +1,5 @@
-from django.utils.encoding import force_text
-from django.conf.urls import url
+from django.utils.encoding import force_str
+from django.urls import re_path
 from django.db.utils import DatabaseError
 
 from django.conf import settings
@@ -73,7 +73,7 @@ class ModelRouter(DefaultRouter):
         if 'name' not in kwargs:
             kwargs['name'] = model._meta.model_name
         if 'url' not in kwargs:
-            url = force_text(model._meta.verbose_name_plural)
+            url = force_str(model._meta.verbose_name_plural)
             kwargs['url'] = url.replace(' ', '')
 
         other_model = self._page_models.get(kwargs['name'], None)
@@ -528,7 +528,7 @@ class ModelRouter(DefaultRouter):
             if not mapping:
                 continue
             view = viewset.as_view(mapping, **route.initkwargs)
-            urls.append(url(pattern, view, name=name))
+            urls.append(re_path(pattern, view, name=name))
 
         return format_suffix_patterns(urls)
 
