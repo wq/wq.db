@@ -51,6 +51,7 @@ jobs:
         python -m pip install flake8 pytest wheel
         python -m pip install django==${{ matrix.django-version }}
         python -m pip install djangorestframework==${{ matrix.drf-version }}
+        python -m pip install django-mustache
         python -m pip install .
     - name: Lint with flake8
       run: |

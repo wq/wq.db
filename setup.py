@@ -66,7 +66,6 @@ setup(
     install_requires=[
         'Django>=1.11,<5.0',
         'djangorestframework>=3.8.0,<4.0',
-        'django-mustache',
         'html-json-forms',
         'natural-keys>=1.6.0',
     ],
