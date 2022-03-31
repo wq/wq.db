@@ -123,6 +123,22 @@ class ClearableImageField(ClearableFileField, serializers.ImageField):
     pass
 
 
+def get_choice_list(choices, group=None):
+    choice_list = []
+    for key, value in choices.items():
+        if isinstance(value, dict):
+            choice_list += get_choice_list(value, group=key)
+        else:
+            choice = {
+                'name': key,
+                'label': value,
+            }
+            if group:
+                choice['group'] = group
+            choice_list.append(choice)
+    return choice_list
+
+
 class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
     xlsform_types = OrderedDict((
         (serializers.ImageField, 'image'),
@@ -246,10 +262,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             info['hint'] = field.help_text
 
         if isinstance(field, serializers.ChoiceField):
-            info['choices'] = [{
-                'name': cname,
-                'label': label,
-            } for cname, label in field.choices.items()]
+            info['choices'] = get_choice_list(field.grouped_choices)
         elif getattr(field, 'max_length', None):
             if not isinstance(field, serializers.FileField):
                 info['wq:length'] = field.max_length

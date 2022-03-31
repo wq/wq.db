@@ -108,6 +108,16 @@ class ChoiceModel(LabelModel):
         ('two', 'Choice Two'),
         ('three', 'Choice Three'),
     ]
+    GROUPED_CHOICES = [
+        (
+            'Group 1',
+            (
+                ('one', 'Choice One'),
+                ('two', 'Choice Two'),
+                ('three', 'Choice Three'),
+            ),
+        )
+    ]
     name = models.CharField(
         max_length=10,
         help_text='Enter Name',
@@ -116,6 +126,11 @@ class ChoiceModel(LabelModel):
         max_length=10,
         help_text='Pick One',
         choices=CHOICE_CHOICES,
+    )
+    grouped_choice = models.CharField(
+        max_length=10,
+        help_text='Pick One',
+        choices=GROUPED_CHOICES,
     )
 
     wq_label_template = "{{name}}: {{choice}}"

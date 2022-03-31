@@ -51,9 +51,7 @@ class HTMLRenderer(TemplateHTMLRenderer):
                 data,
                 (renderer_context or {}).get('request'),
             )
-        return super(HTMLRenderer, self).render(
-            data, accepted_media_type, renderer_context
-        )
+        return super().render(data, accepted_media_type, renderer_context)
 
 
 class ESMRenderer(JSONRenderer):
@@ -61,9 +59,7 @@ class ESMRenderer(JSONRenderer):
     format = 'js'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
-        data = super(JSONRenderer, self).render(
-            data, accepted_media_type, renderer_context
-        )
+        data = super().render(data, accepted_media_type, renderer_context)
         return b"const config = " + data + b";\nexport default config;"
 
 
@@ -94,7 +90,7 @@ class GeoJSONRenderer(JSONRenderer):
                     'name': 'urn:ogc:def:crs:EPSG::%s' % settings.SRID
                 }
             }
-        return super(GeoJSONRenderer, self).render(data, *args, **kwargs)
+        return super().render(data, *args, **kwargs)
 
     def render_feature(self, obj):
         feature = {

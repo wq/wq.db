@@ -99,7 +99,27 @@ class ConfigTestCase(APITestCase):
                     'name': 'three',
                     'label': 'Choice Three',
                 }]
-            }
+            },
+            {
+                'name': 'grouped_choice',
+                'label': 'Grouped Choice',
+                'hint': 'Pick One',
+                'type': 'select one',
+                'bind': {'required': True},
+                'choices': [{
+                    'name': 'one',
+                    'label': 'Choice One',
+                    'group': 'Group 1',
+                }, {
+                    'name': 'two',
+                    'label': 'Choice Two',
+                    'group': 'Group 1',
+                }, {
+                    'name': 'three',
+                    'label': 'Choice Three',
+                    'group': 'Group 1',
+                }]
+            },
         ], conf['form'])
 
     def test_rest_config_json_boolean_choices(self):
