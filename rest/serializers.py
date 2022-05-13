@@ -377,6 +377,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         if not getattr(self.Meta, 'wq_fieldsets', None):
             return super().to_internal_value(data)
 
+        data = data.copy()
         for name, conf in self.Meta.wq_fieldsets.items():
             if name == '':
                 continue
