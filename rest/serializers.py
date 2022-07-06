@@ -14,7 +14,7 @@ from collections import OrderedDict
 from django.conf import settings
 
 from rest_framework.utils import model_meta
-from html_json_forms.serializers import JSONFormSerializer
+from html_json_forms.serializers import parse_json_form, JSONFormSerializer
 from .model_tools import get_object_id
 from .exceptions import ImproperlyConfigured
 
@@ -377,7 +377,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         if not getattr(self.Meta, 'wq_fieldsets', None):
             return super().to_internal_value(data)
 
-        data = data.copy()
+        data = parse_json_form(data)
         for name, conf in self.Meta.wq_fieldsets.items():
             if name == '':
                 continue
