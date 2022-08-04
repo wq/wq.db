@@ -76,13 +76,9 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
     @action(detail=True)
     def edit(self, request, *args, **kwargs):
         """
-        Generates a context appropriate for editing a form
+        Edit view (note: form and lookup context now generated on client)
         """
-        response = self.retrieve(request, *args, **kwargs)
-        obj = self.get_object()
-        serializer = self.get_serializer(obj)
-        serializer.add_lookups(response.data)
-        return response
+        return self.retrieve(request, *args, **kwargs)
 
     def new(self, request):
         """
@@ -90,29 +86,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         to lookup.
         """
         self.action = 'edit'
-        init = request.GET.dict()
-        for arg in self.ignore_kwargs:
-            init.pop(arg, None)
-        for key in list(init.keys()):
-            try:
-                field = self.model._meta.get_field(key)
-            except FieldDoesNotExist:
-                del init[key]
-            else:
-                if field.remote_field:
-                    fk_model = field.remote_field.model
-                    try:
-                        obj = get_by_identifier(fk_model.objects, init[key])
-                    except fk_model.DoesNotExist:
-                        del init[key]
-                    else:
-                        init[key] = obj.pk
-
-        obj = self.model(**init)
-        serializer = self.get_serializer(obj)
-        data = serializer.data
-        serializer.add_lookups(data)
-        return Response(data)
+        return Response({})
 
     def retrieve(self, request, *args, **kwargs):
         """
