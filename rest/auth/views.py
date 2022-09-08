@@ -14,7 +14,7 @@ class AuthView(SimpleViewSet):
         user_dict['id'] = get_object_id(request.user)
         return Response({
             'user': user_dict,
-            'config': rest.router.get_config(request.user),
+            'config': rest.router.get_user_config(request.user),
             'csrftoken': csrf.get_token(request),
         })
 

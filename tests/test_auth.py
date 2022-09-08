@@ -18,15 +18,3 @@ class AuthTestCase(APITestCase):
         response = self.client.get('/login.json')
         result = json.loads(response.content.decode('utf-8'))
         self.assertTrue("user" in result)
-
-    def test_auth_context_processors(self):
-        response = self.client.get('/auth_context')
-        result = response.content.decode('utf-8')
-        self.assertHTMLEqual(
-            result,
-            """
-            <div>
-                <p>testuser</p>
-            </div>
-            """
-        )

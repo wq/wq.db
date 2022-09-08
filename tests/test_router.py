@@ -1,9 +1,5 @@
 from .base import APITestCase
 from django.core.exceptions import ImproperlyConfigured
-try:
-    from django.urls import include
-except ImportError:
-    from django.conf.urls import include
 
 
 class RestRouterTestCase(APITestCase):
@@ -40,7 +36,7 @@ class RestRouterTestCase(APITestCase):
             Item, name="conflictitem", url="conflictitems", fields="__all__"
         )
         self.assertIn(Item, rest.router._models)
-        self.assertIn("conflictitem", rest.router.get_config()['pages'])
+        self.assertIn("conflictitem", rest.router.config['pages'])
 
     def test_rest_old_config(self):
         from wq.db import rest
@@ -72,7 +68,3 @@ class RestRouterTestCase(APITestCase):
             )
 
         self.assertNotIn(TestModel, rest.router._models)
-
-    def test_rest_include(self):
-        from wq.db import rest
-        include(rest.router.urls)

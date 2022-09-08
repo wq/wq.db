@@ -6,8 +6,6 @@ from .base.serializers import (
     NaturalKeyAttachedModelSerializer,
 )
 
-from .identify.serializers import IdentifiedModelSerializer
-
 
 __all__ = (
     'AttachmentSerializer',
@@ -15,5 +13,4 @@ __all__ = (
     'AttachedModelSerializer',
     'NaturalKeyModelSerializer',
     'NaturalKeyAttachedModelSerializer',
-    'IdentifiedModelSerializer',
 )

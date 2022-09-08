@@ -1,6 +1,4 @@
 from wq.db import rest
-from wq.db.patterns import rest as patterns
-from wq.db.patterns.identify.views import IdentifiedModelViewSet
 from .models import (
     IdentifiedModel,
     CustomPatternModel, CustomTypedPatternModel, CustomType,
@@ -11,9 +9,8 @@ from .serializers import (
 )
 rest.router.register_model(
     IdentifiedModel,
-    serializer=patterns.IdentifiedModelSerializer,
+    lookup="slug",
     fields='__all__',
-    viewset=IdentifiedModelViewSet,
 )
 rest.router.register_model(
     CustomPatternModel,

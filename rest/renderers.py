@@ -1,10 +1,10 @@
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from django.conf import settings
-from wq.db.default_settings import SRID
 import re
 
 
 APP_TEMPLATES = {}
+SRID = 4326
 
 
 def load_app_template(template_name):

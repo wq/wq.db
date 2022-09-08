@@ -1,7 +1,6 @@
 from wq.db.rest.serializers import ModelSerializer
 from rest_framework import serializers
 from natural_keys import NaturalKeySerializer, NaturalKeyModelSerializer
-from django.conf import settings
 
 
 class AttachmentListSerializer(serializers.ListSerializer):
@@ -15,11 +14,6 @@ class AttachmentListSerializer(serializers.ListSerializer):
         if initial and not data and self.parent.is_detail:
             if self.parent.instance and not self.parent.instance.pk:
                 data = self.default_attachments(initial)
-
-        if not getattr(settings, 'WQ_APP_TEMPLATE', None):
-            # FIXME: remove in 2.0
-            for i, row in enumerate(data):
-                row['@index'] = i
 
         return data
 

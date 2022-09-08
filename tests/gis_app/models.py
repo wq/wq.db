@@ -7,11 +7,11 @@ if settings.WITH_GIS:
 
     class GeometryModel(LabelModel):
         name = models.CharField(max_length=255)
-        geometry = models.GeometryField(srid=settings.SRID)
+        geometry = models.GeometryField(srid=4326)
 
     class PointModel(LabelModel):
         name = models.CharField(max_length=255)
-        geometry = models.PointField(srid=settings.SRID)
+        geometry = models.PointField(srid=4326)
 
 else:
     GeometryModel = None

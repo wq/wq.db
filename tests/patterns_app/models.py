@@ -2,8 +2,9 @@ from django.db import models
 from wq.db.patterns import models as patterns
 
 
-class IdentifiedModel(patterns.IdentifiedModel):
-    pass
+class IdentifiedModel(patterns.LabelModel):
+    slug = models.SlugField()
+    name = models.CharField(max_length=255)
 
 
 class FilterableModel(patterns.LabelModel):

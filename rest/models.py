@@ -74,10 +74,10 @@ class ContentType(DjangoContentType):
         else:
             return set(child[0] for child in children)
 
-    def get_config(self, user=None):
+    def get_config(self):
         from . import router  # avoid circular import
         cls = self.model_class()
-        return router.get_model_config(cls, user)
+        return router.get_model_config(cls)
 
     def is_registered(self):
         from . import router  # avoid circular import

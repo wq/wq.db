@@ -15,8 +15,6 @@ from .serializers import ModelSerializer
 from .renderers import JSONRenderer, ESMRenderer
 from .exceptions import ImproperlyConfigured
 
-import inspect
-
 
 class ModelRouter(DefaultRouter):
     _models = set()
@@ -160,11 +158,6 @@ class ModelRouter(DefaultRouter):
             if real_model in classes:
                 return classes[real_model]
             else:
-                if real_model not in self._config:
-                    # FIXME: Probably can just use default instead of erroring
-                    raise ImproperlyConfigured(
-                        "%s is not registered!" % real_model
-                    )
                 return default(real_model)
 
     def get_serializer_for_model(self, model_class, serializer_depth=None):
@@ -349,27 +342,27 @@ class ModelRouter(DefaultRouter):
         self._base_config.update(self._extra_config)
         return self._base_config
 
-    def get_config(self, user=None):
-        if user is None or not user.is_authenticated:
-            return self.base_config
+    @property
+    def config(self):
+        return self.base_config
 
+    def get_user_config(self, user):
         # Add user-specific permissions to configuration
         config = {
-            key: val.copy() if hasattr(val, 'copy') else val
-            for key, val in self.base_config.items()
+            "pages": {}
         }
-        for page, info in config['pages'].items():
+        for page, info in self.config['pages'].items():
             if not info.get('list', False):
                 continue
             try:
                 ct = get_ct(self._page_models[page])
             except (RuntimeError, DatabaseError):
                 continue
-            info = info.copy()
+            perms = {}
             for perm in ('add', 'change', 'delete'):
                 if has_perm(user, ct, perm):
-                    info['can_' + perm] = True
-            config['pages'][page] = info
+                    perms['can_' + perm] = True
+            config['pages'][page] = perms
 
         return config
 
@@ -391,18 +384,16 @@ class ModelRouter(DefaultRouter):
     def get_page(self, page):
         return self._extra_pages[page]
 
-    def get_page_config(self, name, user=None):
-        config = self.get_config(user)
-        return config['pages'].get(name, None)
+    def get_page_config(self, name):
+        return self.config['pages'].get(name, None)
 
-    def get_model_config(self, model, user=None):
+    def get_model_config(self, model):
         if model in self._page_models:
             model = self._page_models[model]
 
         # First, check models registered with API
         if model in self._page_names:
-            config = self.get_config(user)
-            return config['pages'][self._page_names[model]]
+            return self.config['pages'][self._page_names[model]]
 
         # Then check config cache directly (in case model was configured but
         # not fully registered as part of API)
@@ -418,30 +409,14 @@ class ModelRouter(DefaultRouter):
             renderer_classes = [JSONRenderer, ESMRenderer]
 
             def list(this, request, *args, **kwargs):
-                if request.accepted_renderer.format == 'js':
-                    config = self.base_config
-                else:
-                    config = self.get_config(request.user)
-                return Response(config)
+                return Response(self.config)
 
         return ConfigView
-
-    def get_index(self, user):
-        config = self.get_config(user)
-
-        def page_sort(page):
-            is_list = page.get('list', False)
-            return (not is_list, page['name'])
-
-        pages = sorted(config['pages'].values(), key=page_sort)
-        return {
-            'pages': pages
-        }
 
     def get_index_view(self):
         class IndexView(SimpleViewSet):
             def list(this, request, *args, **kwargs):
-                return Response(self.get_index(request.user))
+                return Response({})
         return IndexView
 
     def get_multi_view(self):
@@ -452,11 +427,10 @@ class ModelRouter(DefaultRouter):
         return MultipleListView
 
     def get_multi(self, request, urls):
-        conf = self.get_config(request.user)
         conf_by_url = {
             conf['url']: (page, conf)
             for page, conf
-            in self.get_config(request.user)['pages'].items()
+            in self.config['pages'].items()
         }
         result = {}
         for listurl in urls:
@@ -603,14 +577,6 @@ class ModelRouter(DefaultRouter):
     @property
     def urls(self):
         urls = super(ModelRouter, self).urls
-        try:
-            # FIXME: Remove in 2.0
-            caller = inspect.stack()[1]
-            code_context = getattr(caller, 'code_context', caller[4])
-            if 'include' in code_context[0]:
-                return urls, 'wq'
-        except Exception:
-            pass
         return urls, 'wq', 'wq'
 
 

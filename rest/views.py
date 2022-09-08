@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets
 from .model_tools import get_ct, get_object_id, get_by_identifier
-from django.core.exceptions import FieldDoesNotExist
 from django.db.models import ProtectedError
 
 
@@ -147,7 +146,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
 
     def postsave(self, request, response):
         ct = get_ct(self.model)
-        conf = ct.get_config(request.user)
+        conf = ct.get_config()
 
         # Redirect to new page
         postsave = conf.get('postsave', ct.identifier + '_detail')

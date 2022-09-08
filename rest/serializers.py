@@ -15,7 +15,6 @@ from django.conf import settings
 
 from rest_framework.utils import model_meta
 from html_json_forms.serializers import parse_json_form, JSONFormSerializer
-from .model_tools import get_object_id
 from .exceptions import ImproperlyConfigured
 
 
@@ -295,7 +294,12 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             if hasattr(field, 'queryset'):
                 fk = self.get_wq_foreignkey_info(field.queryset.model)
                 if fk:
+                    model = model or self.Meta.model
+                    source = model._meta.get_field(name)
                     info['wq:ForeignKey'] = fk
+                    info[
+                        'wq:related_name'
+                    ] = source.remote_field.get_accessor_name()
 
         elif isinstance(field, serializers.ManyRelatedField):
             # ManyToMany field to related model
@@ -510,7 +514,7 @@ class ModelSerializer(BaseModelSerializer):
             auto_related_field = (
                 serializers.BaseSerializer,
                 serializers.ManyRelatedField,
-                LookupRelatedField,
+                serializers.SlugRelatedField,
             )
             if not isinstance(default_field, auto_related_field):
                 continue

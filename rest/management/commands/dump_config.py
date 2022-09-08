@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
 def dump_config(f, format='json', **kwargs):
     text = json.dumps(
-        rest.router.get_config(),
+        rest.router.config,
         cls=encoders.JSONEncoder,
         indent=4,
     )

@@ -82,6 +82,7 @@ class CustomPatternTestCase(APITestCase):
                     'label': 'Type',
                     'type': 'select one',
                     'wq:ForeignKey': 'customtype',
+                    'wq:related_name': 'customtypedattachment_set',
                     'bind': {'required': True},
                 }],
                 'initial': {

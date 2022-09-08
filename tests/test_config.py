@@ -29,13 +29,6 @@ class ConfigTestCase(APITestCase):
         # Extra config
         self.assertIn("debug", result)
 
-    def test_rest_index_json(self):
-        from wq.db.rest import router
-        result = router.get_index(None)
-        self.assertIn("pages", result)
-        self.assertIn("list", result["pages"][0])
-        self.assertNotIn("list", result["pages"][-1])
-
     def test_rest_config_meta(self):
         conf = self.get_config('item')
         self.assertEqual({
@@ -168,6 +161,7 @@ class ConfigTestCase(APITestCase):
             'label': 'Parent',
             'type': 'select one',
             'wq:ForeignKey': 'parent',
+            'wq:related_name': 'children',
             'bind': {'required': True},
         }, self.get_field(cconf, 'parent'))
 
@@ -178,6 +172,7 @@ class ConfigTestCase(APITestCase):
             'label': 'Type',
             'type': 'select one',
             'wq:ForeignKey': 'itemtype',
+            'wq:related_name': 'item_set',
             'filter': {'active':  ['1', '{{#id}}0{{/id}}{{^id}}1{{/id}}']},
             'bind': {'required': True},
         }, self.get_field(iconf, 'type'))
