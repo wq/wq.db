@@ -172,13 +172,6 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 
             if not has_wq_config:
                 fields.pop(name)
-            elif isinstance(field, serializers.NullBooleanField):
-                fields[name] = serializers.ChoiceField(
-                    choices=self.get_boolean_choices(field),
-                    required=False,
-                    label=field.label,
-                    help_text=field.help_text,
-                )
             elif isinstance(field, serializers.BooleanField):
                 fields[name] = serializers.ChoiceField(
                     choices=self.get_boolean_choices(field),
