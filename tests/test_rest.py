@@ -78,13 +78,6 @@ class RestTestCase(APITestCase):
         self.assertIn("list", response.data)
         self.assertEqual(len(response.data["list"]), 2)
 
-    def test_rest_target_to_children(self):
-        response = self.client.get("/children-by-parents.json")
-        self.assertIn("list", response.data)
-        self.assertEqual(len(response.data["list"]), 2)
-        self.assertIn("target", response.data)
-        self.assertEqual(response.data["target"], "children")
-
     def test_rest_detail_user_serializer(self):
         response = self.client.get("/usermanagedmodels/1.json")
         self.assertIn("user", response.data)

@@ -168,7 +168,6 @@ class RestPostTestCase(APITestCase):
                 "label": "Test FK (Test #1)",
                 "name": "Test FK",
                 "ref_id": "test1",
-                "ref_label": "Test #1",
             },
         )
 

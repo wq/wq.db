@@ -70,6 +70,5 @@ class NaturalKeyTestCase(APITestCase):
                     "date": "2016-12-31",
                 },
                 "label": "test-key on 2016-12-31: Test Note",
-                "key_label": "test-key on 2016-12-31",
             },
         )

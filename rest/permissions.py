@@ -1,5 +1,4 @@
 from rest_framework.permissions import BasePermission
-from .model_tools import get_ct
 
 
 class ModelPermissions(BasePermission):
@@ -17,20 +16,20 @@ class ModelPermissions(BasePermission):
         if getattr(view, "model", None) is None:
             return True
         user = request.user
-        ct = get_ct(view.model)
-        result = has_perm(user, ct, self.METHOD_PERM[request.method])
-        return result
+        method_perm = self.METHOD_PERM.get(
+            request.method, self.METHOD_PERM["GET"]
+        )
+        return has_perm(user, view.model, method_perm)
 
 
-def has_perm(user, ct, perm):
-    if perm == "view":
+def has_perm(user, model, method_perm):
+    app_label = model._meta.app_label
+    model_name = model._meta.model_name
+    perm = f"{app_label}.{method_perm}_{model_name}"
+
+    if method_perm == "view":
         return True
-    if isinstance(ct, str):
-        perm = "%s_%s" % (ct, perm)
-    else:
-        perm = "%s.%s_%s" % (ct.app_label, perm, ct.model)
-
-    if user.is_authenticated:
+    elif user.is_authenticated:
         return user.has_perm(perm)
     else:
         from django.conf import settings

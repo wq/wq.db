@@ -148,7 +148,7 @@ class CustomPatternTestCase(APITestCase):
         self.assertIn("attachments", response.data)
         atts = response.data["attachments"]
         self.assertEqual(len(atts), 1)
-        self.assertEqual(atts[0]["type_label"], "Custom")
+        self.assertEqual(atts[0]["type_id"], self.type.pk)
 
     def test_customtypedpattern_post_empty(self):
         form = {
@@ -168,7 +168,7 @@ class CustomPatternTestCase(APITestCase):
         self.assertIn("attachments", response.data)
         atts = response.data["attachments"]
         self.assertEqual(len(atts), 1)
-        self.assertEqual(atts[0]["type_label"], "Custom")
+        self.assertEqual(atts[0]["type_id"], self.type.pk)
         self.assertEqual(atts[0]["value"], 0)
 
     def test_customtypedpattern_put(self):

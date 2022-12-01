@@ -72,7 +72,6 @@ class LabelTestCase(APITestCase):
         item = ItemType.objects.get(pk=1).item_set.get(name="Test 1")
         obj = router.serialize(item)
         self.assertEqual(obj["type_id"], 1)
-        self.assertEqual(obj["type_label"], "Test")
         self.assertEqual(obj["label"], "Test 1")
 
         # Custom labels

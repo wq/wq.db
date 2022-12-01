@@ -1,6 +1,5 @@
 from django.utils.encoding import force_str
 from django.urls import re_path
-from django.db.utils import DatabaseError
 
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
@@ -8,7 +7,6 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
 
-from .model_tools import get_ct
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .serializers import ModelSerializer
@@ -220,6 +218,16 @@ class ModelRouter(DefaultRouter):
             context["request"] = request
         return serializer(obj, many=many, context=context).data
 
+    def get_object_id(self, instance):
+        return getattr(instance, self.get_lookup_for_model(instance))
+
+    def get_by_identifier(self, queryset, ident):
+        if hasattr(queryset, "get_by_identifier"):
+            return queryset.get_by_identifier(ident)
+        else:
+            lookup = self.get_lookup_for_model(queryset.model)
+            return queryset.get(**{lookup: ident})
+
     def get_paginate_by_for_model(self, model_class):
         config = self.get_model_config(model_class) or {}
         paginate_by = config.get("per_page", None)
@@ -300,19 +308,13 @@ class ModelRouter(DefaultRouter):
             conf, view = self.get_page(page)
             pages[page] = conf
         for model in self._models:
-            try:
-                ct = get_ct(model)
-            except (RuntimeError, DatabaseError):
-                # This can happen before contenttypes is migrated
-                ct = str(model._meta)
-
-            if not has_perm(user, ct, "view"):
+            if not has_perm(user, model, "view"):
                 continue
 
             info = self._config[model].copy()
             info["list"] = True
             for perm in ("add", "change", "delete"):
-                if has_perm(user, ct, perm):
+                if has_perm(user, model, perm):
                     info["can_" + perm] = True
 
             serializer = self.get_serializer_for_model(model)
@@ -365,13 +367,10 @@ class ModelRouter(DefaultRouter):
         for page, info in self.config["pages"].items():
             if not info.get("list", False):
                 continue
-            try:
-                ct = get_ct(self._page_models[page])
-            except (RuntimeError, DatabaseError):
-                continue
+            model = self._page_models[page]
             perms = {}
             for perm in ("add", "change", "delete"):
-                if has_perm(user, ct, perm):
+                if has_perm(user, model, perm):
                     perms["can_" + perm] = True
             config["pages"][page] = perms
 
@@ -401,6 +400,8 @@ class ModelRouter(DefaultRouter):
         return self.config["pages"].get(name, None)
 
     def get_model_config(self, model):
+        if not isinstance(model, type):
+            model = type(model)
         if model in self._page_models:
             model = self._page_models[model]
 
@@ -416,6 +417,19 @@ class ModelRouter(DefaultRouter):
 
     def model_is_registered(self, model):
         return model in self._models
+
+    def get_foreign_keys(self, model):
+        rel_models = {}
+        for f in model._meta.fields:
+            rel = f.remote_field
+            if (
+                rel is not None
+                and type(rel).__name__ == "ManyToOneRel"
+                and self.model_is_registered(rel.model)
+            ):
+                rel_models.setdefault(rel.model, [])
+                rel_models[rel.model].append(f.name)
+        return rel_models
 
     def get_config_view(self):
         class ConfigView(SimpleViewSet):
@@ -532,22 +546,14 @@ class ModelRouter(DefaultRouter):
         # model by parent models (e.g. foreign keys)
 
         # /[parentmodel_url]/[foreignkey_value]/[model_url]
-        try:
-            ct = get_ct(model)
-        except (RuntimeError, DatabaseError):
-            # This can happen before contenttypes is migrated
-            return routes
-        for pct, fields in ct.get_foreign_keys().items():
-            if not pct.is_registered():
-                continue
+        for rel_model, fields in self.get_foreign_keys(model).items():
             if len(fields) > 1:
                 # Multiple foreign keys to same parent model; can't
                 # automatically determine which one to use
                 continue
-            if pct.urlbase == "":
-                purlbase = ""
-            else:
-                purlbase = pct.urlbase + "/"
+            purlbase = self.get_model_config(rel_model)["url"]
+            if purlbase != "":
+                purlbase += "/"
             routes.append(
                 Route(
                     url=(
@@ -561,20 +567,6 @@ class ModelRouter(DefaultRouter):
                     name="{basename}-for-%s" % fields[0],
                     detail=False,
                     initkwargs={"suffix": "List"},
-                )
-            )
-
-        for cct in ct.get_children():
-            if not cct.is_registered():
-                continue
-            cbase = cct.urlbase
-            routes.append(
-                Route(
-                    url="^%s-by-{prefix}" % cbase,
-                    mapping={"get": "list"},
-                    name="%s-by-%s" % (cct.identifier, ct.identifier),
-                    detail=False,
-                    initkwargs={"target": cbase, "suffix": "List"},
                 )
             )
 

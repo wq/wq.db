@@ -56,13 +56,34 @@ class LookupRelatedField(serializers.SlugRelatedField):
     def __init__(self, router, model, **kwargs):
         self.router = router
         self.model = model
+        self._slug_field = kwargs.pop("slug_field", None)
         super(serializers.SlugRelatedField, self).__init__(**kwargs)
 
     @property
     def slug_field(self):
-        if not self.router:
-            return "pk"
-        return self.router.get_lookup_for_model(self.model)
+        if self._slug_field:
+            return self._slug_field
+        else:
+            return self.router.get_lookup_for_model(self.model)
+
+    def use_pk_only_optimization(self):
+        if self.slug_field == "pk":
+            return True
+        if self.parent and self.parent.Meta.model:
+            model_field = self.parent.Meta.model._meta.get_field(
+                self.source_attrs[-1]
+            )
+            if model_field.target_field.name == self.slug_field:
+                return True
+        return False
+
+    def get_attribute(self, instance):
+        value = super().get_attribute(instance)
+        if self.slug_field != "pk" and isinstance(
+            value, serializers.PKOnlyObject
+        ):
+            setattr(value, self.slug_field, value.pk)
+        return value
 
 
 class LocalDateTimeField(serializers.ReadOnlyField):
@@ -403,6 +424,9 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
 class ModelSerializer(BaseModelSerializer):
     add_label_fields = True
 
+    serializer_related_field = LookupRelatedField
+    serializer_related_to_field = LookupRelatedField
+
     def __init__(self, *args, **kwargs):
         mapping = self.serializer_field_mapping
         mapping[model_fields.FileField] = ClearableFileField
@@ -594,29 +618,6 @@ class ModelSerializer(BaseModelSerializer):
                     source=name,
                 )
 
-        # Add labels for related fields
-        for name, field in info.forward_relations.items():
-            if name in getattr(self.Meta, "exclude", []):
-                continue
-            if name + "_label" in default_fields:
-                continue
-
-            f, field_kwargs = self.build_relational_field(
-                name,
-                info.forward_relations[name],
-            )
-            label_field_kwargs = {
-                "source": name,
-            }
-            if field_kwargs.get("many", None):
-                label_field_kwargs.update(
-                    many=True,
-                    read_only=True,
-                )
-            fields[name + "_label"] = serializers.StringRelatedField(
-                **label_field_kwargs
-            )
-
         return fields
 
     @classmethod
@@ -647,8 +648,7 @@ class ModelSerializer(BaseModelSerializer):
         field_class, field_kwargs = super(
             ModelSerializer, self
         ).build_relational_field(field_name, relation_info)
-        if field_class == self.serializer_related_field:
-            field_class = LookupRelatedField
+        if field_class == LookupRelatedField:
             field_kwargs["router"] = self.router
             field_kwargs["model"] = relation_info.related_model
         return field_class, field_kwargs
