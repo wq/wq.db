@@ -14,7 +14,7 @@ class RestRouterTestCase(APITestCase):
             e.exception.args[0],
             "Could not register <class 'tests.conflict_app.models.Item'>: "
             "the name 'item' was already registered for "
-            "<class 'tests.rest_app.models.Item'>"
+            "<class 'tests.rest_app.models.Item'>",
         )
         self.assertNotIn(Item, rest.router._models)
 
@@ -27,7 +27,7 @@ class RestRouterTestCase(APITestCase):
             e.exception.args[0],
             "Could not register <class 'tests.conflict_app.models.Item'>: "
             "the url 'items' was already registered for "
-            "<class 'tests.rest_app.models.Item'>"
+            "<class 'tests.rest_app.models.Item'>",
         )
         self.assertNotIn(Item, rest.router._models)
 
@@ -36,7 +36,7 @@ class RestRouterTestCase(APITestCase):
             Item, name="conflictitem", url="conflictitems", fields="__all__"
         )
         self.assertIn(Item, rest.router._models)
-        self.assertIn("conflictitem", rest.router.config['pages'])
+        self.assertIn("conflictitem", rest.router.config["pages"])
 
     def test_rest_old_config(self):
         from wq.db import rest
@@ -44,27 +44,21 @@ class RestRouterTestCase(APITestCase):
 
         with self.assertRaises(ImproperlyConfigured):
             rest.router.register_model(
-                TestModel,
-                partial=True,
-                fields="__all__"
+                TestModel, partial=True, fields="__all__"
             )
 
         self.assertNotIn(TestModel, rest.router._models)
 
         with self.assertRaises(ImproperlyConfigured):
             rest.router.register_model(
-                TestModel,
-                reversed=True,
-                fields="__all__"
+                TestModel, reversed=True, fields="__all__"
             )
 
         self.assertNotIn(TestModel, rest.router._models)
 
         with self.assertRaises(ImproperlyConfigured):
             rest.router.register_model(
-                TestModel,
-                max_local_pages=0,
-                fields="__all__"
+                TestModel, max_local_pages=0, fields="__all__"
             )
 
         self.assertNotIn(TestModel, rest.router._models)

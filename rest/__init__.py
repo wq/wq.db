@@ -13,11 +13,11 @@ __all__ = (
 
 
 def autodiscover():
-    autodiscover_modules('rest', register_to=None)
+    autodiscover_modules("rest", register_to=None)
 
-    if getattr(settings, 'WQ_CONFIG_FILE', None):
-        with open(settings.WQ_CONFIG_FILE, 'w') as f:
-            dump_config(f, format='esm')
+    if getattr(settings, "WQ_CONFIG_FILE", None):
+        with open(settings.WQ_CONFIG_FILE, "w") as f:
+            dump_config(f, format="esm")
 
 
-default_app_config = 'wq.db.rest.apps.RestConfig'
+default_app_config = "wq.db.rest.apps.RestConfig"

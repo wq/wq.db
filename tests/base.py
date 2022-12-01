@@ -5,7 +5,7 @@ from django.conf import settings
 class APIClient(APIClient):
     def generic(self, method, path, *args, **kwargs):
         if settings.WITH_NONROOT:
-            path = '/wqsite' + path
+            path = "/wqsite" + path
         return super().generic(method, path, *args, **kwargs)
 
 

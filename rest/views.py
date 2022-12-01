@@ -16,9 +16,9 @@ class GenericAPIView(RestGenericAPIView):
         Infer template name from view/viewset name
         """
         name = type(self).__name__
-        name = name.replace('ViewSet', '')
-        name = name.replace('View', '')
-        return name.lower() + '.html'
+        name = name.replace("ViewSet", "")
+        name = name.replace("View", "")
+        return name.lower() + ".html"
 
     @property
     def depth(self):
@@ -57,17 +57,17 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
     @property
     def template_name(self):
         basename = get_ct(self.model).identifier
-        if self.action in ('retrieve', 'create', 'update', 'delete'):
-            suffix = 'detail'
-        elif self.action and self.action != 'metadata':
+        if self.action in ("retrieve", "create", "update", "delete"):
+            suffix = "detail"
+        elif self.action and self.action != "metadata":
             suffix = self.action
         else:
-            suffix = 'list'
+            suffix = "list"
         return "%s_%s.html" % (basename, suffix)
 
     @property
     def depth(self):
-        if self.action in ('retrieve', 'edit'):
+        if self.action in ("retrieve", "edit"):
             return 1
         else:
             return 0
@@ -84,7 +84,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         new is a variant of the "edit" action, but with no existing model
         to lookup.
         """
-        self.action = 'edit'
+        self.action = "edit"
         return Response({})
 
     def retrieve(self, request, *args, **kwargs):
@@ -102,14 +102,12 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return super(ModelViewSet, self).retrieve(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
-        response = super(ModelViewSet, self).list(
-            request, *args, **kwargs
-        )
+        response = super(ModelViewSet, self).list(request, *args, **kwargs)
         if not isinstance(response.data, dict):
             return response
 
         if self.target:
-            response.data['target'] = self.target
+            response.data["target"] = self.target
         ct = get_ct(self.model)
         for pct, fields in ct.get_foreign_keys().items():
             if len(fields) == 1:
@@ -117,10 +115,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         return response
 
     def create(self, request, *args, **kwargs):
-        response = super(ModelViewSet, self).create(
-            request, *args, **kwargs
-        )
-        if not request.accepted_media_type.startswith('text/html'):
+        response = super(ModelViewSet, self).create(request, *args, **kwargs)
+        if not request.accepted_media_type.startswith("text/html"):
             # JSON request, assume client will handle redirect
             return response
 
@@ -131,10 +127,8 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             return self.saveerror(request, response)
 
     def update(self, request, *args, **kwargs):
-        response = super(ModelViewSet, self).update(
-            request, *args, **kwargs
-        )
-        if not request.accepted_media_type.startswith('text/html'):
+        response = super(ModelViewSet, self).update(request, *args, **kwargs)
+        if not request.accepted_media_type.startswith("text/html"):
             # JSON request, assume client will handle redirect
             return response
 
@@ -149,27 +143,27 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
         conf = ct.get_config()
 
         # Redirect to new page
-        postsave = conf.get('postsave', ct.identifier + '_detail')
-        if '_' in postsave:
-            page, mode = postsave.split('_')
+        postsave = conf.get("postsave", ct.identifier + "_detail")
+        if "_" in postsave:
+            page, mode = postsave.split("_")
         else:
             page = postsave
-            mode = 'detail'
+            mode = "detail"
 
         oid = ""
         if page != ct.identifier and self.router:
             # Optional: return to detail view of a parent model
             pconf = self.router.get_page_config(page)
-            if pconf.get('list', None) and mode != "list":
-                oid = response.data.get(page + '_id', None)
+            if pconf.get("list", None) and mode != "list":
+                oid = response.data.get(page + "_id", None)
         else:
             # Default: return to detail view of the saved model
             pconf = conf
             if mode != "list":
-                oid = response.data['id']
+                oid = response.data["id"]
 
-        url = "/" + pconf['url']
-        if pconf['url'] and pconf.get('list', None):
+        url = "/" + pconf["url"]
+        if pconf["url"] and pconf.get("list", None):
             url += "/"
         if oid:
             url += str(oid)
@@ -177,24 +171,20 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 url += "/edit"
 
         return Response(
-            {'detail': 'Created'},
+            {"detail": "Created"},
             status=status.HTTP_302_FOUND,
-            headers={'Location': url}
+            headers={"Location": url},
         )
 
     def saveerror(self, request, response):
-        errors = [{
-            'field': key,
-            'errors': val
-        } for key, val in response.data.items()]
-        template = get_ct(self.model).identifier + '_error.html'
+        errors = [
+            {"field": key, "errors": val} for key, val in response.data.items()
+        ]
+        template = get_ct(self.model).identifier + "_error.html"
         return Response(
-            {
-                'errors': errors,
-                'post': request.DATA
-            },
+            {"errors": errors, "post": request.DATA},
             status=response.status_code,
-            template_name=template
+            template_name=template,
         )
 
     def destroy(self, request, *args, **kwargs):
@@ -203,11 +193,7 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
                 request, *args, **kwargs
             )
         except ProtectedError as e:
-            return Response({
-                'non_field_errors': [
-                    e.args[0]
-                ]
-            }, status=400)
+            return Response({"non_field_errors": [e.args[0]]}, status=400)
         else:
             return response
 
@@ -222,19 +208,19 @@ class ModelViewSet(viewsets.ModelViewSet, GenericAPIView):
             parent = pcls.objects.get(**{slug: pid})
         else:
             parent = get_by_identifier(pcls.objects, pid)
-        if ct.urlbase == '':
-            urlbase = ''
+        if ct.urlbase == "":
+            urlbase = ""
         else:
-            urlbase = ct.urlbase + '/'
+            urlbase = ct.urlbase + "/"
         objid = get_object_id(parent)
-        response.data['parent_label'] = str(parent)
-        response.data['parent_id'] = objid
-        response.data['parent_url'] = '%s%s' % (urlbase, objid)
-        response.data['parent_is_' + ct.identifier] = True
-        response.data['parent_page'] = ct.identifier
-        response.data['page_config'] = get_ct(self.model).get_config()
+        response.data["parent_label"] = str(parent)
+        response.data["parent_id"] = objid
+        response.data["parent_url"] = "%s%s" % (urlbase, objid)
+        response.data["parent_is_" + ct.identifier] = True
+        response.data["parent_page"] = ct.identifier
+        response.data["page_config"] = get_ct(self.model).get_config()
         if self.router:
-            response.data['parent'] = self.router.serialize(
+            response.data["parent"] = self.router.serialize(
                 parent,
                 request=self.request,
             )

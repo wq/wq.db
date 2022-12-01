@@ -6,275 +6,312 @@ from django.conf import settings
 
 class ConfigTestCase(APITestCase):
     def get_config(self, page_name):
-        response = self.client.get('/config.json')
-        result = json.loads(response.content.decode('utf-8'))
-        self.assertIn('pages', result)
-        self.assertIn(page_name, result['pages'])
-        return result['pages'][page_name]
+        response = self.client.get("/config.json")
+        result = json.loads(response.content.decode("utf-8"))
+        self.assertIn("pages", result)
+        self.assertIn(page_name, result["pages"])
+        return result["pages"][page_name]
 
     def get_field(self, page_config, field_name, allow_none=False):
-        self.assertIn('form', page_config)
-        for field in page_config['form']:
-            if field['name'] == field_name:
+        self.assertIn("form", page_config)
+        for field in page_config["form"]:
+            if field["name"] == field_name:
                 return field
         if not allow_none:
             self.fail("Could not find %s" % field_name)
 
     # Test existence and content of config.json
     def test_rest_config_json(self):
-        response = self.client.get('/config.json')
-        result = json.loads(response.content.decode('utf-8'))
+        response = self.client.get("/config.json")
+        result = json.loads(response.content.decode("utf-8"))
         self.assertIn("pages", result)
 
         # Extra config
         self.assertIn("debug", result)
 
     def test_rest_config_meta(self):
-        conf = self.get_config('item')
-        self.assertEqual({
-            'name': 'item',
-            'url': 'items',
-            'list': True,
-            'cache': 'none',
-            'form': conf['form'],
-            'label_template': '{{name}}',
-            'verbose_name': 'item',
-            'verbose_name_plural': 'items',
-            'ordering': ['type', 'name'],
-        }, conf)
+        conf = self.get_config("item")
+        self.assertEqual(
+            {
+                "name": "item",
+                "url": "items",
+                "list": True,
+                "cache": "none",
+                "form": conf["form"],
+                "label_template": "{{name}}",
+                "verbose_name": "item",
+                "verbose_name_plural": "items",
+                "ordering": ["type", "name"],
+            },
+            conf,
+        )
 
     def test_rest_config_json_fields(self):
-        self.assertEqual([
-            {
-                'name': 'name',
-                'label': 'Name',
-                'type': 'string',
-                'wq:length': 10,
-                'bind': {'required': True},
-            },
-            {
-                'name': 'date',
-                'label': 'Date',
-                'type': 'dateTime',
-                'bind': {'required': True},
-            },
-            {
-                'name': 'empty_date',
-                'label': 'Empty Date',
-                'type': 'dateTime',
-            },
-        ], self.get_config('datemodel')['form'])
+        self.assertEqual(
+            [
+                {
+                    "name": "name",
+                    "label": "Name",
+                    "type": "string",
+                    "wq:length": 10,
+                    "bind": {"required": True},
+                },
+                {
+                    "name": "date",
+                    "label": "Date",
+                    "type": "dateTime",
+                    "bind": {"required": True},
+                },
+                {
+                    "name": "empty_date",
+                    "label": "Empty Date",
+                    "type": "dateTime",
+                },
+            ],
+            self.get_config("datemodel")["form"],
+        )
 
     def test_rest_config_json_choices(self):
-        conf = self.get_config('choicemodel')
-        self.assertEqual([
-            {
-                'name': 'name',
-                'label': 'Name',
-                'hint': 'Enter Name',
-                'type': 'string',
-                'wq:length': 10,
-                'bind': {'required': True},
-            },
-            {
-                'name': 'choice',
-                'label': 'Choice',
-                'hint': 'Pick One',
-                'type': 'select one',
-                'bind': {'required': True},
-                'choices': [{
-                    'name': 'one',
-                    'label': 'Choice One',
-                }, {
-                    'name': 'two',
-                    'label': 'Choice Two',
-                }, {
-                    'name': 'three',
-                    'label': 'Choice Three',
-                }]
-            },
-            {
-                'name': 'grouped_choice',
-                'label': 'Grouped Choice',
-                'hint': 'Pick One',
-                'type': 'select one',
-                'bind': {'required': True},
-                'choices': [{
-                    'name': 'one',
-                    'label': 'Choice One',
-                    'group': 'Group 1',
-                }, {
-                    'name': 'two',
-                    'label': 'Choice Two',
-                    'group': 'Group 1',
-                }, {
-                    'name': 'three',
-                    'label': 'Choice Three',
-                    'group': 'Group 1',
-                }]
-            },
-        ], conf['form'])
+        conf = self.get_config("choicemodel")
+        self.assertEqual(
+            [
+                {
+                    "name": "name",
+                    "label": "Name",
+                    "hint": "Enter Name",
+                    "type": "string",
+                    "wq:length": 10,
+                    "bind": {"required": True},
+                },
+                {
+                    "name": "choice",
+                    "label": "Choice",
+                    "hint": "Pick One",
+                    "type": "select one",
+                    "bind": {"required": True},
+                    "choices": [
+                        {
+                            "name": "one",
+                            "label": "Choice One",
+                        },
+                        {
+                            "name": "two",
+                            "label": "Choice Two",
+                        },
+                        {
+                            "name": "three",
+                            "label": "Choice Three",
+                        },
+                    ],
+                },
+                {
+                    "name": "grouped_choice",
+                    "label": "Grouped Choice",
+                    "hint": "Pick One",
+                    "type": "select one",
+                    "bind": {"required": True},
+                    "choices": [
+                        {
+                            "name": "one",
+                            "label": "Choice One",
+                            "group": "Group 1",
+                        },
+                        {
+                            "name": "two",
+                            "label": "Choice Two",
+                            "group": "Group 1",
+                        },
+                        {
+                            "name": "three",
+                            "label": "Choice Three",
+                            "group": "Group 1",
+                        },
+                    ],
+                },
+            ],
+            conf["form"],
+        )
 
     def test_rest_config_json_boolean_choices(self):
-        conf = self.get_config('itemtype')
-        self.assertEqual([
-            {
-                'name': 'name',
-                'label': 'Name',
-                'type': 'string',
-                'wq:length': 10,
-                'bind': {'required': True},
-            },
-            {
-                'name': 'active',
-                'label': 'Active',
-                'type': 'select one',
-                'choices': [{
-                    'name': True,
-                    'label': 'Yes',
-                }, {
-                    'name': False,
-                    'label': 'No',
-                }],
-            }
-        ], conf['form'])
+        conf = self.get_config("itemtype")
+        self.assertEqual(
+            [
+                {
+                    "name": "name",
+                    "label": "Name",
+                    "type": "string",
+                    "wq:length": 10,
+                    "bind": {"required": True},
+                },
+                {
+                    "name": "active",
+                    "label": "Active",
+                    "type": "select one",
+                    "choices": [
+                        {
+                            "name": True,
+                            "label": "Yes",
+                        },
+                        {
+                            "name": False,
+                            "label": "No",
+                        },
+                    ],
+                },
+            ],
+            conf["form"],
+        )
 
     def test_rest_config_json_rels(self):
-        pconf = self.get_config('parent')
-        self.assertEqual({
-            'name': 'children',
-            'label': 'Children',
-            'type': 'repeat',
-            'bind': {'required': True},
-            'children': [{
-                'name': 'name',
-                'label': 'Name',
-                'type': 'string',
-                'wq:length': 10,
-                'bind': {'required': True},
-            }]
-        }, self.get_field(pconf, 'children'))
+        pconf = self.get_config("parent")
+        self.assertEqual(
+            {
+                "name": "children",
+                "label": "Children",
+                "type": "repeat",
+                "bind": {"required": True},
+                "children": [
+                    {
+                        "name": "name",
+                        "label": "Name",
+                        "type": "string",
+                        "wq:length": 10,
+                        "bind": {"required": True},
+                    }
+                ],
+            },
+            self.get_field(pconf, "children"),
+        )
 
-        cconf = self.get_config('child')
-        self.assertEqual({
-            'name': 'parent',
-            'label': 'Parent',
-            'type': 'select one',
-            'wq:ForeignKey': 'parent',
-            'wq:related_name': 'children',
-            'bind': {'required': True},
-        }, self.get_field(cconf, 'parent'))
+        cconf = self.get_config("child")
+        self.assertEqual(
+            {
+                "name": "parent",
+                "label": "Parent",
+                "type": "select one",
+                "wq:ForeignKey": "parent",
+                "wq:related_name": "children",
+                "bind": {"required": True},
+            },
+            self.get_field(cconf, "parent"),
+        )
 
     def test_rest_config_json_override(self):
-        iconf = self.get_config('item')
-        self.assertEqual({
-            'name': 'type',
-            'label': 'Type',
-            'type': 'select one',
-            'wq:ForeignKey': 'itemtype',
-            'wq:related_name': 'item_set',
-            'filter': {'active':  ['1', '{{#id}}0{{/id}}{{^id}}1{{/id}}']},
-            'bind': {'required': True},
-        }, self.get_field(iconf, 'type'))
+        iconf = self.get_config("item")
+        self.assertEqual(
+            {
+                "name": "type",
+                "label": "Type",
+                "type": "select one",
+                "wq:ForeignKey": "itemtype",
+                "wq:related_name": "item_set",
+                "filter": {"active": ["1", "{{#id}}0{{/id}}{{^id}}1{{/id}}"]},
+                "bind": {"required": True},
+            },
+            self.get_field(iconf, "type"),
+        )
 
     def test_rest_config_json_label(self):
-        pconf = self.get_config('slugrefparent')
-        self.assertIn('label_template', pconf)
+        pconf = self.get_config("slugrefparent")
+        self.assertIn("label_template", pconf)
         self.assertEqual(
             "{{name}}{{#ref_id}} ({{ref}}){{/ref_id}}",
-            pconf['label_template'],
+            pconf["label_template"],
         )
 
     @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
     def test_rest_config_subtype_gis(self):
-        conf = self.get_config('geometrymodel')
-        field = self.get_field(conf, 'geometry')
-        self.assertEqual('geoshape', field['type'])
+        conf = self.get_config("geometrymodel")
+        field = self.get_field(conf, "geometry")
+        self.assertEqual("geoshape", field["type"])
 
-        conf = self.get_config('pointmodel')
-        field = self.get_field(conf, 'geometry')
-        self.assertEqual('geopoint', field['type'])
+        conf = self.get_config("pointmodel")
+        field = self.get_field(conf, "geometry")
+        self.assertEqual("geopoint", field["type"])
 
     def test_rest_config_subtype(self):
-        conf = self.get_config('filemodel')
-        field = self.get_field(conf, 'file')
-        self.assertEqual('file', field['type'])
+        conf = self.get_config("filemodel")
+        field = self.get_field(conf, "file")
+        self.assertEqual("file", field["type"])
 
-        conf = self.get_config('imagemodel')
-        field = self.get_field(conf, 'image')
-        self.assertEqual('image', field['type'])
+        conf = self.get_config("imagemodel")
+        field = self.get_field(conf, "image")
+        self.assertEqual("image", field["type"])
 
-        conf = self.get_config('item')
-        field = self.get_field(conf, 'name')
-        self.assertEqual('string', field['type'])
+        conf = self.get_config("item")
+        field = self.get_field(conf, "name")
+        self.assertEqual("string", field["type"])
 
-        conf = self.get_config('rootmodel')
-        field = self.get_field(conf, 'description')
-        self.assertEqual('text', field['type'])
+        conf = self.get_config("rootmodel")
+        field = self.get_field(conf, "description")
+        self.assertEqual("text", field["type"])
 
     def test_rest_config_field_order(self):
-        conf = self.get_config('slugrefparent')
-        self.assertEqual(conf['form'][0]['name'], 'ref')
-        self.assertEqual(conf['form'][1]['name'], 'name')
+        conf = self.get_config("slugrefparent")
+        self.assertEqual(conf["form"][0]["name"], "ref")
+        self.assertEqual(conf["form"][1]["name"], "name")
 
     def test_rest_list_exclude_config(self):
-        conf = self.get_config('expensivemodel')
-        self.get_field(conf, 'name')
-        self.get_field(conf, 'expensive')
+        conf = self.get_config("expensivemodel")
+        self.get_field(conf, "name")
+        self.get_field(conf, "expensive")
         self.assertIsNone(
-            self.get_field(conf, 'more_expensive', allow_none=True)
+            self.get_field(conf, "more_expensive", allow_none=True)
         )
 
     def test_rest_virtual_fieldset(self):
-        conf = self.get_config('fieldsetmodel')
-        self.assertEqual([
-            {
-                'name': 'general',
-                'type': 'group',
-                'label': 'General',
-                'children': [
-                    {
-                        'name': 'name',
-                        'label': 'Name',
-                        'type': 'string',
-                        'wq:length': 50,
-                        'bind': {'required': True},
-                    },
-                    {
-                        'name': 'title',
-                        'label': 'Title',
-                        'type': 'string',
-                        'wq:length': 20,
-                        'bind': {'required': True},
-                    },
-                    {
-                        'name': 'status',
-                        'label': 'Status',
-                        'type': 'string',
-                        'disabled': True,
-                    }
-                ]
-            },
-            {
-                'name': 'contact',
-                'type': 'group',
-                'label': 'Contact Information',
-                'control': {'appearance': 'contact-fieldset'},
-                'children': [
-                    {
-                        'name': 'address',
-                        'label': 'Address',
-                        'type': 'string',
-                        'wq:length': 255,
-                        'bind': {'required': True},
-                    },
-                    {
-                        'name': 'city',
-                        'label': 'City',
-                        'type': 'string',
-                        'wq:length': 255,
-                        'bind': {'required': True},
-                    },
-                ]
-            },
-        ], conf['form'])
+        conf = self.get_config("fieldsetmodel")
+        self.assertEqual(
+            [
+                {
+                    "name": "general",
+                    "type": "group",
+                    "label": "General",
+                    "children": [
+                        {
+                            "name": "name",
+                            "label": "Name",
+                            "type": "string",
+                            "wq:length": 50,
+                            "bind": {"required": True},
+                        },
+                        {
+                            "name": "title",
+                            "label": "Title",
+                            "type": "string",
+                            "wq:length": 20,
+                            "bind": {"required": True},
+                        },
+                        {
+                            "name": "status",
+                            "label": "Status",
+                            "type": "string",
+                            "disabled": True,
+                        },
+                    ],
+                },
+                {
+                    "name": "contact",
+                    "type": "group",
+                    "label": "Contact Information",
+                    "control": {"appearance": "contact-fieldset"},
+                    "children": [
+                        {
+                            "name": "address",
+                            "label": "Address",
+                            "type": "string",
+                            "wq:length": 255,
+                            "bind": {"required": True},
+                        },
+                        {
+                            "name": "city",
+                            "label": "City",
+                            "type": "string",
+                            "wq:length": 255,
+                            "bind": {"required": True},
+                        },
+                    ],
+                },
+            ],
+            conf["form"],
+        )

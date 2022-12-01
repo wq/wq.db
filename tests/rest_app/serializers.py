@@ -1,8 +1,14 @@
 from rest_framework import serializers
 from wq.db.rest.serializers import ModelSerializer
 from .models import (
-    OneToOneModel, ExtraModel, Child, ChoiceModel, DateModel, Item,
-    ExpensiveModel, FieldsetModel
+    OneToOneModel,
+    ExtraModel,
+    Child,
+    ChoiceModel,
+    DateModel,
+    Item,
+    ExpensiveModel,
+    FieldsetModel,
 )
 
 
@@ -18,7 +24,7 @@ class RootModelSerializer(ModelSerializer):
 class ChildSerializer(ModelSerializer):
     class Meta:
         model = Child
-        exclude = ('parent',)
+        exclude = ("parent",)
 
 
 class ParentSerializer(ModelSerializer):
@@ -28,28 +34,21 @@ class ParentSerializer(ModelSerializer):
 class ItemSerializer(ModelSerializer):
     class Meta:
         wq_field_config = {
-            'type': {
-                 'filter': {
-                     'active': [
-                         '1',
-
-                         # Allow inactive types when editing existing items
-                         '{{#id}}0{{/id}}{{^id}}1{{/id}}',
-                     ]
-                 }
+            "type": {
+                "filter": {
+                    "active": [
+                        "1",
+                        # Allow inactive types when editing existing items
+                        "{{#id}}0{{/id}}{{^id}}1{{/id}}",
+                    ]
+                }
             }
         }
 
 
 class SlugRefChildSerializer(ModelSerializer):
     class Meta:
-        wq_field_config = {
-            'parent': {
-                 'filter': {
-                     'ref_id': 'test'
-                 }
-            }
-        }
+        wq_field_config = {"parent": {"filter": {"ref_id": "test"}}}
 
 
 class ChoiceLabelSerializer(ModelSerializer):
@@ -67,7 +66,7 @@ class DateLabelSerializer(ModelSerializer):
     date_label = serializers.SerializerMethodField()
 
     def get_date_label(self, instance):
-        return instance.date.strftime('%B %-d, %Y')
+        return instance.date.strftime("%B %-d, %Y")
 
     class Meta:
         model = DateModel
@@ -80,10 +79,10 @@ class ItemLabelSerializer(ModelSerializer):
     type_label = serializers.SerializerMethodField()
 
     def get_label(self, instance):
-        return '%s: %s' % (instance.type.name, instance.name)
+        return "%s: %s" % (instance.type.name, instance.name)
 
     def get_type_id(self, instance):
-        return 'id-%s' % instance.type_id
+        return "id-%s" % instance.type_id
 
     def get_type_label(self, instance):
         return instance.type.name.upper()
@@ -96,19 +95,19 @@ class ItemLabelSerializer(ModelSerializer):
 class ExpensiveSerializer(ModelSerializer):
     class Meta:
         fields = "__all__"
-        list_exclude = ('expensive', 'more_expensive')
-        config_exclude = ('more_expensive',)
+        list_exclude = ("expensive", "more_expensive")
+        config_exclude = ("more_expensive",)
         model = ExpensiveModel
 
 
 class FieldsetSerializer(ModelSerializer):
     status = serializers.SerializerMethodField(
-        style={'wq_config': {'disabled': True}}
+        style={"wq_config": {"disabled": True}}
     )
     is_complete = serializers.SerializerMethodField()
 
     def get_status(self, instance):
-        return 'OK'
+        return "OK"
 
     def get_is_complete(self, instance):
         return True
@@ -117,13 +116,13 @@ class FieldsetSerializer(ModelSerializer):
         model = FieldsetModel
         fields = "__all__"
         wq_fieldsets = {
-            'general': {
-                'label': 'General',
-                'fields': ['name', 'title', 'status']
+            "general": {
+                "label": "General",
+                "fields": ["name", "title", "status"],
             },
-            'contact': {
-                'label': 'Contact Information',
-                'control': {'appearance': 'contact-fieldset'},
-                'fields': ['address', 'city']
-            }
+            "contact": {
+                "label": "Contact Information",
+                "control": {"appearance": "contact-fieldset"},
+                "fields": ["address", "city"],
+            },
         }

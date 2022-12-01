@@ -9,9 +9,7 @@ class IdentifiedModel(patterns.LabelModel):
 
 class FilterableModel(patterns.LabelModel):
     name = models.CharField(max_length=10)
-    parent = models.ForeignKey(
-        IdentifiedModel, models.CASCADE
-    )
+    parent = models.ForeignKey(IdentifiedModel, models.CASCADE)
 
 
 class CustomPatternModel(models.Model):
@@ -21,7 +19,9 @@ class CustomPatternModel(models.Model):
 class CustomAttachment(models.Model):
     name = models.CharField(max_length=10)
     parent = models.ForeignKey(
-        CustomPatternModel, models.CASCADE, related_name='attachments',
+        CustomPatternModel,
+        models.CASCADE,
+        related_name="attachments",
     )
 
 
@@ -41,9 +41,7 @@ class CustomTypedAttachment(models.Model):
     value = models.FloatField(null=True, blank=True)
     type = models.ForeignKey(CustomType, models.CASCADE)
     parent = models.ForeignKey(
-        CustomTypedPatternModel,
-        models.CASCADE,
-        related_name='attachments'
+        CustomTypedPatternModel, models.CASCADE, related_name="attachments"
     )
 
 
@@ -62,9 +60,9 @@ class Entity(models.Model):
     campaign = models.ForeignKey(Campaign, models.CASCADE)
 
     class Meta:
-        verbose_name_plural = 'entities'
+        verbose_name_plural = "entities"
 
 
 class Value(models.Model):
     attribute = models.ForeignKey(Attribute, models.CASCADE)
-    entity = models.ForeignKey(Entity, models.CASCADE, related_name='values')
+    entity = models.ForeignKey(Entity, models.CASCADE, related_name="values")

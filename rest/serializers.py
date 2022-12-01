@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from django.core.exceptions import ImproperlyConfigured
+
 try:
     from django.contrib.gis.db import models as model_fields
     from django.contrib.gis.geos import GEOSGeometry
 except (OSError, ImproperlyConfigured):
     from django.db import models as model_fields
+
     GEOSGeometry = None
 
 from django.utils import timezone
@@ -23,10 +25,12 @@ class GeometryField(serializers.Field):
         if value is None:
             return None
         import json
+
         return json.loads(value.geojson)
 
     def to_internal_value(self, value):
         import json
+
         if isinstance(value, dict):
             value = json.dumps(value)
 
@@ -34,12 +38,12 @@ class GeometryField(serializers.Field):
             raise Exception("Missing GDAL")
 
         geom = GEOSGeometry(value)
-        srid = getattr(settings, 'SRID', 4326)
+        srid = getattr(settings, "SRID", 4326)
 
-        if 'crs' in value and value['crs'].get('type', None) == 'name':
-            name = value['crs']['properties']['name']
-            if name.startswith('urn:ogc:def:crs:EPSG::'):
-                geom.srid = int(name.replace('urn:ogc:def:crs:EPSG::', ''))
+        if "crs" in value and value["crs"].get("type", None) == "name":
+            name = value["crs"]["properties"]["name"]
+            if name.startswith("urn:ogc:def:crs:EPSG::"):
+                geom.srid = int(name.replace("urn:ogc:def:crs:EPSG::", ""))
 
         if geom.srid is None:
             geom.srid = 4326
@@ -57,7 +61,7 @@ class LookupRelatedField(serializers.SlugRelatedField):
     @property
     def slug_field(self):
         if not self.router:
-            return 'pk'
+            return "pk"
         return self.router.get_lookup_for_model(self.model)
 
 
@@ -67,7 +71,7 @@ class LocalDateTimeField(serializers.ReadOnlyField):
             return None
         if value.tzinfo:
             value = timezone.localtime(value)
-        return value.strftime('%Y-%m-%d %I:%M %p')
+        return value.strftime("%Y-%m-%d %I:%M %p")
 
 
 MODEL_BOOLEAN_FIELDS = (
@@ -81,15 +85,15 @@ class BooleanLabelField(serializers.ReadOnlyField):
         if value is None:
             return None
         elif value:
-            return 'Yes'
+            return "Yes"
         else:
-            return 'No'
+            return "No"
 
 
 class BlankCharField(serializers.CharField):
     def run_validation(self, data=serializers.empty):
         if self.allow_blank and data is None:
-            return ''
+            return ""
         return super(BlankCharField, self).run_validation(data)
 
 
@@ -98,7 +102,7 @@ def is_empty_or_url(data):
         return True
     if data is serializers.empty:
         return True
-    if isinstance(data, str) and data.startswith(('http://', 'https://')):
+    if isinstance(data, str) and data.startswith(("http://", "https://")):
         return True
     return False
 
@@ -129,43 +133,45 @@ def get_choice_list(choices, group=None):
             choice_list += get_choice_list(value, group=key)
         else:
             choice = {
-                'name': key,
-                'label': value,
+                "name": key,
+                "label": value,
             }
             if group:
-                choice['group'] = group
+                choice["group"] = group
             choice_list.append(choice)
     return choice_list
 
 
 class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
-    xlsform_types = OrderedDict((
-        (serializers.ImageField, 'image'),
-        (ClearableImageField, 'image'),
-        (serializers.FileField, 'file'),
-        (ClearableFileField, 'file'),
-        (serializers.DateField, 'date'),
-        (serializers.DateTimeField, 'dateTime'),
-        (serializers.FloatField, 'decimal'),
-        (GeometryField, 'geoshape'),
-        (serializers.IntegerField, 'int'),
-        (serializers.CharField, 'string'),
-        (serializers.ChoiceField, 'select one'),
-        (serializers.TimeField, 'time'),
-    ))
+    xlsform_types = OrderedDict(
+        (
+            (serializers.ImageField, "image"),
+            (ClearableImageField, "image"),
+            (serializers.FileField, "file"),
+            (ClearableFileField, "file"),
+            (serializers.DateField, "date"),
+            (serializers.DateTimeField, "dateTime"),
+            (serializers.FloatField, "decimal"),
+            (GeometryField, "geoshape"),
+            (serializers.IntegerField, "int"),
+            (serializers.CharField, "string"),
+            (serializers.ChoiceField, "select one"),
+            (serializers.TimeField, "time"),
+        )
+    )
 
     def get_fields_for_config(self):
         self._for_wq_config = True
         fields = self.get_fields()
         del self._for_wq_config
-        overrides = getattr(self.Meta, 'wq_field_config', None) or {}
+        overrides = getattr(self.Meta, "wq_field_config", None) or {}
 
         for name, field in list(fields.items()):
 
             has_wq_config = False
-            if name != 'id' and not field.read_only and not field.write_only:
+            if name != "id" and not field.read_only and not field.write_only:
                 has_wq_config = True
-            elif 'wq_config' in field.style:
+            elif "wq_config" in field.style:
                 has_wq_config = True
             elif name in overrides:
                 has_wq_config = True
@@ -182,7 +188,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         return fields
 
     def get_boolean_choices(self, field):
-        return [(True, 'Yes'), (False, 'No')]
+        return [(True, "Yes"), (False, "No")]
 
     def get_wq_config(self):
         serializer_fields = self.get_fields_for_config()
@@ -190,140 +196,138 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         nested_fields = []
         has_geo_fields = False
 
-        overrides = getattr(self.Meta, 'wq_field_config', None) or {}
-        fieldsets = getattr(self.Meta, 'wq_fieldsets', None) or {}
+        overrides = getattr(self.Meta, "wq_field_config", None) or {}
+        fieldsets = getattr(self.Meta, "wq_fieldsets", None) or {}
 
         def get_info(name, field):
             info = self.get_wq_field_info(name, field)
-            if info['name'] in overrides:
-                info.update(overrides[info['name']])
+            if info["name"] in overrides:
+                info.update(overrides[info["name"]])
             return info
 
         for name, conf in fieldsets.items():
             conf = conf.copy()
-            conf.setdefault('name', name)
-            conf.setdefault('type', 'group')
-            conf.setdefault('label', name)
-            conf['children'] = [
+            conf.setdefault("name", name)
+            conf.setdefault("type", "group")
+            conf.setdefault("label", name)
+            conf["children"] = [
                 get_info(name, serializer_fields.pop(name))
-                for name in conf.pop('fields')
+                for name in conf.pop("fields")
             ]
             nested_fields.append(conf)
 
         for name, field in serializer_fields.items():
             info = get_info(name, field)
 
-            if info['type'].startswith('geo') or info['name'] == 'latitude':
+            if info["type"].startswith("geo") or info["name"] == "latitude":
                 has_geo_fields = True
 
-            if info['type'] == 'repeat':
+            if info["type"] == "repeat":
                 nested_fields.append(info)
             else:
                 fields.append(info)
 
-        config = getattr(self.Meta, 'wq_config', {}).copy()
-        config['form'] = fields + nested_fields
+        config = getattr(self.Meta, "wq_config", {}).copy()
+        config["form"] = fields + nested_fields
 
         meta = self.Meta.model._meta
-        config.setdefault('name', meta.model_name)
-        config.setdefault('verbose_name', meta.verbose_name)
-        config.setdefault('verbose_name_plural', meta.verbose_name_plural)
+        config.setdefault("name", meta.model_name)
+        config.setdefault("verbose_name", meta.verbose_name)
+        config.setdefault("verbose_name_plural", meta.verbose_name_plural)
         if meta.ordering:
-            config.setdefault('ordering', meta.ordering)
+            config.setdefault("ordering", meta.ordering)
 
         if has_geo_fields:
-            config.setdefault('map', True)
+            config.setdefault("map", True)
 
-        label_template = getattr(
-            self.Meta.model, 'wq_label_template', None
-        )
+        label_template = getattr(self.Meta.model, "wq_label_template", None)
         if label_template:
-            config.setdefault('label_template', label_template)
+            config.setdefault("label_template", label_template)
         return config
 
     def get_wq_field_info(self, name, field, model=None):
         info = {
-            'name': name,
-            'label': field.label or name.replace('_', ' ').title(),
+            "name": name,
+            "label": field.label or name.replace("_", " ").title(),
         }
         if field.required:
-            info.setdefault('bind', {})
-            info['bind']['required'] = True
+            info.setdefault("bind", {})
+            info["bind"]["required"] = True
 
         if field.help_text:
-            info['hint'] = field.help_text
+            info["hint"] = field.help_text
 
         if isinstance(field, serializers.ChoiceField):
-            info['choices'] = get_choice_list(field.grouped_choices)
-        elif getattr(field, 'max_length', None):
+            info["choices"] = get_choice_list(field.grouped_choices)
+        elif getattr(field, "max_length", None):
             if not isinstance(field, serializers.FileField):
-                info['wq:length'] = field.max_length
+                info["wq:length"] = field.max_length
 
         if isinstance(field, serializers.BaseSerializer):
             # Nested model with a foreign key to this one
             if isinstance(field, serializers.ListSerializer):
-                info['type'] = 'repeat'
+                info["type"] = "repeat"
                 serializer = field.child
             else:
-                info['type'] = 'group'
+                info["type"] = "group"
                 serializer = field
 
-            serializer.context['router'] = self.router
-            if hasattr(serializer, 'get_wq_config'):
+            serializer.context["router"] = self.router
+            if hasattr(serializer, "get_wq_config"):
                 child_config = serializer.get_wq_config()
             else:
-                child_config = {'form': []}
+                child_config = {"form": []}
 
-            info['children'] = child_config['form']
-            for key in ('initial', 'control'):
+            info["children"] = child_config["form"]
+            for key in ("initial", "control"):
                 if key in child_config:
                     info[key] = child_config[key]
 
         elif isinstance(field, serializers.RelatedField):
             # Foreign key to a parent model
-            info['type'] = 'select one'
-            info['name'] = info['name'].replace('_id', '')
-            info['label'] = info['label'].replace(' Id', '')
-            if hasattr(field, 'queryset'):
+            info["type"] = "select one"
+            info["name"] = info["name"].replace("_id", "")
+            info["label"] = info["label"].replace(" Id", "")
+            if hasattr(field, "queryset"):
                 fk = self.get_wq_foreignkey_info(field.queryset.model)
                 if fk:
                     model = model or self.Meta.model
                     source = model._meta.get_field(name)
-                    info['wq:ForeignKey'] = fk
+                    info["wq:ForeignKey"] = fk
                     info[
-                        'wq:related_name'
+                        "wq:related_name"
                     ] = source.remote_field.get_accessor_name()
 
         elif isinstance(field, serializers.ManyRelatedField):
             # ManyToMany field to related model
-            info['type'] = 'select'
-            info['name'] = info['name'].replace('_id', '')
-            info['label'] = info['label'].replace(' Id', '')
+            info["type"] = "select"
+            info["name"] = info["name"].replace("_id", "")
+            info["label"] = info["label"].replace(" Id", "")
             if field.child_relation.queryset:
                 fk = self.get_wq_foreignkey_info(
                     field.child_relation.queryset.model
                 )
-                info['wq:ForeignKey'] = fk
+                info["wq:ForeignKey"] = fk
 
-        if 'type' not in info:
-            info['type'] = 'string'
+        if "type" not in info:
+            info["type"] = "string"
 
             for field_type, xlsform_type in self.xlsform_types.items():
                 if isinstance(field, field_type):
-                    info['type'] = xlsform_type
+                    info["type"] = xlsform_type
                     break
 
-            if info['type'] == 'geoshape':
+            if info["type"] == "geoshape":
                 model = model or self.Meta.model
                 source = model._meta.get_field(name)
-                if info['type'] == 'geoshape':
-                    geom_type = getattr(source, 'geom_type', None)
-                    if geom_type == 'POINT':
-                        info['type'] = 'geopoint'
-                    elif geom_type == 'LINESTRING':
-                        info['type'] = 'geotrace'
+                if info["type"] == "geoshape":
+                    geom_type = getattr(source, "geom_type", None)
+                    if geom_type == "POINT":
+                        info["type"] = "geopoint"
+                    elif geom_type == "LINESTRING":
+                        info["type"] = "geotrace"
 
-            if info['type'] == 'string':
+            if info["type"] == "string":
                 model = model or self.Meta.model
                 try:
                     source = model._meta.get_field(name)
@@ -331,12 +335,12 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                     pass
                 else:
                     if source.get_internal_type() == "TextField":
-                        info['type'] = "text"
+                        info["type"] = "text"
 
-        if 'wq_config' in field.style:
-            info.update(field.style['wq_config'])
+        if "wq_config" in field.style:
+            info.update(field.style["wq_config"])
 
-        field_config = getattr(self.Meta, 'wq_field_config', {})
+        field_config = getattr(self.Meta, "wq_field_config", {})
         if name in field_config:
             info.update(field_config[name])
 
@@ -346,24 +350,22 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         if not self.router or not self.router.model_is_registered(model):
             return None
         else:
-            serializer = self.router.get_serializer_for_model(
-                model
-            )
+            serializer = self.router.get_serializer_for_model(model)
             model_conf = serializer().get_wq_config()
-            return model_conf['name']
+            return model_conf["name"]
 
     def to_representation(self, obj):
         data = super().to_representation(obj)
-        if getattr(self.Meta, 'wq_fieldsets', None):
+        if getattr(self.Meta, "wq_fieldsets", None):
             return self.to_virtual_fieldsets(data)
         else:
             return data
 
     def to_virtual_fieldsets(self, data):
         for name, conf in self.Meta.wq_fieldsets.items():
-            if name == '':
+            if name == "":
                 continue
-            for field in conf['fields']:
+            for field in conf["fields"]:
                 if field not in data:
                     continue
                 data.setdefault(name, {})
@@ -371,12 +373,12 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         return data
 
     def to_internal_value(self, data):
-        if not getattr(self.Meta, 'wq_fieldsets', None):
+        if not getattr(self.Meta, "wq_fieldsets", None):
             return super().to_internal_value(data)
 
         data = parse_json_form(data)
         for name, conf in self.Meta.wq_fieldsets.items():
-            if name == '':
+            if name == "":
                 continue
             fs_data = data.pop(name, None)
             if isinstance(fs_data, dict):
@@ -411,54 +413,61 @@ class ModelSerializer(BaseModelSerializer):
                 mapping[model_field] = BlankCharField
 
         if GEOSGeometry:
-            for field in ('Geometry', 'GeometryCollection',
-                          'Point', 'LineString', 'Polygon',
-                          'MultiPoint', 'MultiLineString', 'MultiPolygon'):
-                mapping[getattr(model_fields, field + 'Field')] = GeometryField
+            for field in (
+                "Geometry",
+                "GeometryCollection",
+                "Point",
+                "LineString",
+                "Polygon",
+                "MultiPoint",
+                "MultiLineString",
+                "MultiPolygon",
+            ):
+                mapping[getattr(model_fields, field + "Field")] = GeometryField
         super(ModelSerializer, self).__init__(*args, **kwargs)
 
     @property
     def router(self):
-        if 'view' not in self.context and 'router' not in self.context:
+        if "view" not in self.context and "router" not in self.context:
             return None
-        if 'view' in self.context:
-            return self.context['view'].router
+        if "view" in self.context:
+            return self.context["view"].router
         else:
-            return self.context['router']
+            return self.context["router"]
 
     @property
     def is_detail(self):
-        if getattr(self.Meta, 'depth', 0) > 0:
+        if getattr(self.Meta, "depth", 0) > 0:
             return True
-        view = self.context.get('view', None)
+        view = self.context.get("view", None)
         return view and view.action != "list"
 
     @property
     def is_edit(self):
-        view = self.context.get('view', None)
-        return view and view.action == 'edit'
+        view = self.context.get("view", None)
+        return view and view.action == "edit"
 
     @property
     def is_geojson(self):
-        request = self.context.get('request', None)
+        request = self.context.get("request", None)
         if not request:
             return
-        if request.accepted_renderer.format == 'geojson':
+        if request.accepted_renderer.format == "geojson":
             return True
         return False
 
     @property
     def is_html(self):
-        request = self.context.get('request', None)
+        request = self.context.get("request", None)
         if not request:
             return
-        if request.accepted_renderer.format == 'html':
+        if request.accepted_renderer.format == "html":
             return True
         return False
 
     @property
     def is_config(self):
-        return getattr(self, '_for_wq_config', False)
+        return getattr(self, "_for_wq_config", False)
 
     def get_fields(self, *args, **kwargs):
         fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
@@ -470,12 +479,12 @@ class ModelSerializer(BaseModelSerializer):
             return set(getattr(self.Meta, meta_name, []))
 
         if not self.is_detail and not self.is_config:
-            exclude |= get_exclude('list_exclude')
+            exclude |= get_exclude("list_exclude")
             if self.is_html:
-                exclude |= get_exclude('html_list_exclude')
+                exclude |= get_exclude("html_list_exclude")
 
         if self.is_config:
-            exclude |= get_exclude('config_exclude')
+            exclude |= get_exclude("config_exclude")
 
         for field in list(exclude):
             fields.pop(field, None)
@@ -483,10 +492,10 @@ class ModelSerializer(BaseModelSerializer):
         return fields
 
     def update_id_fields(self, fields):
-        if 'id' not in self._declared_fields:
-            lookup = getattr(self.Meta, 'wq_config', {}).get('lookup', None)
-            if lookup and lookup != 'id':
-                fields['id'] = serializers.ReadOnlyField(source=lookup)
+        if "id" not in self._declared_fields:
+            lookup = getattr(self.Meta, "wq_config", {}).get("lookup", None)
+            if lookup and lookup != "id":
+                fields["id"] = serializers.ReadOnlyField(source=lookup)
 
         id_fields = {}
         info = model_meta.get_field_info(self.Meta.model)
@@ -512,25 +521,24 @@ class ModelSerializer(BaseModelSerializer):
             if not isinstance(default_field, auto_related_field):
                 continue
 
-            if name + '_id' not in fields:
+            if name + "_id" not in fields:
                 id_field, id_field_kwargs = self.build_relational_field(
                     name, field
                 )
                 extra_field_kwargs = extra_kwargs.get(name, {})
-                extra_field_kwargs.update(
-                    extra_kwargs.get(name + '_id', {})
-                )
+                extra_field_kwargs.update(extra_kwargs.get(name + "_id", {}))
                 self.include_extra_kwargs(
                     id_field_kwargs,
                     extra_field_kwargs,
                 )
-                id_field_kwargs['source'] = name
+                id_field_kwargs["source"] = name
                 id_fields[name] = id_field(**id_field_kwargs)
 
             if name in fields:
                 # Update/remove DRF default foreign key field (w/o _id)
                 if self.is_detail and isinstance(
-                        default_field, serializers.BaseSerializer):
+                    default_field, serializers.BaseSerializer
+                ):
                     # Nested representation, keep for detail template context
                     fields[name].read_only = True
                 else:
@@ -547,14 +555,14 @@ class ModelSerializer(BaseModelSerializer):
             if name in fields:
                 updated_fields[name] = fields.pop(name)
             if name in id_fields:
-                updated_fields[name + '_id'] = id_fields.pop(name)
+                updated_fields[name + "_id"] = id_fields.pop(name)
 
         if fields:
             updated_fields.update(fields)
 
         if id_fields:
             for name in id_fields:
-                updated_fields[name + '_id'] = id_fields[name]
+                updated_fields[name + "_id"] = id_fields[name]
 
         return updated_fields
 
@@ -563,9 +571,9 @@ class ModelSerializer(BaseModelSerializer):
             return {}
         fields = {}
 
-        exclude = getattr(self.Meta, 'exclude', [])
-        if 'label' not in exclude and 'label' not in default_fields:
-            fields['label'] = serializers.ReadOnlyField(source='__str__')
+        exclude = getattr(self.Meta, "exclude", [])
+        if "label" not in exclude and "label" not in default_fields:
+            fields["label"] = serializers.ReadOnlyField(source="__str__")
 
         info = model_meta.get_field_info(self.Meta.model)
 
@@ -573,16 +581,16 @@ class ModelSerializer(BaseModelSerializer):
         for name, field in info.fields.items():
             if name in getattr(self.Meta, "exclude", []):
                 continue
-            if name + '_label' in default_fields:
+            if name + "_label" in default_fields:
                 continue
             if isinstance(field, model_fields.DateTimeField):
-                fields[name + '_label'] = LocalDateTimeField(source=name)
+                fields[name + "_label"] = LocalDateTimeField(source=name)
             if field.choices:
-                fields[name + '_label'] = serializers.ReadOnlyField(
-                    source='get_%s_display' % name
+                fields[name + "_label"] = serializers.ReadOnlyField(
+                    source="get_%s_display" % name
                 )
             if isinstance(field, MODEL_BOOLEAN_FIELDS):
-                fields[name + '_label'] = BooleanLabelField(
+                fields[name + "_label"] = BooleanLabelField(
                     source=name,
                 )
 
@@ -590,21 +598,22 @@ class ModelSerializer(BaseModelSerializer):
         for name, field in info.forward_relations.items():
             if name in getattr(self.Meta, "exclude", []):
                 continue
-            if name + '_label' in default_fields:
+            if name + "_label" in default_fields:
                 continue
 
             f, field_kwargs = self.build_relational_field(
-                name, info.forward_relations[name],
+                name,
+                info.forward_relations[name],
             )
             label_field_kwargs = {
-                'source': name,
+                "source": name,
             }
-            if field_kwargs.get('many', None):
+            if field_kwargs.get("many", None):
                 label_field_kwargs.update(
                     many=True,
                     read_only=True,
                 )
-            fields[name + '_label'] = serializers.StringRelatedField(
+            fields[name + "_label"] = serializers.StringRelatedField(
                 **label_field_kwargs
             )
 
@@ -613,17 +622,19 @@ class ModelSerializer(BaseModelSerializer):
     @classmethod
     def for_model(cls, model_class, include_fields=None):
         class Serializer(cls):
-            class Meta(getattr(cls, 'Meta', object)):
+            class Meta(getattr(cls, "Meta", object)):
                 model = model_class
                 if include_fields:
                     fields = include_fields
+
         return Serializer
 
     @classmethod
     def for_depth(cls, serializer_depth):
         class Serializer(cls):
-            class Meta(getattr(cls, 'Meta', object)):
+            class Meta(getattr(cls, "Meta", object)):
                 depth = serializer_depth
+
         return Serializer
 
     def build_relational_field(self, field_name, relation_info):
@@ -638,17 +649,15 @@ class ModelSerializer(BaseModelSerializer):
         ).build_relational_field(field_name, relation_info)
         if field_class == self.serializer_related_field:
             field_class = LookupRelatedField
-            field_kwargs['router'] = self.router
-            field_kwargs['model'] = relation_info.related_model
+            field_kwargs["router"] = self.router
+            field_kwargs["model"] = relation_info.related_model
         return field_class, field_kwargs
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         field_class, field_kwargs = super(
             ModelSerializer, self
-        ).build_nested_field(
-            field_name, relation_info, nested_depth
-        )
-        field_kwargs['required'] = False
+        ).build_nested_field(field_name, relation_info, nested_depth)
+        field_kwargs["required"] = False
         if self.router:
             field_class = self.router.get_serializer_for_model(
                 relation_info.related_model, nested_depth

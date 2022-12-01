@@ -7,23 +7,23 @@ import json
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
-            '--format',
-            default='json',
+            "--format",
+            default="json",
         )
         parser.add_argument(
-            '--filename',
+            "--filename",
             default=None,
         )
 
     def handle(self, **options):
-        if options.get('filename'):
-            with open(options['filename'], 'w') as f:
+        if options.get("filename"):
+            with open(options["filename"], "w") as f:
                 dump_config(f, **options)
         else:
             dump_config(self.stdout, **options)
 
 
-def dump_config(f, format='json', **kwargs):
+def dump_config(f, format="json", **kwargs):
     text = json.dumps(
         rest.router.config,
         cls=encoders.JSONEncoder,

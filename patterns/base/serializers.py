@@ -10,7 +10,7 @@ class AttachmentListSerializer(serializers.ListSerializer):
             return
 
         wq_config = self.child.get_wq_config()
-        initial = wq_config.get('initial', None)
+        initial = wq_config.get("initial", None)
         if initial and not data and self.parent.is_detail:
             if self.parent.instance and not self.parent.instance.pk:
                 data = self.default_attachments(initial)
@@ -20,13 +20,13 @@ class AttachmentListSerializer(serializers.ListSerializer):
     def default_attachments(self, initial):
         data = []
         for i in range(0, int(initial)):
-            data.append({'new_attachment': True})
+            data.append({"new_attachment": True})
         return data
 
 
 class TypedAttachmentListSerializer(AttachmentListSerializer):
     def check_empty(self, value):
-        if value is None or value == '':
+        if value is None or value == "":
             return True
         else:
             return False
@@ -42,7 +42,7 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
             empty = True
             if isinstance(row, dict):
                 for key, val in row.items():
-                    if key in ('@index', self.child.Meta.type_field):
+                    if key in ("@index", self.child.Meta.type_field):
                         continue
                     elif not self.check_empty(val):
                         empty = False
@@ -52,31 +52,33 @@ class TypedAttachmentListSerializer(AttachmentListSerializer):
 
     def default_attachments(self, initial):
         if not isinstance(initial, dict):
-            return super(
-                TypedAttachmentListSerializer, self
-            ).add_attachments(initial)
+            return super(TypedAttachmentListSerializer, self).add_attachments(
+                initial
+            )
 
         wq_config = self.child.get_wq_config()
         type_field = None
-        for field in wq_config['form']:
-            if field['name'] == initial.get('type_field'):
+        for field in wq_config["form"]:
+            if field["name"] == initial.get("type_field"):
                 type_field = field.copy()
 
         if not type_field:
             return []
 
-        if initial.get('filter'):
-            type_field['filter'] = initial['filter']
+        if initial.get("filter"):
+            type_field["filter"] = initial["filter"]
         types = self.child.get_lookup_choices(
-            type_field,
-            self.context.get('request').GET.dict()
-            )
+            type_field, self.context.get("request").GET.dict()
+        )
 
-        data = [{
-           'new_attachment': True,
-           type_field['name'] + '_id': row['id'],
-           type_field['name'] + '_label': row['label'],
-        } for row in types]
+        data = [
+            {
+                "new_attachment": True,
+                type_field["name"] + "_id": row["id"],
+                type_field["name"] + "_label": row["label"],
+            }
+            for row in types
+        ]
 
         return data
 
@@ -85,7 +87,7 @@ class AttachmentSerializer(ModelSerializer):
     id = serializers.IntegerField(required=False)
 
     def __init__(self, *args, **kwargs):
-        kwargs['allow_null'] = True
+        kwargs["allow_null"] = True
         super(AttachmentSerializer, self).__init__(*args, **kwargs)
 
     class Meta:
@@ -95,22 +97,25 @@ class AttachmentSerializer(ModelSerializer):
 class TypedAttachmentSerializer(AttachmentSerializer):
     def get_wq_config(self):
         config = super(TypedAttachmentSerializer, self).get_wq_config()
-        if 'initial' not in config:
-            config['initial'] = {
-                'type_field': self.Meta.type_field.replace('_id', ''),
-                'filter': self.Meta.type_filter,
+        if "initial" not in config:
+            config["initial"] = {
+                "type_field": self.Meta.type_field.replace("_id", ""),
+                "filter": self.Meta.type_filter,
             }
         return config
 
     class Meta:
         # Don't validate these fields (items are saved with their parent)
-        exclude = ("content_type", "object_id",)
+        exclude = (
+            "content_type",
+            "object_id",
+        )
         list_serializer_class = TypedAttachmentListSerializer
 
         # patterns-specific meta
-        type_field = 'type_id'
+        type_field = "type_id"
         type_filter = {}
-        object_field = 'content_object'
+        object_field = "content_object"
 
 
 class AttachedModelSerializer(ModelSerializer):
@@ -130,9 +135,7 @@ class AttachedModelSerializer(ModelSerializer):
 
     def update(self, instance, validated_data):
         model_data, attachment_data = self.extract_attachments(validated_data)
-        obj = super(
-            AttachedModelSerializer, self
-        ).update(instance, model_data)
+        obj = super(AttachedModelSerializer, self).update(instance, model_data)
 
         fields = self.get_fields()
         for name in attachment_data:
@@ -141,8 +144,8 @@ class AttachedModelSerializer(ModelSerializer):
                 if not attachment:
                     continue
                 self.set_parent_object(attachment, instance, name)
-                if 'id' in attachment:
-                    exist = self.get_attachment(model, attachment['id'])
+                if "id" in attachment:
+                    exist = self.get_attachment(model, attachment["id"])
                     self.update_attachment(exist, attachment, name)
                 else:
                     self.create_attachment(model, attachment, name)
@@ -158,7 +161,7 @@ class AttachedModelSerializer(ModelSerializer):
 
     def set_parent_object(self, attachment, instance, name):
         serializer = self.get_fields()[name].child
-        fk_name = getattr(serializer.Meta, 'object_field', 'content_object')
+        fk_name = getattr(serializer.Meta, "object_field", "content_object")
         attachment[fk_name] = instance
 
     def get_attachment(self, model, pk):
@@ -166,7 +169,7 @@ class AttachedModelSerializer(ModelSerializer):
 
     def update_attachment(self, exist, attachment, name):
         field = self.get_fields()[name]
-        attachment.pop('id')
+        attachment.pop("id")
         field.child.update(exist, attachment)
 
     def create_attachment(self, model, attachment, name):
@@ -188,20 +191,20 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
             ]
             if len(children) == 1:
                 info = children[0]
-                info['name'] = name + '[%s]' % info['name']
+                info["name"] = name + "[%s]" % info["name"]
 
                 fk = self.get_wq_foreignkey_info(field.Meta.model)
                 if fk:
-                    info['wq:ForeignKey'] = fk
-                    info['type'] = 'select one'
+                    info["wq:ForeignKey"] = fk
+                    info["type"] = "select one"
             else:
                 info = {
-                    'name': name,
-                    'type': 'group',
-                    'bind': {'required': True},
-                    'children': children
+                    "name": name,
+                    "type": "group",
+                    "bind": {"required": True},
+                    "children": children,
                 }
-            info['label'] = field.label or name.replace('_', ' ').title()
+            info["label"] = field.label or name.replace("_", " ").title()
             return info
         else:
             return super(NaturalKeyModelSerializer, self).get_wq_field_info(
@@ -209,13 +212,9 @@ class NaturalKeyModelSerializer(NaturalKeyModelSerializer, ModelSerializer):
             )
 
 
-class NaturalKeyAttachedModelSerializer(NaturalKeyModelSerializer,
-                                        AttachedModelSerializer):
-
+class NaturalKeyAttachedModelSerializer(
+    NaturalKeyModelSerializer, AttachedModelSerializer
+):
     def create(self, validated_data):
-        self.convert_natural_keys(
-            validated_data
-        )
-        return AttachedModelSerializer.create(
-            self, validated_data
-        )
+        self.convert_natural_keys(validated_data)
+        return AttachedModelSerializer.create(self, validated_data)

@@ -1,14 +1,30 @@
 from wq.db import rest
 from .models import (
-    RootModel, UserManagedModel, Parent, Child, ItemType, Item,
-    FileModel, ImageModel,
-    SlugModel, SlugRefParent, SlugRefChild,
-    DateModel, ChoiceModel, TranslatedModel,
-    CharFieldModel, ExpensiveModel, FieldsetModel
+    RootModel,
+    UserManagedModel,
+    Parent,
+    Child,
+    ItemType,
+    Item,
+    FileModel,
+    ImageModel,
+    SlugModel,
+    SlugRefParent,
+    SlugRefChild,
+    DateModel,
+    ChoiceModel,
+    TranslatedModel,
+    CharFieldModel,
+    ExpensiveModel,
+    FieldsetModel,
 )
 from .serializers import (
-    RootModelSerializer, ParentSerializer, ItemSerializer,
-    SlugRefChildSerializer, ExpensiveSerializer, FieldsetSerializer,
+    RootModelSerializer,
+    ParentSerializer,
+    ItemSerializer,
+    SlugRefChildSerializer,
+    ExpensiveSerializer,
+    FieldsetSerializer,
 )
 
 
@@ -95,7 +111,7 @@ rest.router.register_model(
 rest.router.register_model(
     ExpensiveModel,
     serializer=ExpensiveSerializer,
-    queryset=ExpensiveModel.objects.defer('expensive', 'more_expensive'),
+    queryset=ExpensiveModel.objects.defer("expensive", "more_expensive"),
 )
 rest.router.register_model(
     FieldsetModel,

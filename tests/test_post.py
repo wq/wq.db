@@ -19,21 +19,20 @@ class RestPostTestCase(APITestCase):
         Posting GeoJSON to a model with a geometry field should work.
         """
         form = {
-            'name': "Geometry Test 1",
-            'geometry': json.dumps({
-                "type": "Point",
-                "coordinates": [-90, 44]
-            })
+            "name": "Geometry Test 1",
+            "geometry": json.dumps(
+                {"type": "Point", "coordinates": [-90, 44]}
+            ),
         }
 
         # Test for expected response
-        response = self.client.post('/geometrymodels.json', form)
+        response = self.client.post("/geometrymodels.json", form)
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
 
         # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data['id'])
+        obj = GeometryModel.objects.get(id=response.data["id"])
         geom = obj.geometry
         self.assertEqual(geom.srid, 4326)
         self.assertEqual(geom.x, -90)
@@ -45,18 +44,18 @@ class RestPostTestCase(APITestCase):
         Posting WKT to a model with a geometry field should work.
         """
         form = {
-            'name': "Geometry Test 2",
-            'geometry': "POINT(%s %s)" % (-97, 50)
+            "name": "Geometry Test 2",
+            "geometry": "POINT(%s %s)" % (-97, 50),
         }
 
         # Test for expected response
-        response = self.client.post('/geometrymodels.json', form)
+        response = self.client.post("/geometrymodels.json", form)
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
 
         # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data['id'])
+        obj = GeometryModel.objects.get(id=response.data["id"])
         geom = obj.geometry
         self.assertEqual(geom.srid, 4326)
         self.assertEqual(geom.x, -97)
@@ -67,26 +66,26 @@ class RestPostTestCase(APITestCase):
         Posting to a model with a date should return a label and an ISO date
         """
         form = {
-            'name': "Test Date",
-            'date': '2015-06-01 12:00:00Z',
+            "name": "Test Date",
+            "date": "2015-06-01 12:00:00Z",
         }
         response = self.client.post("/datemodels.json", form)
         self.assertEqual(
             response.status_code, status.HTTP_201_CREATED, response.data
         )
-        self.assertIn('date_label', response.data)
-        self.assertEqual(response.data['date_label'], "2015-06-01 07:00 AM")
-        self.assertIn('date', response.data)
-        self.assertEqual(response.data['date'], "2015-06-01T07:00:00-05:00")
+        self.assertIn("date_label", response.data)
+        self.assertEqual(response.data["date_label"], "2015-06-01 07:00 AM")
+        self.assertIn("date", response.data)
+        self.assertEqual(response.data["date"], "2015-06-01T07:00:00-05:00")
 
     def test_rest_empty_date_post(self):
         """
         Allow posting an empty date if the field allows nulls
         """
         form = {
-            'name': "Test Date",
-            'date': '2015-06-01 12:00:00Z',
-            'empty_date': '',
+            "name": "Test Date",
+            "date": "2015-06-01 12:00:00Z",
+            "empty_date": "",
         }
         response = self.client.post("/datemodels.json", form)
         self.assertEqual(
@@ -100,7 +99,7 @@ class RestPostTestCase(APITestCase):
                 self.assertEqual(
                     response.status_code,
                     status.HTTP_400_BAD_REQUEST,
-                    response.data
+                    response.data,
                 )
                 return
 
@@ -117,128 +116,154 @@ class RestPostTestCase(APITestCase):
         check_result({}, False)
 
         # Required field submitted but left blank
-        check_result({'required_field': ''}, False)
+        check_result({"required_field": ""}, False)
 
         # Required field submitted
-        check_result({
-            'required_field': 'test',
-        }, {
-            'required_field': 'test',
-            'nullable_field': None,
-            'blankable_field': '',
-            'nullableblankable_field': None,
-        })
+        check_result(
+            {
+                "required_field": "test",
+            },
+            {
+                "required_field": "test",
+                "nullable_field": None,
+                "blankable_field": "",
+                "nullableblankable_field": None,
+            },
+        )
 
         # All fields submitted but left blank
-        check_result({
-            'required_field': 'test',
-            'nullable_field': '',
-            'blankable_field': '',
-            'nullableblankable_field': '',
-        }, {
-            'required_field': 'test',
-            'nullable_field': None,
-            'blankable_field': '',
-            'nullableblankable_field': '',
-        })
+        check_result(
+            {
+                "required_field": "test",
+                "nullable_field": "",
+                "blankable_field": "",
+                "nullableblankable_field": "",
+            },
+            {
+                "required_field": "test",
+                "nullable_field": None,
+                "blankable_field": "",
+                "nullableblankable_field": "",
+            },
+        )
 
     def test_rest_custom_lookup_fk(self):
         SlugModel.objects.create(
-            code='test1',
-            name='Test #1',
+            code="test1",
+            name="Test #1",
         )
-        response = self.client.post('/slugrefparents.json', {
-            'ref_id': 'test1',
-            'name': "Test FK",
-        })
+        response = self.client.post(
+            "/slugrefparents.json",
+            {
+                "ref_id": "test1",
+                "name": "Test FK",
+            },
+        )
         self.assertTrue(status.is_success(response.status_code), response.data)
-        rid = response.data.get('id')
-        self.assertEqual(response.data, {
-            'id': rid,
-            'label': 'Test FK (Test #1)',
-            'name': 'Test FK',
-            'ref_id': 'test1',
-            'ref_label': 'Test #1',
-        })
+        rid = response.data.get("id")
+        self.assertEqual(
+            response.data,
+            {
+                "id": rid,
+                "label": "Test FK (Test #1)",
+                "name": "Test FK",
+                "ref_id": "test1",
+                "ref_label": "Test #1",
+            },
+        )
 
-        response = self.client.post('/slugrefparents.json', {
-            'ref_id': 'test_invalid',
-            'name': "Test FK",
-        })
+        response = self.client.post(
+            "/slugrefparents.json",
+            {
+                "ref_id": "test_invalid",
+                "name": "Test FK",
+            },
+        )
         self.assertTrue(
             status.is_client_error(response.status_code), response.data
         )
-        self.assertEqual(response.data, {
-            'ref_id': ['Object with code=test_invalid does not exist.']
-        })
+        self.assertEqual(
+            response.data,
+            {"ref_id": ["Object with code=test_invalid does not exist."]},
+        )
 
     def test_rest_list_exclude_post(self):
         # Create
-        response = self.client.post('/expensivemodels.json', {
-            "name": "Test",
-            "expensive": "SOME_DATA",
-        })
+        response = self.client.post(
+            "/expensivemodels.json",
+            {
+                "name": "Test",
+                "expensive": "SOME_DATA",
+            },
+        )
         item = response.data
-        item_url = '/expensivemodels/{pk}.json'.format(pk=item['id'])
-        self.assertEqual(item['name'], "Test")
-        self.assertEqual(item['expensive'], "SOME_DATA")
+        item_url = "/expensivemodels/{pk}.json".format(pk=item["id"])
+        self.assertEqual(item["name"], "Test")
+        self.assertEqual(item["expensive"], "SOME_DATA")
 
         # List view
-        response = self.client.get('/expensivemodels.json')
-        item = response.data['list'][0]
-        self.assertEqual(item['name'], "Test")
-        self.assertNotIn('expensive', item)
-        self.assertNotIn('more_expensive', item)
+        response = self.client.get("/expensivemodels.json")
+        item = response.data["list"][0]
+        self.assertEqual(item["name"], "Test")
+        self.assertNotIn("expensive", item)
+        self.assertNotIn("more_expensive", item)
 
         # Detail view
         response = self.client.get(item_url)
         item = response.data
-        self.assertEqual(item['name'], "Test")
-        self.assertEqual(item['expensive'], "SOME_DATA")
+        self.assertEqual(item["name"], "Test")
+        self.assertEqual(item["expensive"], "SOME_DATA")
 
         # Update
-        response = self.client.put(item_url, {
-            "name": "Test 2",
-            "expensive": "SOME_OTHER_DATA",
-        })
+        response = self.client.put(
+            item_url,
+            {
+                "name": "Test 2",
+                "expensive": "SOME_OTHER_DATA",
+            },
+        )
         item = response.data
-        self.assertEqual(item['name'], "Test 2")
-        self.assertEqual(item['expensive'], "SOME_OTHER_DATA")
+        self.assertEqual(item["name"], "Test 2")
+        self.assertEqual(item["expensive"], "SOME_OTHER_DATA")
 
     def test_rest_virtual_fieldset(self):
-        response = self.client.post('/fieldsetmodels.json', {
-            "general": {
-                "name": "Test",
-                "title": "Dr.",
+        response = self.client.post(
+            "/fieldsetmodels.json",
+            {
+                "general": {
+                    "name": "Test",
+                    "title": "Dr.",
+                },
+                "contact": {
+                    "address": "123 Main St",
+                    "city": "Minneapolis",
+                },
             },
-            "contact": {
-                "address": "123 Main St",
-                "city": "Minneapolis",
-            }
-        }, format='json')
-        self.assertTrue(
-            status.is_success(response.status_code), response.data
+            format="json",
         )
-        obj = FieldsetModel.objects.get(pk=response.data['id'])
+        self.assertTrue(status.is_success(response.status_code), response.data)
+        obj = FieldsetModel.objects.get(pk=response.data["id"])
         self.assertEqual(obj.name, "Test")
         self.assertEqual(obj.title, "Dr.")
         self.assertEqual(obj.address, "123 Main St")
         self.assertEqual(obj.city, "Minneapolis")
 
-        response = self.client.post('/fieldsetmodels.json', {
-            "general": {
-                "name": "Test",
+        response = self.client.post(
+            "/fieldsetmodels.json",
+            {
+                "general": {
+                    "name": "Test",
+                },
+                "contact": {
+                    "address": "123 Main St",
+                    "city": "Minneapolis",
+                },
             },
-            "contact": {
-                "address": "123 Main St",
-                "city": "Minneapolis",
-            }
-        }, format='json')
+            format="json",
+        )
         self.assertTrue(
             status.is_client_error(response.status_code), response.data
         )
-        self.assertEqual(response.data, {
-            'general': {
-                'title': ['This field is required.']
-            }
-        })
+        self.assertEqual(
+            response.data, {"general": {"title": ["This field is required."]}}
+        )

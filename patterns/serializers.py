@@ -8,9 +8,9 @@ from .base.serializers import (
 
 
 __all__ = (
-    'AttachmentSerializer',
-    'TypedAttachmentSerializer',
-    'AttachedModelSerializer',
-    'NaturalKeyModelSerializer',
-    'NaturalKeyAttachedModelSerializer',
+    "AttachmentSerializer",
+    "TypedAttachmentSerializer",
+    "AttachedModelSerializer",
+    "NaturalKeyModelSerializer",
+    "NaturalKeyAttachedModelSerializer",
 )

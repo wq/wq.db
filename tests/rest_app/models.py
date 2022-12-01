@@ -63,17 +63,17 @@ class Item(LabelModel):
     type = models.ForeignKey(ItemType, models.CASCADE)
 
     class Meta:
-        ordering = ('type', 'name')
+        ordering = ("type", "name")
 
 
 class FileModel(LabelModel):
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to='files')
+    file = models.FileField(upload_to="files")
 
 
 class ImageModel(LabelModel):
     name = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='files')
+    image = models.ImageField(upload_to="files")
 
 
 class SlugModel(LabelModel):
@@ -104,32 +104,32 @@ class DateModel(models.Model):
 
 class ChoiceModel(LabelModel):
     CHOICE_CHOICES = [
-        ('one', 'Choice One'),
-        ('two', 'Choice Two'),
-        ('three', 'Choice Three'),
+        ("one", "Choice One"),
+        ("two", "Choice Two"),
+        ("three", "Choice Three"),
     ]
     GROUPED_CHOICES = [
         (
-            'Group 1',
+            "Group 1",
             (
-                ('one', 'Choice One'),
-                ('two', 'Choice Two'),
-                ('three', 'Choice Three'),
+                ("one", "Choice One"),
+                ("two", "Choice Two"),
+                ("three", "Choice Three"),
             ),
         )
     ]
     name = models.CharField(
         max_length=10,
-        help_text='Enter Name',
+        help_text="Enter Name",
     )
     choice = models.CharField(
         max_length=10,
-        help_text='Pick One',
+        help_text="Pick One",
         choices=CHOICE_CHOICES,
     )
     grouped_choice = models.CharField(
         max_length=10,
-        help_text='Pick One',
+        help_text="Pick One",
         choices=GROUPED_CHOICES,
     )
 
@@ -138,7 +138,7 @@ class ChoiceModel(LabelModel):
 
 class TranslatedModel(models.Model):
     name = models.CharField(
-        verbose_name=_('translated model name'),
+        verbose_name=_("translated model name"),
         max_length=255,
     )
 
@@ -159,7 +159,7 @@ class ExpensiveField(models.CharField):
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
-        kwargs['cost'] = self.cost
+        kwargs["cost"] = self.cost
         return name, path, args, kwargs
 
     def to_python(self, value):
@@ -172,10 +172,7 @@ class ExpensiveModel(LabelModel):
     name = models.CharField(max_length=20)
     expensive = ExpensiveField(cost=2, max_length=255)
     more_expensive = ExpensiveField(
-        cost=5,
-        max_length=255,
-        null=True,
-        blank=True
+        cost=5, max_length=255, null=True, blank=True
     )
 
 

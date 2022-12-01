@@ -1,8 +1,5 @@
 from wq.db import rest
-from .models import (
-    NaturalKeyParent,
-    ModelWithNaturalKey
-)
+from .models import NaturalKeyParent, ModelWithNaturalKey
 from wq.db.patterns.serializers import NaturalKeyModelSerializer
 
 

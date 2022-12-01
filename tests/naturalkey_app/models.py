@@ -9,7 +9,7 @@ class NaturalKeyParent(NaturalKeyModel):
         return self.slug
 
     class Meta:
-        unique_together = [['slug']]
+        unique_together = [["slug"]]
 
 
 class NaturalKeyChild(NaturalKeyModel):
@@ -20,7 +20,7 @@ class NaturalKeyChild(NaturalKeyModel):
         return "%s on %s" % (self.parent, self.date)
 
     class Meta:
-        unique_together = [['parent', 'date']]
+        unique_together = [["parent", "date"]]
 
 
 class ModelWithNaturalKey(models.Model):

@@ -4,9 +4,9 @@ from .settings import WITH_NONROOT
 
 
 if WITH_NONROOT:
-    base_url = 'wqsite/'
+    base_url = "wqsite/"
 else:
-    base_url = ''
+    base_url = ""
 
 
 urlpatterns = [
