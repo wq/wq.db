@@ -9,7 +9,6 @@ from rest_framework.response import Response
 
 from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
-from .serializers import ModelSerializer
 from .renderers import JSONRenderer, ESMRenderer
 from .exceptions import ImproperlyConfigured
 
@@ -17,6 +16,7 @@ from .exceptions import ImproperlyConfigured
 class ModelRouter(DefaultRouter):
     _models = set()
     _serializers = {}
+    _nested_arrays = {}
     _fields = {}
     _querysets = {}
     _filters = {}
@@ -33,7 +33,7 @@ class ModelRouter(DefaultRouter):
     include_config_view = True
     include_multi_view = True
 
-    default_serializer_class = ModelSerializer
+    default_serializer_class = None
 
     def __init__(self, trailing_slash=False):
         # Add trailing slash for HTML list views
@@ -48,16 +48,23 @@ class ModelRouter(DefaultRouter):
         )
         super(ModelRouter, self).__init__(trailing_slash=trailing_slash)
 
+    def register(self, model, *args, **kwargs):
+        if isinstance(model, type) and not args:
+            self.register_model(model, **kwargs)
+        else:
+            super().register(model, *args, **kwargs)
+
     def register_model(
         self,
         model,
         viewset=None,
         serializer=None,
+        nested_arrays=None,
         fields=None,
         queryset=None,
         filter=None,
         cache_filter=None,
-        **kwargs
+        **kwargs,
     ):
         if isinstance(model, str) and "." in model:
             from django.db.models import get_model
@@ -100,6 +107,11 @@ class ModelRouter(DefaultRouter):
 
         if serializer:
             self.register_serializer(model, serializer)
+
+        if nested_arrays:
+            if not isinstance(nested_arrays, (list, tuple)):
+                nested_arrays = [nested_arrays]
+            self._nested_arrays[model] = nested_arrays
 
         if fields:
             self.register_fields(model, fields)
@@ -152,7 +164,11 @@ class ModelRouter(DefaultRouter):
         self._extra_config.update(extra)
         self._base_config = None
 
-    def get_default_serializer_class(self, model_class):
+    def get_default_serializer_class(self, model_class=None):
+        if not self.default_serializer_class:
+            from .serializers import ModelSerializer
+
+            self.default_serializer_class = ModelSerializer
         return self.default_serializer_class
 
     def get_class(self, classes, model_class, default=lambda model: None):
@@ -182,12 +198,11 @@ class ModelRouter(DefaultRouter):
                         "No serializer fields defined for %s" % model_class
                     )
             serializer = serializer.for_model(
-                model_class, include_fields=include_fields
+                model_class,
+                include_fields=include_fields,
+                serializer_depth=serializer_depth,
+                nested_arrays=self._nested_arrays.get(model_class),
             )
-
-        if serializer_depth is not None:
-            if serializer_depth != getattr(meta, "depth", None):
-                serializer = serializer.for_depth(serializer_depth)
 
         meta = getattr(serializer, "Meta", object)
         conf = self._config.get(model_class, None)

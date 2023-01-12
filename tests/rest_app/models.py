@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from wq.db.patterns.models import LabelModel
+from wq.db.rest.models import LabelModel
 import time
 
 

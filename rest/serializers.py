@@ -16,7 +16,12 @@ from collections import OrderedDict
 from django.conf import settings
 
 from rest_framework.utils import model_meta
-from html_json_forms.serializers import parse_json_form, JSONFormSerializer
+from html_json_forms.serializers import parse_json_form
+from natural_keys.serializers import (
+    NaturalKeyModelSerializer,
+    NaturalKeySerializer,
+)
+from drf_writable_nested import WritableNestedModelSerializer
 from .exceptions import ImproperlyConfigured
 
 
@@ -163,7 +168,53 @@ def get_choice_list(choices, group=None):
     return choice_list
 
 
-class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
+class ListSerializer(serializers.ListSerializer):
+    @property
+    def type_field(self):
+        if not hasattr(self, "_type_field"):
+            initial = self.child.get_wq_config().get("initial")
+            if (
+                initial
+                and isinstance(initial, dict)
+                and "type_field" in initial
+            ):
+                self._type_field = initial["type_field"] + "_id"
+            else:
+                self._type_field = None
+        return self._type_field
+
+    def check_empty(self, val):
+        return val is None or val == ""
+
+    def skip_empty(self, row):
+        if not self.type_field:
+            return None
+        vals = [
+            val
+            for key, val in row.items()
+            if key != self.type_field and not self.check_empty(val)
+        ]
+        if not vals:
+            return True
+        else:
+            return False
+
+    def get_value(self, dictionary):
+        value = super().get_value(dictionary)
+        if isinstance(value, list):
+            value = [row for row in value if not self.skip_empty(row)]
+        return value
+
+
+class ModelSerializer(
+    NaturalKeyModelSerializer,
+    WritableNestedModelSerializer,
+):
+    add_label_fields = True
+
+    serializer_related_field = LookupRelatedField
+    serializer_related_to_field = LookupRelatedField
+
     xlsform_types = OrderedDict(
         (
             (serializers.ImageField, "image"),
@@ -180,6 +231,49 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             (serializers.TimeField, "time"),
         )
     )
+
+    def __init__(self, *args, wq_config=None, **kwargs):
+        mapping = self.serializer_field_mapping
+        mapping[model_fields.FileField] = ClearableFileField
+        mapping[model_fields.ImageField] = ClearableImageField
+
+        for model_field, serializer_field in list(mapping.items()):
+            if serializer_field == serializers.CharField:
+                mapping[model_field] = BlankCharField
+
+        if GEOSGeometry:
+            for field in (
+                "Geometry",
+                "GeometryCollection",
+                "Point",
+                "LineString",
+                "Polygon",
+                "MultiPoint",
+                "MultiLineString",
+                "MultiPolygon",
+            ):
+                mapping[getattr(model_fields, field + "Field")] = GeometryField
+        if wq_config:
+            self.wq_config = wq_config
+        super().__init__(*args, **kwargs)
+        if getattr(self, "initial_data", None):
+            self.initial_data = parse_json_form(self.initial_data)
+
+    @classmethod
+    def many_init(cls, *args, **kwargs):
+        if not hasattr(cls.Meta, "list_serializer_class"):
+            cls.Meta.list_serializer_class = ListSerializer
+        return super().many_init(*args, **kwargs)
+
+    def create(self, validated_data):
+        self.convert_natural_keys(validated_data)
+        return WritableNestedModelSerializer.create(self, validated_data)
+
+    def update(self, instance, validated_data):
+        self.convert_natural_keys(validated_data)
+        return WritableNestedModelSerializer.update(
+            self, instance, validated_data
+        )
 
     def get_fields_for_config(self):
         self._for_wq_config = True
@@ -215,6 +309,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         serializer_fields = self.get_fields_for_config()
         fields = []
         nested_fields = []
+        nested_field_dict = {}
         has_geo_fields = False
 
         overrides = getattr(self.Meta, "wq_field_config", None) or {}
@@ -226,16 +321,47 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 info.update(overrides[info["name"]])
             return info
 
+        def pop_info(name):
+            fsconf = (
+                f"{type(self).__name__}.Meta.wq_fieldsets"
+                f" for {self.Meta.model.__name__}"
+            )
+            if name in serializer_fields:
+                field = serializer_fields.pop(name)
+                info_name = name
+            elif f"{name}_id" in serializer_fields:
+                info_name = f"{name}_id"
+                field = serializer_fields.pop(info_name)
+            else:
+                raise ImproperlyConfigured(
+                    f'Unknown field "{name}" in {fsconf}'
+                )
+
+            is_fk = isinstance(
+                field, (serializers.RelatedField, serializers.ManyRelatedField)
+            )
+            if name == info_name and is_fk:
+                raise ImproperlyConfigured(
+                    f'Use "{name[:-3]}" rather than "{name}"'
+                    f" for ForeignKey in {fsconf}"
+                )
+            elif name != info_name and not is_fk:
+                raise ImproperlyConfigured(
+                    f'Use "{info_name}" rather than "{name}"'
+                    f" for non-ForeignKey in {fsconf}"
+                )
+            return get_info(info_name, field)
+
         for name, conf in fieldsets.items():
             conf = conf.copy()
             conf.setdefault("name", name)
             conf.setdefault("type", "group")
             conf.setdefault("label", name)
             conf["children"] = [
-                get_info(name, serializer_fields.pop(name))
-                for name in conf.pop("fields")
+                pop_info(name) for name in conf.pop("fields", [])
             ]
             nested_fields.append(conf)
+            nested_field_dict[name] = conf
 
         for name, field in serializer_fields.items():
             info = get_info(name, field)
@@ -244,11 +370,21 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 has_geo_fields = True
 
             if info["type"] == "repeat":
-                nested_fields.append(info)
+                if name in nested_field_dict:
+                    conf = nested_field_dict[name]
+                    for key, val in info.items():
+                        if key in ("type", "children"):
+                            conf[key] = val
+                        else:
+                            conf.setdefault(key, val)
+                else:
+                    nested_fields.append(info)
+                    nested_field_dict[name] = info
             else:
                 fields.append(info)
 
         config = getattr(self.Meta, "wq_config", {}).copy()
+        config.update(getattr(self, "wq_config", {}))
         config["form"] = fields + nested_fields
 
         meta = self.Meta.model._meta
@@ -267,6 +403,29 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         return config
 
     def get_wq_field_info(self, name, field, model=None):
+        if isinstance(field, NaturalKeySerializer):
+            children = [
+                self.get_wq_field_info(n, f, model=field.Meta.model)
+                for n, f in field.get_fields().items()
+            ]
+            if len(children) == 1:
+                info = children[0]
+                info["name"] = name + "[%s]" % info["name"]
+
+                fk = self.get_wq_foreignkey_info(field.Meta.model)
+                if fk:
+                    info["wq:ForeignKey"] = fk
+                    info["type"] = "select one"
+            else:
+                info = {
+                    "name": name,
+                    "type": "group",
+                    "bind": {"required": True},
+                    "children": children,
+                }
+            info["label"] = field.label or name.replace("_", " ").title()
+            return info
+
         info = {
             "name": name,
             "label": field.label or name.replace("_", " ").title(),
@@ -299,10 +458,21 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
             else:
                 child_config = {"form": []}
 
-            info["children"] = child_config["form"]
-            for key in ("initial", "control"):
-                if key in child_config:
-                    info[key] = child_config[key]
+            for key in child_config:
+                if key in (
+                    "name",
+                    "verbose_name",
+                    "verbose_name_plural",
+                    "url",
+                    "postsave",
+                    "label_template",
+                ):
+                    continue
+                elif key == "form":
+                    info_key = "children"
+                else:
+                    info_key = key
+                info[info_key] = child_config[key]
 
         elif isinstance(field, serializers.RelatedField):
             # Foreign key to a parent model
@@ -386,7 +556,7 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         for name, conf in self.Meta.wq_fieldsets.items():
             if name == "":
                 continue
-            for field in conf["fields"]:
+            for field in conf.get("fields") or []:
                 if field not in data:
                     continue
                 data.setdefault(name, {})
@@ -397,9 +567,8 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
         if not getattr(self.Meta, "wq_fieldsets", None):
             return super().to_internal_value(data)
 
-        data = parse_json_form(data)
         for name, conf in self.Meta.wq_fieldsets.items():
-            if name == "":
+            if name == "" or not conf.get("fields"):
                 continue
             fs_data = data.pop(name, None)
             if isinstance(fs_data, dict):
@@ -414,41 +583,6 @@ class BaseModelSerializer(JSONFormSerializer, serializers.ModelSerializer):
                 )
             else:
                 raise
-
-    class Meta:
-        wq_config = {}
-        wq_field_config = {}
-        wq_fieldsets = None
-
-
-class ModelSerializer(BaseModelSerializer):
-    add_label_fields = True
-
-    serializer_related_field = LookupRelatedField
-    serializer_related_to_field = LookupRelatedField
-
-    def __init__(self, *args, **kwargs):
-        mapping = self.serializer_field_mapping
-        mapping[model_fields.FileField] = ClearableFileField
-        mapping[model_fields.ImageField] = ClearableImageField
-
-        for model_field, serializer_field in list(mapping.items()):
-            if serializer_field == serializers.CharField:
-                mapping[model_field] = BlankCharField
-
-        if GEOSGeometry:
-            for field in (
-                "Geometry",
-                "GeometryCollection",
-                "Point",
-                "LineString",
-                "Polygon",
-                "MultiPoint",
-                "MultiLineString",
-                "MultiPolygon",
-            ):
-                mapping[getattr(model_fields, field + "Field")] = GeometryField
-        super(ModelSerializer, self).__init__(*args, **kwargs)
 
     @property
     def router(self):
@@ -494,9 +628,10 @@ class ModelSerializer(BaseModelSerializer):
         return getattr(self, "_for_wq_config", False)
 
     def get_fields(self, *args, **kwargs):
-        fields = super(ModelSerializer, self).get_fields(*args, **kwargs)
+        fields = super().get_fields(*args, **kwargs)
         fields = self.update_id_fields(fields)
         fields.update(self.get_label_fields(fields))
+        fields.update(self.get_nested_arrays(fields))
         exclude = set()
 
         def get_exclude(meta_name):
@@ -543,6 +678,8 @@ class ModelSerializer(BaseModelSerializer):
                 serializers.SlugRelatedField,
             )
             if not isinstance(default_field, auto_related_field):
+                continue
+            if isinstance(default_field, NaturalKeySerializer):
                 continue
 
             if name + "_id" not in fields:
@@ -620,21 +757,68 @@ class ModelSerializer(BaseModelSerializer):
 
         return fields
 
+    def get_nested_arrays(self, fields):
+        model_class = self.Meta.model
+        nested = {}
+        for array_model in getattr(self.Meta, "wq_nested_arrays", None) or []:
+            fk_field = None
+            for field in array_model._meta.fields:
+                if field.related_model == model_class:
+                    fk_field = field
+                    break
+            fk_desc = (
+                f"ForeignKey from {array_model.__name__}"
+                f" to {model_class.__name__}"
+            )
+            if not fk_field:
+                raise ImproperlyConfigured(f"No {fk_desc}")
+            rel_name = fk_field._related_name
+            if not rel_name or rel_name.startswith("+"):
+                raise ImproperlyConfigured(f"No related_name for {fk_desc}")
+
+            if rel_name in fields:
+                continue
+
+            base = self.get_nested_array_serializer(array_model)
+            base_fields = getattr(base.Meta, "fields", None) or []
+            base_exclude = getattr(base.Meta, "exclude", None) or []
+
+            class NestedSerializer(base):
+                class Meta(base.Meta):
+                    model = array_model
+                    if not base_fields or base_fields == "__all__":
+                        fields = None
+                        if fk_field.name not in base_exclude:
+                            exclude = [*base_exclude, fk_field.name]
+                    else:
+                        fields = [f for f in base_fields if f != fk_field.name]
+
+            nested[rel_name] = NestedSerializer(many=True)
+        return nested
+
+    def get_nested_array_serializer(self, array_model):
+        if self.router:
+            return self.router._serializers.get(array_model, ModelSerializer)
+        else:
+            return ModelSerializer
+
     @classmethod
-    def for_model(cls, model_class, include_fields=None):
+    def for_model(
+        cls,
+        model_class,
+        include_fields=None,
+        nested_arrays=None,
+        serializer_depth=None,
+    ):
         class Serializer(cls):
             class Meta(getattr(cls, "Meta", object)):
                 model = model_class
                 if include_fields:
                     fields = include_fields
-
-        return Serializer
-
-    @classmethod
-    def for_depth(cls, serializer_depth):
-        class Serializer(cls):
-            class Meta(getattr(cls, "Meta", object)):
-                depth = serializer_depth
+                if nested_arrays:
+                    wq_nested_arrays = nested_arrays
+                if serializer_depth is not None:
+                    depth = serializer_depth
 
         return Serializer
 
@@ -658,8 +842,15 @@ class ModelSerializer(BaseModelSerializer):
             ModelSerializer, self
         ).build_nested_field(field_name, relation_info, nested_depth)
         field_kwargs["required"] = False
-        if self.router:
+        if self.router and not issubclass(field_class, NaturalKeySerializer):
             field_class = self.router.get_serializer_for_model(
                 relation_info.related_model, nested_depth
             )
         return field_class, field_kwargs
+
+    class Meta:
+        wq_config = {}
+        wq_field_config = {}
+        wq_fieldsets = None
+        wq_nested_arrays = None
+        list_serializer_class = ListSerializer

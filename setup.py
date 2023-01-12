@@ -68,6 +68,7 @@ setup(
         "djangorestframework>=3.8.0,<4.0",
         "html-json-forms",
         "natural-keys>=1.6.0",
+        "drf-writable-nested",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",

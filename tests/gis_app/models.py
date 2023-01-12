@@ -1,5 +1,5 @@
 from django.conf import settings
-from wq.db.patterns.models import LabelModel
+from wq.db.rest.models import LabelModel
 
 
 if settings.WITH_GIS:

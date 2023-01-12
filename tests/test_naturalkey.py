@@ -63,7 +63,6 @@ class NaturalKeyTestCase(APITestCase):
             json.loads(response.content.decode("utf-8")),
             {
                 "id": instance.id,
-                "key_id": instance.key_id,
                 "note": "Test Note",
                 "key": {
                     "parent": {"slug": "test-key"},
