@@ -69,6 +69,7 @@ setup(
         "html-json-forms",
         "natural-keys>=1.6.0",
         "drf-writable-nested",
+        "pystache",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",

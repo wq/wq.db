@@ -772,7 +772,8 @@ class ModelSerializer(
             )
             if not fk_field:
                 raise ImproperlyConfigured(f"No {fk_desc}")
-            rel_name = fk_field._related_name
+
+            rel_name = fk_field.remote_field.related_name
             if not rel_name or rel_name.startswith("+"):
                 raise ImproperlyConfigured(f"No related_name for {fk_desc}")
 
