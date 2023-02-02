@@ -272,7 +272,7 @@ class ModelRouter(DefaultRouter):
         return qs
 
     def get_cache_filter_for_model(self, model):
-        return self._cache_filters.get(model, lambda qs, req: qs)
+        return self._cache_filters.get(model, lambda qs, req: qs.none())
 
     def get_lookup_for_model(self, model_class):
         config = self.get_model_config(model_class) or {}
