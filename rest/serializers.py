@@ -258,6 +258,7 @@ class ModelSerializer(
         super().__init__(*args, **kwargs)
         if getattr(self, "initial_data", None):
             self.initial_data = parse_json_form(self.initial_data)
+        self.id_fields = set()
 
     @classmethod
     def many_init(cls, *args, **kwargs):
@@ -557,6 +558,8 @@ class ModelSerializer(
             if name == "":
                 continue
             for field in conf.get("fields") or []:
+                if field in self.id_fields:
+                    field = f"{field}_id"
                 if field not in data:
                     continue
                 data.setdefault(name, {})
@@ -708,6 +711,8 @@ class ModelSerializer(
 
         if not id_fields:
             return fields
+
+        self.id_fields.update(id_fields)
 
         # Ensure _id fields show up in the same order they appear on model
         updated_fields = OrderedDict()
