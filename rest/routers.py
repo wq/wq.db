@@ -504,8 +504,9 @@ class ModelRouter(DefaultRouter):
             register(config, viewset)
 
         # Extra/custom viewsets
-        for name in self._extra_pages:
-            register(*self._extra_pages[name])
+        for name, (config, viewset) in self._extra_pages.items():
+            if not config.get("external"):
+                register(config, viewset)
 
         if self.include_config_view:
             # /config.js
