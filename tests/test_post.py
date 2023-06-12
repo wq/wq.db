@@ -266,3 +266,12 @@ class RestPostTestCase(APITestCase):
         self.assertEqual(
             response.data, {"general": {"title": ["This field is required."]}}
         )
+
+    def test_empty_post(self):
+        """
+        Empty post should return 400, not 500
+        """
+        response = self.client.post("/entities.json", data={})
+        self.assertTrue(
+            status.is_client_error(response.status_code), response.data
+        )

@@ -283,7 +283,6 @@ class ModelSerializer(
         overrides = getattr(self.Meta, "wq_field_config", None) or {}
 
         for name, field in list(fields.items()):
-
             has_wq_config = False
             if name != "id" and not field.read_only and not field.write_only:
                 has_wq_config = True
@@ -567,7 +566,7 @@ class ModelSerializer(
         return data
 
     def to_internal_value(self, data):
-        if not getattr(self.Meta, "wq_fieldsets", None):
+        if not data or not getattr(self.Meta, "wq_fieldsets", None):
             return super().to_internal_value(data)
 
         for name, conf in self.Meta.wq_fieldsets.items():
