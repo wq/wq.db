@@ -34,9 +34,13 @@
 &bull;
 [ModelViewSet][views]
 
-[**wq.db.patterns**][patterns]
+[**Guides**][guides]
 <br>
+[Fieldsets][fieldsets]
+&bull;
 [Repeating Nested Forms][nested-forms]
+&bull;
+[Entity-Attribute-Value][eav]
 
 [logo]: https://wq.io/images/wq.db.svg
 [docs]: https://wq.io/wq.db/
@@ -50,8 +54,10 @@
 [router]: https://wq.io/wq.db/router
 [serializers]: https://wq.io/wq.db/serializers
 [views]: https://wq.io/wq.db/views
-[patterns]: https://wq.io/wq.db/patterns
+[guides]: https://wq.io/guides/
+[fieldsets]: https://wq.io/guides/organize-inputs-into-fieldsets
 [nested-forms]: https://wq.io/guides/implement-repeating-nested-forms
+[eav]: https://wq.io/guides/eav-vs-relational
 
 [wq]: https://wq.io
 [wq.app]: https://wq.io/wq.app/
