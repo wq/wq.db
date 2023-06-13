@@ -4,6 +4,5 @@
 *.sw?
 build
 dist
-wq/
 tests/media
 wqdb_test.sqlite3

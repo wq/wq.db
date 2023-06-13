@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+
+[project]
+name = "wq.db"
+dynamic = ["version"]
+authors = [
+    {name = "S. Andrew Sheppard", email = "andrew@wq.io"},
+]
+description = "Django REST API for offline mobile surveys and field data collection."
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Database :: Database Engines/Servers",
+]
+dependencies = [
+    "Django>=1.11,<5.0",
+    "djangorestframework>=3.8.0,<4.0",
+    "html-json-forms",
+    "natural-keys>=1.6.0",
+    "drf-writable-nested",
+    "pystache",
+]
+
+[project.entry-points.wq]
+"wq.db" = "wq.db"
+
+[project.urls]
+Homepage = "https://wq.io/wq.db/"
+Documentation = "https://wq.io/"
+Source = "https://github.com/wq/wq.db"
+"Release Notes" = "https://github.com/wq/wq.db/releases"
+Issues = "https://github.com/wq/wq.db/issues"
+CI = "https://github.com/wq/wq.db/actions/workflows/test.yml"
+
+[tool.setuptools_scm]
