@@ -48,8 +48,7 @@ jobs:
         python -m pip install flake8 pytest wheel
         python -m pip install django==${{ matrix.django-version }}
         python -m pip install djangorestframework==${{ matrix.drf-version }}
-        python -m pip install html-json-forms drf-writable-nested pystache
-        python -m pip install git+https://github.com/wq/django-natural-keys.git
+        python -m pip install html-json-forms natural-keys drf-writable-nested pystache
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
