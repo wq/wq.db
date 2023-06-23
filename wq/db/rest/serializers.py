@@ -68,8 +68,10 @@ class LookupRelatedField(serializers.SlugRelatedField):
     def slug_field(self):
         if self._slug_field:
             return self._slug_field
-        else:
+        elif self.router:
             return self.router.get_lookup_for_model(self.model)
+        else:
+            return "pk"
 
     def use_pk_only_optimization(self):
         if self.slug_field == "pk":
