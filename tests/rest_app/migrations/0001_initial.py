@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=10)),
-                ('active', models.NullBooleanField(default=True)),
+                ('active', models.BooleanField(default=True, null=True)),
             ],
             options={
                 'abstract': False,
