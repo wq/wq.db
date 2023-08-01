@@ -14,6 +14,8 @@
 [![Python Support](https://img.shields.io/pypi/pyversions/wq.db.svg)](https://pypi.org/project/wq.db)
 [![Django Support](https://img.shields.io/pypi/djversions/wq.db.svg)](https://pypi.org/project/wq.db)
 
+**Note:** EAV mustache context helpers do not work in Django 4.1 and above.
+
 ### [Documentation][docs]
 
 [**Installation**][installation]
