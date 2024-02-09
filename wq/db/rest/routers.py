@@ -1,5 +1,5 @@
 from django.utils.encoding import force_str
-from django.urls import re_path
+from django.urls import re_path, path
 
 from django.conf import settings
 from rest_framework.routers import DefaultRouter, Route
@@ -11,6 +11,12 @@ from .permissions import has_perm
 from .views import SimpleViewSet, ModelViewSet
 from .renderers import JSONRenderer, ESMRenderer
 from .exceptions import ImproperlyConfigured
+from .maps import (
+    tiles,
+    update_tiles_url,
+    update_geometry_fields,
+    update_map_config,
+)
 
 
 class ModelRouter(DefaultRouter):
@@ -32,6 +38,7 @@ class ModelRouter(DefaultRouter):
     include_root_view = False
     include_config_view = True
     include_multi_view = True
+    include_tiles_view = True
 
     default_serializer_class = None
 
@@ -321,7 +328,7 @@ class ModelRouter(DefaultRouter):
         pages = {}
         for page in self._extra_pages:
             conf, view = self.get_page(page)
-            pages[page] = conf
+            pages[page] = conf.copy()
         for model in self._models:
             if not has_perm(user, model, "view"):
                 continue
@@ -353,8 +360,15 @@ class ModelRouter(DefaultRouter):
                     "name": "index",
                     "show_in_index": False,
                     "verbose_name": site_title,
+                    "map": True,
                 },
             )
+
+        for conf in pages.values():
+            update_geometry_fields(conf)
+
+        for conf in pages.values():
+            update_map_config(conf, pages)
 
         self._base_config = {
             "pages": pages,
@@ -367,6 +381,9 @@ class ModelRouter(DefaultRouter):
         }
         if getattr(settings, "WQ_CONFIG", None):
             self._base_config.update(settings.WQ_CONFIG)
+
+        update_tiles_url(self._base_config.get("map"), self.get_base_url())
+
         if settings.DEBUG:
             self._base_config["debug"] = True
         self._base_config.update(self._extra_config)
@@ -484,6 +501,9 @@ class ModelRouter(DefaultRouter):
             result[listurl] = self.paginate(model, 1, request)
         return Response(result)
 
+    def tiles(self, request, z, x, y):
+        return tiles(self, request, z, x, y)
+
     def get_urls(self):
         # Register viewsets with DefaultRouter just before returning urls
 
@@ -525,6 +545,9 @@ class ModelRouter(DefaultRouter):
         if root:
             # / - Skip registration and directly generate custom URLs
             urls.extend(self.get_root_urls(root["view"], root["name"]))
+
+        if self.include_tiles_view:
+            urls.append(path("tiles/<int:z>/<int:x>/<int:y>.pbf", self.tiles))
 
         return urls
 
