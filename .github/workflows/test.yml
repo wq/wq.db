@@ -31,10 +31,6 @@ jobs:
           django-version: 4.2.2
           drf-version: 3.14.0
           variant: default
-        - python-version: 3.7
-          django-version: 3.2.19
-          drf-version: 3.14.0
-          variant: default
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
