@@ -274,8 +274,24 @@ class ModelRouter(DefaultRouter):
             qs = self._querysets[model]
         else:
             qs = model.objects.all()
-        if request and model in self._filters:
-            qs = self._filters[model](qs, request)
+        if request:
+            if model in self._filters:
+                qs = self._filters[model](qs, request)
+            config = self.get_model_config(model) or {}
+            renderer = getattr(request, "accepted_renderer", None)
+            if (
+                config.get("defer_geometry")
+                and config.get("geometry_fields")
+                and renderer
+                and renderer.format != "geojson"
+            ):
+                qs = qs.defer(
+                    *[
+                        field["name"]
+                        for field in config["geometry_fields"]
+                        if "." not in field["name"]
+                    ]
+                )
         return qs
 
     def get_cache_filter_for_model(self, model):

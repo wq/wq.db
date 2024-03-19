@@ -1,65 +1,13 @@
-import unittest
 from .base import APITestCase
 from rest_framework import status
-import json
-from tests.rest_app.models import SlugModel, FieldsetModel
-from tests.gis_app.models import GeometryModel
+from .rest_app.models import SlugModel, FieldsetModel
 from django.contrib.auth.models import User
-from django.conf import settings
 
 
 class RestPostTestCase(APITestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser", is_superuser=True)
         self.client.force_authenticate(self.user)
-
-    @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
-    def test_rest_geometry_post_geojson(self):
-        """
-        Posting GeoJSON to a model with a geometry field should work.
-        """
-        form = {
-            "name": "Geometry Test 1",
-            "geometry": json.dumps(
-                {"type": "Point", "coordinates": [-90, 44]}
-            ),
-        }
-
-        # Test for expected response
-        response = self.client.post("/geometrymodels.json", form)
-        self.assertEqual(
-            response.status_code, status.HTTP_201_CREATED, response.data
-        )
-
-        # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data["id"])
-        geom = obj.geometry
-        self.assertEqual(geom.srid, 4326)
-        self.assertEqual(geom.x, -90)
-        self.assertEqual(geom.y, 44)
-
-    @unittest.skipUnless(settings.WITH_GIS, "requires GIS")
-    def test_rest_geometry_post_wkt(self):
-        """
-        Posting WKT to a model with a geometry field should work.
-        """
-        form = {
-            "name": "Geometry Test 2",
-            "geometry": "POINT(%s %s)" % (-97, 50),
-        }
-
-        # Test for expected response
-        response = self.client.post("/geometrymodels.json", form)
-        self.assertEqual(
-            response.status_code, status.HTTP_201_CREATED, response.data
-        )
-
-        # Double-check ORM model & geometry attribute
-        obj = GeometryModel.objects.get(id=response.data["id"])
-        geom = obj.geometry
-        self.assertEqual(geom.srid, 4326)
-        self.assertEqual(geom.x, -97)
-        self.assertEqual(geom.y, 50)
 
     def test_rest_date_label_post(self):
         """

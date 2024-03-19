@@ -131,10 +131,18 @@ def update_map_config(conf, pages):
             map_conf.pop("auto_layers", None)
             map_conf.pop("autoLayers", None)
             layers = map_conf.get("layers") or []
+            reference_layers = pages.copy()
             if mode in ("list", "detail") and not layers:
-                layers += get_context_layers(conf, mode)
+                if conf.get("defer_geometry"):
+                    if mode == "list" and supports_vector_tiles():
+                        layers += get_tile_layers({conf["name"]: conf}, None)
+                        reference_layers.pop(conf["name"])
+                    else:
+                        layers += get_geojson_url_layers(conf, mode)
+                else:
+                    layers += get_context_layers(conf, mode)
             if supports_vector_tiles():
-                layers += get_tile_layers(pages, mode)
+                layers += get_tile_layers(reference_layers, mode)
             map_conf["layers"] = layers
 
     return conf
@@ -207,6 +215,33 @@ def get_context_layers(conf, mode):
             layer_conf["color"] = conf["map_color"]
             # TODO: layer_conf["legend"] = ...
         layers.append(layer_conf)
+    return layers
+
+
+def get_geojson_url_layers(conf, mode):
+    if mode == "list":
+        url = "{{{rt}}}/" + conf["url"] + ".geojson"
+    else:
+        url = "{{{rt}}}/" + conf["url"] + "/{{{id}}}.geojson"
+
+    layers = []
+    for field in conf.get("geometry_fields") or []:
+        layer_conf = {
+            "name": get_geometry_label(conf, field, mode),
+            "type": "geojson",
+            "url": url,
+            "popup": conf["name"],
+        }
+        if mode == "list":
+            layer_conf["cluster"] = True  # TODO: implement in @wq/map-gl
+        if conf.get("map_color"):
+            layer_conf["color"] = conf["map_color"]
+            # TODO: layer_conf["legend"] = ...
+        layers.append(layer_conf)
+
+    # Only last geometry supported in GeoJSONRenderer
+    layers = layers[-1:]
+
     return layers
 
 

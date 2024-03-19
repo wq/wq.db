@@ -636,6 +636,7 @@ class ModelSerializer(
         fields = self.update_id_fields(fields)
         fields.update(self.get_label_fields(fields))
         fields.update(self.get_nested_arrays(fields))
+
         exclude = set()
 
         def get_exclude(meta_name):
@@ -649,8 +650,17 @@ class ModelSerializer(
         if self.is_config:
             exclude |= get_exclude("config_exclude")
 
-        for field in list(exclude):
-            fields.pop(field, None)
+        if not self.is_config and not self.is_geojson:
+            defer_geometry = getattr(self.Meta, "wq_config", {}).get(
+                "defer_geometry", False
+            )
+            if defer_geometry:
+                for field_name, field in fields.items():
+                    if isinstance(field, GeometryField):
+                        exclude.add(field_name)
+
+        for field_name in list(exclude):
+            fields.pop(field_name, None)
 
         return fields
 
