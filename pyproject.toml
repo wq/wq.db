@@ -33,10 +33,10 @@ classifiers = [
     "Topic :: Database :: Database Engines/Servers",
 ]
 dependencies = [
-    "Django>=1.11,<5.0",
-    "djangorestframework>=3.8.0,<4.0",
+    "Django>=4.0,<6.0",
+    "djangorestframework>=3.14.0,<4.0",
     "html-json-forms",
-    "natural-keys>=2.1.0",
+    "natural-keys>=2.1.1",
     "drf-writable-nested",
     "pystache",
 ]
